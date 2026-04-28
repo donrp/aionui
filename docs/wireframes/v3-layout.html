@@ -1599,7 +1599,7 @@
   <div class="sidebar">
 
     <div class="sidebar-topbar">
-      <span class="panel-title" id="panel-title">聊天</span>
+      <span class="panel-title" id="panel-title">工作区</span>
       <div class="sb-actions">
         <div class="sb-btn" title="后退">←</div>
         <div class="sb-btn" title="前进">→</div>
@@ -1923,21 +1923,29 @@
         <div class="sidebar-divider"></div>
 
         <div class="section-label">活跃任务</div>
-        <div class="conv-item" style="padding:8px 20px;">
-          <span class="c-dot" style="background:var(--accent);"></span>
-          <span class="c-label">每日代码审查</span>
-          <span style="margin-left:auto; font-size:10px; color:var(--text-muted);">每天 09:00</span>
+        <div class="conv-item" style="padding:8px 20px; flex-wrap:wrap; gap:4px;">
+          <img src="../../src/renderer/assets/logos/ai-major/claude.svg" style="width:16px; height:16px; border-radius:50%; background:#f5f5f5; padding:2px; flex-shrink:0;">
+          <span class="c-label" style="flex:1; min-width:0;">每日代码审查</span>
+          <span style="font-size:10px; color:var(--text-muted); flex-shrink:0;">每天 09:00</span>
+          <div style="width:100%; display:flex; align-items:center; gap:4px; padding-left:20px;">
+            <span style="font-size:10px; color:var(--accent);">✓ 上次成功</span>
+            <span style="font-size:10px; color:var(--text-muted);">· 今天 09:01</span>
+          </div>
         </div>
-        <div class="conv-item" style="padding:8px 20px;">
-          <span class="c-dot" style="background:var(--accent);"></span>
-          <span class="c-label">周报汇总</span>
-          <span style="margin-left:auto; font-size:10px; color:var(--text-muted);">每周五 17:00</span>
+        <div class="conv-item" style="padding:8px 20px; flex-wrap:wrap; gap:4px;">
+          <img src="../../src/renderer/assets/profiles/cowork.jpg" style="width:16px; height:16px; border-radius:50%; flex-shrink:0;">
+          <span class="c-label" style="flex:1; min-width:0;">周报汇总</span>
+          <span style="font-size:10px; color:var(--text-muted); flex-shrink:0;">每周五 17:00</span>
+          <div style="width:100%; display:flex; align-items:center; gap:4px; padding-left:20px;">
+            <span style="font-size:10px; color:var(--accent);">✓ 上次成功</span>
+            <span style="font-size:10px; color:var(--text-muted);">· 4月25日 17:02</span>
+          </div>
         </div>
 
         <div class="sidebar-divider"></div>
         <div class="section-label">已暂停</div>
         <div class="conv-item" style="padding:8px 20px; opacity:0.5;">
-          <span class="c-dot"></span>
+          <img src="../../src/renderer/assets/profiles/cowork.jpg" style="width:16px; height:16px; border-radius:50%; flex-shrink:0;">
           <span class="c-label">日报生成</span>
           <span style="margin-left:auto; font-size:10px; color:var(--text-muted);">已暂停</span>
         </div>
@@ -1958,11 +1966,11 @@
         </div>
         <div class="conv-item" style="padding:8px 20px;">
           <span style="font-size:14px; margin-right:8px;">🛠</span>
-          <span class="c-label">Agent 管理</span>
+          <span class="c-label">助手管理</span>
         </div>
         <div class="conv-item" style="padding:8px 20px;">
           <span style="font-size:14px; margin-right:8px;">⚡</span>
-          <span class="c-label">技能与工具</span>
+          <span class="c-label">功能扩展</span>
         </div>
 
         <div class="sidebar-divider"></div>
@@ -1973,7 +1981,7 @@
         </div>
         <div class="conv-item" style="padding:8px 20px;">
           <span style="font-size:14px; margin-right:8px;">📱</span>
-          <span class="c-label">WebUI 远程访问</span>
+          <span class="c-label">手机 / 网页访问</span>
         </div>
         <div class="conv-item" style="padding:8px 20px;">
           <span style="font-size:14px; margin-right:8px;">🐾</span>
@@ -2022,6 +2030,14 @@
             </div>
             <button class="send-btn">↑</button>
           </div>
+        </div>
+
+        <!-- 示例提示词 -->
+        <div style="width:100%; max-width:680px; display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:4px;">
+          <span style="font-size:12px; color:var(--text-tertiary); padding:5px 12px; border:1px solid var(--border); border-radius:16px; cursor:pointer; transition:all var(--transition);" onmouseenter="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)'" onmouseleave="this.style.borderColor='var(--border)'; this.style.color='var(--text-tertiary)'">帮我写一篇周报</span>
+          <span style="font-size:12px; color:var(--text-tertiary); padding:5px 12px; border:1px solid var(--border); border-radius:16px; cursor:pointer; transition:all var(--transition);" onmouseenter="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)'" onmouseleave="this.style.borderColor='var(--border)'; this.style.color='var(--text-tertiary)'">总结这个文件</span>
+          <span style="font-size:12px; color:var(--text-tertiary); padding:5px 12px; border:1px solid var(--border); border-radius:16px; cursor:pointer; transition:all var(--transition);" onmouseenter="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)'" onmouseleave="this.style.borderColor='var(--border)'; this.style.color='var(--text-tertiary)'">帮我做一个 PPT</span>
+          <span style="font-size:12px; color:var(--text-tertiary); padding:5px 12px; border:1px solid var(--border); border-radius:16px; cursor:pointer; transition:all var(--transition);" onmouseenter="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)'" onmouseleave="this.style.borderColor='var(--border)'; this.style.color='var(--text-tertiary)'">翻译成英文</span>
         </div>
       </div>
 
@@ -2310,7 +2326,7 @@
             <span style="font-size:12px; color:var(--text-tertiary); margin-left:6px; white-space:nowrap;">4 位成员</span>
           </div>
           <div class="ch-filter" onclick="toggleMemberComms()" title="隐藏成员之间的通信，只看与你相关的消息">
-            <span class="ch-filter-label">隐藏成员间通信</span>
+            <span class="ch-filter-label">只看我的消息</span>
             <div class="ch-toggle" id="member-comms-toggle"><div class="ch-toggle-dot"></div></div>
           </div>
           <div class="ch-panel-toggle" title="展开/收起工作空间" onclick="toggleWorkspacePanel()">
@@ -2321,7 +2337,7 @@
         <!-- First-time tip -->
         <div class="group-tip" id="group-tip" style="display:flex; align-items:center; gap:8px; padding:8px 16px; background:var(--accent-light); border-bottom:1px solid rgba(76,175,80,.15); font-size:12px; color:var(--text-secondary);">
           <span style="font-size:14px;">💡</span>
-          <span>群聊中可以通过右上角「隐藏成员间通信」开关，只看与你相关的消息。</span>
+          <span>开启右上角「只看我的消息」，可过滤 AI 之间的对话，只保留与你相关的内容。</span>
           <span style="margin-left:auto; cursor:pointer; color:var(--text-muted); font-size:14px;" onclick="this.parentElement.style.display='none'">✕</span>
         </div>
 
@@ -2945,7 +2961,7 @@
 </div>
 
 <script>
-  var panelTitles = { chat: '聊天', people: '通讯录', cron: '定时任务', settings: '设置' };
+  var panelTitles = { chat: '工作区', people: '通讯录', cron: '定时任务', settings: '设置' };
   function switchRail(name) {
     document.querySelectorAll('.icon-rail .rail-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.sidebar-panel').forEach(p => p.classList.remove('active'));
