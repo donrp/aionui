@@ -5,6 +5,10 @@
 - **上游**:`origin/feat/cleanup-and-test-rewrite`(N1 产物)
 - **对应总设计**:`2026-05-08-cleanup-and-test-rewrite-design.md` →
   UC-C / UC-F / 里程碑清单 N2 行
+- **执行前必读**:
+  - `2026-05-08-cleanup-teammate-cheatsheet.md`(teammate 硬约束,含 UC-F 5 条)
+  - 本文档(requirements)
+  - `handoffs/N1-outcome.md`(上游实际交付)
 
 ## 做什么
 

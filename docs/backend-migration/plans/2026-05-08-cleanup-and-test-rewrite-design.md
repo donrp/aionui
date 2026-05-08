@@ -181,22 +181,75 @@ $ echo $?
 任何非 0 退出的命令必须在 handoff 的**诊断**节说明根因 + 修复动作,
 不得 `|| true` 吞错。
 
-#### UC-F-2:改 CI workflow 必须触发真实 CI run(N5 强制,其它里程碑按需)
+#### UC-F-2:CI 真实性验证(整链末端一次性合入 dev)
 
-当里程碑改动了 `.github/workflows/**` 下任何文件:
+本仓库 CI 触发条件实测:
 
-- push 后必须**等对应 workflow run 跑完**,不得 push 了就写 handoff 宣告完成
-- handoff 必须包含:
-  - `gh run list --branch <branch> --limit 5 --json databaseId,name,status,conclusion,url` 原始 JSON 输出
-  - 被修改的 workflow(或被恢复的 step)所在 run 的 `conclusion: success` URL
-  - 如果某个 workflow 的触发条件是 `workflow_call` 或 `workflow_dispatch` 无法通过
-    普通 push 触发,handoff 必须说明"用何种方式触发、URL、conclusion";实在无法
-    触发的要 escalate,不得默认"按经验应该能通过"
-- CI fail 时:**不得 merge 基线后再 push"冲一冲"来掩盖**,必须修到真绿或 escalate
-- **N5 的 handoff 至少包含 2 次 CI 成功**:
-  - 第一次:workflow 改完初次 push 触发
-  - 第二次:merge `origin/feat/backend-migration` 基线后再次 push 触发
-  两次 run 的 URL 都要贴
+| Workflow | 触发 | 说明 |
+|---|---|---|
+| `pr-checks.yml` | `pull_request` 到 `main/dev` + 手动 `workflow_dispatch` | feature 分支 push 不会直接触发 |
+| `build-and-release.yml` | `push: branches: [dev]` + tags | **push 到 dev 会触发完整 build/release CI** |
+| `_build-reusable.yml` | `workflow_call` | 被上面两个调用 |
+| `pack-web-cli.yml` | `workflow_call` | 同上 |
+
+**本链策略:整条 N1-N5 在 feature 分支链上完成后,由 team-lead(或人类
+协调者)把最终成果一次性合入 `dev`,借此触发一次 `build-and-release.yml`
+真实 CI 并观察结果**。这是本链的唯一"真跑 CI"机会,不是每个里程碑跑一次
+(避免 dev 被频繁扰动 + 保持 dev 改动粒度对外清晰)。
+
+##### 里程碑期(N1-N5 各自的 executor 责任)
+
+- 只在**自己的 feature 分支**上工作;本地 `lint + tsc + vitest + prek`
+  四件套 + 基线同步后复跑(UC-F-5)**是本里程碑主门禁**
+- **严禁**在里程碑期间把任何内容 push / merge 到 `dev` 或 `feat/backend-migration`
+- **严禁**在里程碑期间用 `gh workflow run` 等方式主动触发 CI(等 team-lead
+  在整链合入时统一做),避免 CI queue 被占满
+- handoff 必须显式写"本里程碑未触发 CI run,统一由 team-lead 在整链合入 dev
+  时验证"
+
+##### 整链末端(team-lead / 协调者一次性做)
+
+N5 executor 完成并 handoff 后:
+
+1. team-lead 确认 N1-N5 所有 handoff 的 UC-F-1..5 证据齐全
+2. team-lead(或人类,按分支权限决定)把**整条链**合入 `dev`:
+   ```bash
+   # 选一(推荐):本地完整 merge 链路
+   git fetch origin
+   git checkout dev
+   git pull origin dev
+   git merge --no-ff origin/feat/n5-restore-ci \
+     -m "chore: cleanup + test rewrite chain (N1-N5) integration"
+   git push origin dev
+
+   # 选二:让 `feat/backend-migration` 先把链吃进来,再让 dev 吃 `feat/backend-migration`
+   #      (若团队习惯是通过 feat/backend-migration 中转)
+   ```
+3. push 到 dev 触发 `build-and-release.yml`;team-lead **必须等 run 跑完**并
+   `gh run watch` 观察 `conclusion`
+4. **接受条件**:该次 CI run `conclusion: success`
+5. **失败处理**:
+   - 明显代码问题 → **不得**在 dev 上 hot-fix;`git revert` 该 merge(或
+     `git reset --hard HEAD~1 && git push --force-with-lease` 若团队规则允许)
+     回滚 dev;回到链尾某里程碑的 feature 分支补 commit;修完再整链合入重跑
+   - 非代码问题(registry timeout 等):允许 `gh run rerun` 一次并在最终
+     验收报告说明;≥ 2 次 flaky 必须 escalate 调查根因
+
+##### 最终验收报告(team-lead / 人类产出,不是 teammate)
+
+整链合入后,team-lead 在 `docs/backend-migration/handoffs/N5-outcome.md` 末尾
+追加"整链合入 dev 验证"节,或单独写 `docs/backend-migration/handoffs/chain-integration.md`:
+
+- 合入 dev 的 merge commit SHA
+- `gh run list --branch dev --limit 5 --json ...` 原始 JSON
+- `build-and-release.yml` 的 `conclusion: success` URL
+- 如有 rerun:次数 + 原因
+- 跨平台(macOS / Linux / Windows)的产物验证简报(若 CI 包含 build)
+
+##### 通用
+
+- CI fail **不得**掩盖;规则见上
+- handoff 必须贴 `gh run list` 原始 JSON + `conclusion: success` URL
 
 #### UC-F-3:删除代码必须 grep 证明无外部引用
 
@@ -460,10 +513,24 @@ git log --merges --oneline -1
 
 ## 参考文档
 
-- `docs/backend-migration/plans/2026-05-07-webui-decouple-electron-design.md` —— M 系列总设计,协作模型来源
-- `docs/backend-migration/plans/2026-05-07-webui-decouple-team-playbook.md` —— 协作规范、分支模型、handoff 模板
-- `docs/backend-migration/plans/2026-05-07-webui-decouple-teammate-cheatsheet.md` —— teammate 必读硬约束(精简版)
-- `docs/backend-migration/handoffs/ci-web-cli-release-outcome.md` —— 单测禁用 TODO 的来源
+### 本链内部配套文档
+
+- `2026-05-08-cleanup-team-playbook.md` —— 本链的 team playbook(给 team-lead 读)
+- `2026-05-08-cleanup-teammate-cheatsheet.md` —— 本链的 teammate cheatsheet(给 executor / plan-writer 读,~280 行,含 UC-F 5 条完整版)
+- `2026-05-08-n{1..5}-*-requirements.md` —— 各里程碑需求文档
+- `2026-05-08-n{3,4}-*.md` —— N3/N4 detailed plan(由 plan-writer 产出)
+- `handoffs/N{1..5}-outcome.md` —— 各里程碑 handoff
+
+### M 系列(格式与流程参考)
+
+- `2026-05-07-webui-decouple-electron-design.md` —— M 系列总设计,协作模型来源
+- `2026-05-07-webui-decouple-team-playbook.md` —— M 系列 playbook(格式参考)
+- `2026-05-07-webui-decouple-teammate-cheatsheet.md` —— M 系列 cheatsheet(格式参考)
+- `2026-05-07-m1-monorepo-skeleton.md` —— M 系列 detailed plan 样例(plan-writer 格式参考)
+
+### 其它
+
+- `handoffs/ci-web-cli-release-outcome.md` —— 单测禁用 TODO 的来源(N5 要把这里改 DONE)
 - `/Users/zhoukai/Documents/github/aionui-backend/docs/development-workflow.md` —— 前后端联调流程
 
 ## 附录 A:grep 二次确认记录(2026-05-08)

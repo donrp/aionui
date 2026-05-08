@@ -4,7 +4,10 @@
 - **里程碑**:N1(本次清理与测试重写链的首个里程碑)
 - **上游**:`origin/feat/backend-migration`(共享分支,最新 SHA `e4cdff41f` 或更新)
 - **对应总设计**:`2026-05-08-cleanup-and-test-rewrite-design.md` →
-  UC-A / UC-B / 文件清单(N1) / 关键事实 A-C / 附录 A-B
+  UC-A / UC-B / UC-F / 文件清单(N1) / 关键事实 A-C / 附录 A-B
+- **执行前必读**:
+  - `2026-05-08-cleanup-teammate-cheatsheet.md`(teammate 硬约束,含 UC-F 5 条)
+  - 本文档(requirements)
 
 ## 做什么
 

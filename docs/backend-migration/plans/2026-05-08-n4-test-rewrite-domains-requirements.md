@@ -5,6 +5,11 @@
 - **上游**:`origin/feat/n3-test-rewrite-adapter-common`(N3 产物,含 mock 模板)
 - **对应总设计**:`2026-05-08-cleanup-and-test-rewrite-design.md` →
   UC-C / UC-D / UC-F / 测试覆盖清单
+- **执行前必读**:
+  - `2026-05-08-cleanup-teammate-cheatsheet.md`(teammate 硬约束)
+  - 本文档(requirements)
+  - `2026-05-08-n4-test-rewrite-domains.md`(executor 必读;由 plan-writer 产出,含 N4a/N4b/N4c 分区)
+  - `handoffs/N3-outcome.md`(上游;**重要**:N3 handoff 里锁定的 `mockHttpBridge` 签名)
 
 ## 做什么
 

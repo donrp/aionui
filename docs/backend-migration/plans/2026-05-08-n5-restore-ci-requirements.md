@@ -5,6 +5,11 @@
 - **上游**:`origin/feat/n4-test-rewrite-domains`(N4 产物)
 - **对应总设计**:`2026-05-08-cleanup-and-test-rewrite-design.md` →
   UC-E / UC-F / 里程碑清单 N5 行
+- **执行前必读**:
+  - `2026-05-08-cleanup-teammate-cheatsheet.md`(teammate 硬约束)
+  - 本文档(requirements)
+  - `handoffs/N4-outcome.md`(上游)
+  - `handoffs/ci-web-cli-release-outcome.md`(未解决的 TODO 节——N5 要把它改 DONE)
 
 ## 做什么
 
@@ -24,8 +29,12 @@ CI run 的 N5 handoff 不予接受**(见 UC-F-2)。
    - "未解决的 TODO" 节中关于单测禁用的段落标记为 `✅ DONE (N5 恢复于 <日期>)`
    - 新增引用:本 N5 handoff 的 CI run URL
 
-3. **触发真实 CI run 并等通过**:push 后等 3 个 workflow 的 run 跑完;必须
-   `conclusion: success`
+3. **准备整链合入 dev 的交接**(见总设计 UC-F-2):
+   - N5 executor **不触发 CI**(由 team-lead 整链合入 dev 时统一做)
+   - N5 handoff 必须为 team-lead 准备:
+     - 整链 N1-N5 各分支的最新 SHA
+     - 整链合入 dev 的操作指南(merge command 示例)
+     - 预留"整链合入 dev 验证"节让 team-lead 回填(merge SHA / CI run URL / conclusion)
 
 ## 不做什么(边界)
 
@@ -46,8 +55,9 @@ CI run 的 N5 handoff 不予接受**(见 UC-F-2)。
 | 是否保留被注释掉的 "# Unit tests temporarily disabled" 注释行 | **删除**,回到 M8 之前的形态 | 这个临时状态的目的达成后,保留注释只会误导未来 reader;commit message + handoff 足够留存历史 |
 | 取消注释 vs 重写整个 step | **仅取消注释**(diff 尽可能小) | M 系列的 `2cae1bc19` commit 里格式就是 `- name: Run unit tests\n  run: bunx vitest run`,恢复到原样即可 |
 | 触发 CI 的方式 | **push 到 `feat/n5-restore-ci` 分支**,让 `pr-checks.yml` 和 `_build-reusable.yml` 自然触发 | 不需要开 PR;分支推送 workflow 就跑 |
-| 两次 CI 成功的要求(UC-F-2) | **必须 2 次**:第一次 push 后 + merge 基线后再次 push | 证明 N4 的测试在 CI 环境稳定,且基线同步没破坏测试 |
-| 跨平台验证 | `pr-checks.yml` 的 `unit-tests` job 已覆盖 ubuntu-latest / macos-14 / windows-2022,必须**三平台都 success** | 已有 matrix 机制,不需要额外配置;平台差异由此暴露 |
+| CI 真跑的责任 | **整链末端由 team-lead 合入 dev 一次性验证**;N5 executor 本身不触发 CI | 避免 dev 被频繁扰动 + 保持粒度清晰;见总设计 UC-F-2 |
+| N5 executor 的门禁 | 本地 `lint + tsc + vitest + prek` 绿 + 基线同步后复跑 PASS | 与 N1-N4 一致;不因 N5 改 workflow 就额外要求 feature 分支真跑 CI |
+| 跨平台验证 | 由 team-lead 在 dev 整链合入后的 `build-and-release.yml` 里观察;N5 executor 本身不承担跨平台验证 | matrix 在 dev CI 已覆盖 |
 | CI 失败时的行为 | **按 UC-F-2 处理**:不得 push 基线后 "冲一冲";必须修到绿 / escalate;修需要改测试则回到 N4 分支追加 commit,rebase 到 N5 | 这是防御"偷懒"的硬约束,M 系列经验教训 |
 | 更新 ci-web-cli-release-outcome.md 的 diff 范围 | 仅改单测禁用那一段 + 加 DONE 标记 + 本 N5 CI URL | 保持 handoff 文档稳定,不做"顺手重写" |
 
@@ -94,36 +104,25 @@ prek run --from-ref origin/feat/backend-migration --to-ref HEAD
 # 预期:全部退出 0
 ```
 
-### CI 真实验证(UC-F-2 硬门禁)
+### CI 真实验证(UC-F-2)
 
-```bash
-# 5. push 触发 CI
-git push -u origin feat/n5-restore-ci
+#### N5 executor 责任(本里程碑)
 
-# 6. 列出分支上的 run
-gh run list --branch feat/n5-restore-ci --limit 10 \
-  --json databaseId,name,status,conclusion,url
+- 本地门禁全绿(UC-F-5 Step 1+4)
+- push feature 分支:`git push -u origin feat/n5-restore-ci`
+- **不触发 CI**(不 `gh workflow run`,不开临时 PR,不合 dev)
+- handoff 必须写:"**本里程碑未触发 CI run,统一由 team-lead 在整链合入
+  dev 时验证**"
 
-# 7. 等每个 workflow 的 run 结束,断言每个 conclusion=success
-gh run watch $(gh run list --branch feat/n5-restore-ci --workflow pr-checks.yml --limit 1 --json databaseId --jq '.[0].databaseId')
-# 预期:run 结束后 exit 0
-# (build-and-release.yml / pack-web-cli.yml 是 workflow_call,按 pr-checks 链路间接触发或手动 workflow_dispatch)
+#### team-lead 责任(整链末端,不在本 requirements 的 executor 门禁内)
 
-# 8. 第一次 CI 成功后,再次触发(证明稳定):
-git commit --allow-empty -m "chore(n5): force CI re-run for stability verification"
-git push
-# 再次等 CI 通过
-```
+整链合入 dev 见 playbook "整链合入 dev + 真 CI 验证"节。N5 handoff 的
+"整链合入 dev 验证"节由 team-lead 回填:
 
-### Handoff 必要证据(UC-F-2)
-
-handoff 必须包含:
-
-- **第 1 次 CI run 的 URL + `conclusion: success`**(push 后初次触发)
-- **第 2 次 CI run 的 URL + `conclusion: success`**(稳定性验证)
-- 三平台(ubuntu-latest / macos-14 / windows-2022)的 `unit-tests` job 的逐平台
-  summary:`N passed` 数字
-- 3 个 workflow 各自的 run URL,以防 `unit-tests` 在不同 workflow 有差异
+- 合入 dev 的 merge commit SHA
+- `gh run list --branch dev` JSON
+- `build-and-release.yml` `conclusion: success` URL
+- 有 rerun 记录和原因
 
 ### 最终闸门
 
@@ -172,20 +171,25 @@ handoff 必须包含:
 ## Handoff 必填字段(重点)
 
 - 本里程碑分支名 + 最新 SHA + 基线同步 merge SHA
-- **UC-F-1 命令输出**:自动化门禁 1-4 条 + 5-8 条的原始输出
-- **UC-F-2 CI 证据**:
-  - `gh run list --branch feat/n5-restore-ci --json ...` 原始 JSON(完整)
-  - 第 1 次 CI 成功 URL(`pr-checks.yml` / `_build-reusable.yml` /
-    `pack-web-cli.yml` 各一条)
-  - 第 2 次 CI 成功 URL(同上)
-  - 三平台 `unit-tests` job 的 summary 截取(`N passed` 数字)
-- 3 个 workflow 的 diff(vs `origin/feat/n4-test-rewrite-domains`)
-- ci-web-cli-release-outcome.md 的 diff
-- **整条链 SHA 列表**(给人类做最终合回决策用):
+- **UC-F-1 命令输出**:本地门禁所有命令的头 10 尾 10 + 退出码
+- **UC-F-2 声明**:"**本里程碑未触发 CI run,统一由 team-lead 在整链合入
+  dev 时验证**"
+- **整条链 SHA 列表**(给 team-lead 整链合入用):
   - `feat/cleanup-and-test-rewrite` SHA = ...
   - `feat/n2-legacy-test-cleanup` SHA = ...
   - `feat/n3-test-rewrite-adapter-common` SHA = ...
   - `feat/n4-test-rewrite-domains` SHA = ...
   - `feat/n5-restore-ci` SHA = ...
-- 若任何一次 CI rerun,必须记录原因 + 排查过程
-- 最后一节:"**整条链已就绪,等待人类决定如何合回 `feat/backend-migration`**"
+- 3 个 workflow 的 diff(vs `origin/feat/n4-test-rewrite-domains`)
+- `ci-web-cli-release-outcome.md` 的 diff
+- **预留"整链合入 dev 验证"节**(留白给 team-lead 回填):
+  ```markdown
+  ## 整链合入 dev 验证(team-lead 回填)
+
+  - 合入 dev 的 merge commit SHA: _待回填_
+  - `gh run list --branch dev` JSON: _待回填_
+  - `build-and-release.yml` conclusion: success URL: _待回填_
+  - 是否有 rerun 及原因: _待回填_
+  ```
+- 最后一节:"**整条链已就绪,请 team-lead 按 playbook '整链合入 dev' 节把
+  整链合入 dev 并回填本 handoff 的整链合入 dev 验证节**"
