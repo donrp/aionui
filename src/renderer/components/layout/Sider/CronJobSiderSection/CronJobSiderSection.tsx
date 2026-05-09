@@ -66,7 +66,7 @@ const CronJobSiderSection: React.FC<CronJobSiderSectionProps> = ({ jobs, pathnam
   if (jobs.length === 0) return null;
 
   return (
-    <div className='mb-8px min-w-0'>
+    <div className='min-w-0'>
       <div className='group/label flex items-center px-12px h-28px select-none sticky top-0 z-10 bg-fill-2'>
         <span className='text-12px text-t-tertiary font-normal leading-none'>{t('cron.scheduledTasks')}</span>
         <span
