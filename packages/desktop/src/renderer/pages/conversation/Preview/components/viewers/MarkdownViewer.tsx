@@ -28,7 +28,7 @@ import SelectionToolbar from '../renderers/SelectionToolbar';
 import { useContainerScroll, useContainerScrollTarget } from '../../hooks/useScrollSyncHelpers';
 import { convertLatexDelimiters } from '@/renderer/utils/chat/latexDelimiters';
 import MermaidBlock from '@/renderer/components/Markdown/MermaidBlock';
-import { fetchFileAsBlob } from '@/renderer/utils/file/staticFile';
+import { fetchFileAsBlob, revokeFileBlob } from '@/renderer/utils/file/staticFile';
 
 interface MarkdownPreviewProps {
   content: string;
@@ -95,6 +95,7 @@ const useImageResolverCache = () => {
 const MarkdownImage: React.FC<MarkdownImageProps> = ({ src, alt, baseDir, workspace, conversationId, ...props }) => {
   const [resolvedSrc, setResolvedSrc] = useState<string | undefined>(undefined);
   const resolveImage = useImageResolverCache();
+  const blobRef = useRef<{ conversationId: string; relativePath: string } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -129,7 +130,10 @@ const MarkdownImage: React.FC<MarkdownImageProps> = ({ src, alt, baseDir, worksp
         const relativeSrc = src.replace(/\\/g, '/');
         resolveImage(`static:${conversationId}:${relativeSrc}`, () => fetchFileAsBlob(conversationId, relativeSrc))
           .then((blobUrl) => {
-            if (!cancelled) setResolvedSrc(blobUrl);
+            if (!cancelled) {
+              blobRef.current = { conversationId, relativePath: relativeSrc };
+              setResolvedSrc(blobUrl);
+            }
           })
           .catch(async () => {
             const normalizedBase = baseDir ? baseDir.replace(/\\/g, '/') : undefined;
@@ -183,6 +187,10 @@ const MarkdownImage: React.FC<MarkdownImageProps> = ({ src, alt, baseDir, worksp
 
     return () => {
       cancelled = true;
+      if (blobRef.current) {
+        revokeFileBlob(blobRef.current.conversationId, blobRef.current.relativePath);
+        blobRef.current = null;
+      }
     };
   }, [src, baseDir, resolveImage, workspace, conversationId]);
 
