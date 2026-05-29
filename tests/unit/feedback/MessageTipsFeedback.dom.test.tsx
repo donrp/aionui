@@ -122,6 +122,27 @@ describe('MessageTips — FeedbackButton wiring', () => {
     expect(screen.getByText('settings.oneClickFeedback')).toBeInTheDocument();
   });
 
+  it('renders structured error resolution guidance', () => {
+    render(
+      <MessageTips
+        message={buildTips('error', 'raw provider billing error', {
+          message: 'raw provider billing error',
+          code: 'USER_LLM_PROVIDER_BILLING_LIMIT',
+          ownership: 'user_llm_provider',
+          detail: 'Provider billing limit exceeded.',
+          retryable: false,
+          feedback_recommended: false,
+          resolution: {
+            kind: 'check_provider_billing',
+            target: 'provider_settings',
+          },
+        })}
+      />
+    );
+
+    expect(screen.getByText('conversation.agentError.resolution.check_provider_billing')).toBeInTheDocument();
+  });
+
   it('expands classified error technical details explicitly', async () => {
     const user = userEvent.setup();
     render(

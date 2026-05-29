@@ -91,6 +91,9 @@ const MessageTips: React.FC<{ message: IMessageTips }> = ({ message }) => {
         : structuredError.retryable
           ? t('conversation.agentError.retryable')
           : t('conversation.agentError.notRetryable');
+    const resolutionHint = structuredError.resolution
+      ? t(`conversation.agentError.resolution.${structuredError.resolution.kind}`)
+      : null;
     const detailParts = [
       code ? `${t('conversation.agentError.errorCode')}: ${code}` : '',
       structuredError.detail || structuredError.message,
@@ -116,6 +119,9 @@ const MessageTips: React.FC<{ message: IMessageTips }> = ({ message }) => {
               </div>
               <div className='font-500 text-t-primary [word-break:break-word]'>{title}</div>
               <div className='text-t-secondary whitespace-break-spaces [word-break:break-word]'>{body}</div>
+              {resolutionHint && (
+                <div className='text-t-secondary whitespace-break-spaces [word-break:break-word]'>{resolutionHint}</div>
+              )}
               {detailParts.length > 0 && (
                 <Collapse bordered={false} className='bg-transparent' defaultActiveKey={[]}>
                   <Collapse.Item

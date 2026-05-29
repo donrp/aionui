@@ -96,6 +96,22 @@
     "errorCode": "Error code",
     "retryable": "Retryable",
     "notRetryable": "Needs configuration",
+    "resolution": {
+      "retry": "Retry later, or send this message again.",
+      "wait_for_current_response": "Wait for the current response to finish before sending another message.",
+      "start_new_session": "Start a new conversation before continuing.",
+      "reconnect_agent": "Restart or reconnect the selected agent, then retry.",
+      "check_agent_login": "Log in to the selected agent, or refresh its credentials.",
+      "check_agent_installation": "Check the agent installation and local command configuration.",
+      "check_agent_version": "Update the agent, or fix the protocol version incompatibility.",
+      "check_local_command": "Install the missing command, or confirm it has been added to PATH.",
+      "check_provider_credentials": "Check the model provider API key or account credentials in settings.",
+      "check_provider_billing": "Check the model provider balance, credits, or quota.",
+      "check_provider_base_url": "Check the model provider Base URL, API path, proxy, and API compatibility.",
+      "change_model": "Choose a model that is available for the current account and supports this request.",
+      "reduce_context": "Reduce the message content, referenced files, or context size, then retry.",
+      "send_feedback": "Send feedback with logs so the team can investigate."
+    },
     "ownership": {
       "aionui": "App",
       "user_agent": "Agent",

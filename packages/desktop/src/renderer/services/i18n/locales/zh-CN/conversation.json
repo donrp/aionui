@@ -96,6 +96,22 @@
     "errorCode": "错误码",
     "retryable": "可重试",
     "notRetryable": "需先处理配置",
+    "resolution": {
+      "retry": "稍后重试，或重新发送这条消息。",
+      "wait_for_current_response": "请等待当前回复结束后再发送下一条消息。",
+      "start_new_session": "请新建一个对话后继续。",
+      "reconnect_agent": "请重启或重新连接所选 Agent 后重试。",
+      "check_agent_login": "请先登录所选 Agent，或刷新它的凭证。",
+      "check_agent_installation": "请检查 Agent 的安装状态和本地命令配置。",
+      "check_agent_version": "请更新 Agent，或修复协议版本不兼容问题。",
+      "check_local_command": "请安装缺失的命令，或确认它已经加入 PATH。",
+      "check_provider_credentials": "请在设置中检查模型服务商的 API Key 或账号凭证。",
+      "check_provider_billing": "请检查模型服务商的余额、额度或配额。",
+      "check_provider_base_url": "请检查模型服务商的 Base URL、接口路径、代理和 API 兼容性。",
+      "change_model": "请选择当前账号可用且支持该请求的模型。",
+      "reduce_context": "请减少消息内容、引用文件或上下文大小后重试。",
+      "send_feedback": "请提交反馈并附带日志，方便团队排查。"
+    },
     "ownership": {
       "aionui": "应用",
       "user_agent": "Agent",
