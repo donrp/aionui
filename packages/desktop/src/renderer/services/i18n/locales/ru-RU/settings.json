@@ -963,6 +963,7 @@
   "mcpInlineConfigHint": "Возможно, конфигурация неверна. Проверьте MCP JSON и повторите тест.",
   "mcpInlineCommandHint": "На этом устройстве отсутствует {{command}}. Установите его и повторите проверку.",
   "retry": "Retry",
+  "runtimeRetryConnectionTest": "Retry test",
   "runtimeStatus": {
     "waitingForLock": "Waiting for another task to finish preparing the runtime.",
     "downloading": "Downloading the managed Node runtime.",

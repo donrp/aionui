@@ -963,6 +963,7 @@
     "pendingTimeRemaining": "剩餘時間：{{time}}"
   },
   "retry": "重試",
+  "runtimeRetryConnectionTest": "重試檢測",
   "runtimeStatus": {
     "waitingForLock": "正在等待其他任務完成執行環境準備。",
     "downloading": "正在下載託管 Node 執行環境。",

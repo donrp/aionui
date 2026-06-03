@@ -211,10 +211,12 @@ const McpServerHeader: React.FC<McpServerHeaderProps> = ({
           <Button
             size='mini'
             icon={<Refresh size={'14'} />}
-            title={t('settings.mcpTestConnection')}
-            loading={isTestingConnection}
+            title={t(runtimeFailed ? 'settings.runtimeRetryConnectionTest' : 'settings.mcpTestConnection')}
+            loading={isTestingConnection || runtimeBusy}
             onClick={() => onTestConnection(server)}
-          />
+          >
+            {runtimeFailed ? t('settings.runtimeRetryConnectionTest') : undefined}
+          </Button>
         )}
       </div>
       {!isReadOnly && (

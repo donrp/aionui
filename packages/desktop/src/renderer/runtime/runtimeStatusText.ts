@@ -3,10 +3,6 @@ import type { TFunction } from 'i18next';
 import type { IRuntimeStatusEvent } from '@/common/adapter/ipcBridge';
 
 export function formatRuntimeStatusText(t: TFunction, status: IRuntimeStatusEvent): string {
-  if (status.message) {
-    return status.message;
-  }
-
   switch (status.phase) {
     case 'waiting_for_lock':
       return t('settings.runtimeStatus.waitingForLock', {

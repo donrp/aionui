@@ -961,6 +961,7 @@
   "mcpInlineConfigHint": "Yapılandırma hatalı olabilir. MCP JSON'u gözden geçirip yeniden test edin.",
   "mcpInlineCommandHint": "Bu makinede {{command}} bulunmuyor. Kurup tekrar test edin.",
   "retry": "Retry",
+  "runtimeRetryConnectionTest": "Retry test",
   "runtimeStatus": {
     "waitingForLock": "Waiting for another task to finish preparing the runtime.",
     "downloading": "Downloading the managed Node runtime.",

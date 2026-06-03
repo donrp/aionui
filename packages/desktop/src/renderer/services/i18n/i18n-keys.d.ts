@@ -1715,6 +1715,7 @@ export type I18nKey =
   | 'settings.restartNow'
   | 'settings.retry'
   | 'settings.rule_content'
+  | 'settings.runtimeRetryConnectionTest'
   | 'settings.runtimeStatus.downloading'
   | 'settings.runtimeStatus.extracting'
   | 'settings.runtimeStatus.failedDownload'
