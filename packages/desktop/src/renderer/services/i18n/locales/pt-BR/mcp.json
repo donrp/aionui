@@ -1,4 +1,5 @@
 {
+  "label": "MCP",
   "integration": {
     "title": "Integração MCP",
     "description": "Gerenciar servidores e ferramentas do Model Context Protocol"

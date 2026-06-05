@@ -58,6 +58,7 @@
   "mermaidTitle": "Diagrama Mermaid",
   "largeTextTruncatedHint": "Modo de pré-visualização de arquivos grandes: mostrando os primeiros {{count}} caracteres para melhor desempenho.",
   "truncatedBanner": "O conteúdo da pré-visualização foi truncado. Clique em baixar para visualizar o arquivo completo.",
+  "aiWriting": "A IA está escrevendo…",
   "errors": {
     "missingFilePath": "O caminho do arquivo está ausente",
     "openWithoutPath": "Não é possível abrir: o caminho do arquivo não foi fornecido",

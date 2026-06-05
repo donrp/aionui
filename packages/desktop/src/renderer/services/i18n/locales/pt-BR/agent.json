@@ -26,5 +26,9 @@
     "noAlternatives": "Nenhum agente disponível encontrado",
     "configureFirst": "Por favor, configure um agente nas Configurações primeiro.",
     "switching": "Alternando agente..."
+  },
+  "model": {
+    "switchSuccess": "Modelo alterado com sucesso",
+    "switchFailed": "Falha ao alternar o modelo"
   }
 }
