@@ -29,10 +29,7 @@ import {
   ASSISTANT_EDITOR_SURFACE,
 } from '../helpers';
 
-async function findAssistantIdByName(
-  page: import('@playwright/test').Page,
-  name: string
-): Promise<string | null> {
+async function findAssistantIdByName(page: import('@playwright/test').Page, name: string): Promise<string | null> {
   for (const id of await getVisibleAssistantIds(page)) {
     const cardText = await page.locator(`[data-testid="assistant-card-${id}"]`).textContent();
     if (cardText?.includes(name)) {
@@ -600,15 +597,16 @@ test.describe('Assistant Settings CRUD', () => {
     expect(firstIndex).toBeGreaterThanOrEqual(0);
     expect(secondIndex).toBeGreaterThanOrEqual(0);
 
-    const [draggedId, targetId] =
-      firstIndex < secondIndex ? [secondId, firstId] : [firstId, secondId];
+    const [draggedId, targetId] = firstIndex < secondIndex ? [secondId, firstId] : [firstId, secondId];
 
     await dragAssistantAbove(page, draggedId, targetId);
 
     await expect
       .poll(async () => {
         const cards = page.locator('[data-testid^="assistant-card-"]');
-        const order = await cards.evaluateAll((elements) => elements.map((element) => element.getAttribute('data-testid')));
+        const order = await cards.evaluateAll((elements) =>
+          elements.map((element) => element.getAttribute('data-testid'))
+        );
         return (
           order.indexOf(`assistant-card-${draggedId}`) !== -1 &&
           order.indexOf(`assistant-card-${targetId}`) !== -1 &&
@@ -631,9 +629,9 @@ test.describe('Assistant Settings CRUD', () => {
     await goToGuidListView(page);
     await expect
       .poll(async () => {
-        const guidOrder = await page.locator('[data-testid^="preset-pill-"]').evaluateAll((elements) =>
-          elements.map((element) => element.getAttribute('data-testid'))
-        );
+        const guidOrder = await page
+          .locator('[data-testid^="preset-pill-"]')
+          .evaluateAll((elements) => elements.map((element) => element.getAttribute('data-testid')));
         return (
           guidOrder.indexOf(`preset-pill-${draggedId}`) !== -1 &&
           guidOrder.indexOf(`preset-pill-${targetId}`) !== -1 &&
