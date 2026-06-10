@@ -7,12 +7,6 @@
 import type { ICreateConversationParams } from '@/common/adapter/ipcBridge';
 import type { TProviderWithModel } from '@/common/config/storage';
 
-export type BuildAgentConversationPresetResources = {
-  rules?: string;
-  enabled_skills?: string[];
-  exclude_auto_inject_skills?: string[];
-};
-
 export type BuildAgentConversationAssistantOverrides = {
   model?: string;
   permission?: string;
@@ -34,7 +28,6 @@ export type BuildAgentConversationInput = {
   custom_workspace?: boolean;
   is_preset?: boolean;
   preset_agent_type?: string;
-  preset_resources?: BuildAgentConversationPresetResources;
   session_mode?: string;
   current_model_id?: string;
   assistant_locale?: string;
