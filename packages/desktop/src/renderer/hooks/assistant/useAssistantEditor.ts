@@ -43,6 +43,11 @@ export const useAssistantEditor = ({
   const [editContext, setEditContext] = useState('');
   const [editAvatar, setEditAvatar] = useState('');
   const [editAgent, setEditAgent] = useState<string>('claude');
+  const [editRecommendedPromptsText, setEditRecommendedPromptsText] = useState('');
+  const [defaultModelMode, setDefaultModelMode] = useState<'auto' | 'fixed'>('auto');
+  const [defaultModelValue, setDefaultModelValue] = useState('');
+  const [defaultPermissionMode, setDefaultPermissionMode] = useState<'auto' | 'fixed'>('auto');
+  const [defaultPermissionValue, setDefaultPermissionValue] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
   const [promptViewMode, setPromptViewMode] = useState<'edit' | 'preview'>('preview');
@@ -83,6 +88,14 @@ export const useAssistantEditor = ({
     setDisabledBuiltinSkills([]);
   }, []);
 
+  const resetDefaultConfigState = useCallback(() => {
+    setEditRecommendedPromptsText('');
+    setDefaultModelMode('auto');
+    setDefaultModelValue('');
+    setDefaultPermissionMode('auto');
+    setDefaultPermissionValue('');
+  }, []);
+
   const handleEdit = async (assistant: AssistantListItem) => {
     setIsCreating(false);
     setActiveAssistantId(assistant.id);
@@ -92,6 +105,7 @@ export const useAssistantEditor = ({
     setEditDescription(assistant.description || '');
     setEditAvatar(assistant.avatar || '');
     setEditAgent(assistant.preset_agent_type || 'claude');
+    resetDefaultConfigState();
     resetSkillEditorState();
 
     try {
@@ -101,6 +115,11 @@ export const useAssistantEditor = ({
       setEditAvatar(detail.profile.avatar || '');
       setEditAgent(detail.engine.agent_backend || assistant.preset_agent_type || 'claude');
       setEditContext(detail.rules.content || '');
+      setEditRecommendedPromptsText((detail.prompts.recommended ?? []).join('\n'));
+      setDefaultModelMode(detail.defaults.model.mode === 'fixed' ? 'fixed' : 'auto');
+      setDefaultModelValue(detail.defaults.model.value || '');
+      setDefaultPermissionMode(detail.defaults.permission.mode === 'fixed' ? 'fixed' : 'auto');
+      setDefaultPermissionValue(detail.defaults.permission.value || '');
       setAvailableSkills(skillsList);
       setBuiltinAutoSkills(autoSkills);
       setSelectedSkills(detail.capabilities.default_skill_ids ?? []);
@@ -109,6 +128,7 @@ export const useAssistantEditor = ({
     } catch (error) {
       console.error('Failed to load assistant detail:', error);
       setEditContext('');
+      resetDefaultConfigState();
       setAvailableSkills([]);
       setBuiltinAutoSkills([]);
       resetSkillEditorState();
@@ -125,6 +145,7 @@ export const useAssistantEditor = ({
     setEditContext('');
     setEditAvatar('\u{1F916}');
     setEditAgent('claude');
+    resetDefaultConfigState();
     resetSkillEditorState();
 
     try {
@@ -150,11 +171,17 @@ export const useAssistantEditor = ({
     setEditDescription(assistant.description_i18n?.[localeKey] || assistant.description || '');
     setEditAvatar(assistant.avatar || '\u{1F916}');
     setEditAgent(assistant.preset_agent_type || 'claude');
+    resetDefaultConfigState();
     resetSkillEditorState();
 
     try {
       const { detail, skillsList, autoSkills } = await loadEditorResources(assistant.id);
       setEditContext(detail.rules.content || '');
+      setEditRecommendedPromptsText((detail.prompts.recommended ?? []).join('\n'));
+      setDefaultModelMode(detail.defaults.model.mode === 'fixed' ? 'fixed' : 'auto');
+      setDefaultModelValue(detail.defaults.model.value || '');
+      setDefaultPermissionMode(detail.defaults.permission.mode === 'fixed' ? 'fixed' : 'auto');
+      setDefaultPermissionValue(detail.defaults.permission.value || '');
       setAvailableSkills(skillsList);
       setBuiltinAutoSkills(autoSkills);
       setSelectedSkills(detail.capabilities.default_skill_ids ?? []);
@@ -163,6 +190,7 @@ export const useAssistantEditor = ({
     } catch (error) {
       console.error('Failed to load assistant content for duplication:', error);
       setEditContext('');
+      resetDefaultConfigState();
       setAvailableSkills([]);
       setBuiltinAutoSkills([]);
       resetSkillEditorState();
@@ -202,6 +230,24 @@ export const useAssistantEditor = ({
         return;
       }
 
+      if (defaultModelMode === 'fixed' && !defaultModelValue.trim()) {
+        message.error(
+          t('settings.assistantDefaultModelRequired', {
+            defaultValue: 'Please choose a default model when using a fixed value.',
+          })
+        );
+        return;
+      }
+
+      if (defaultPermissionMode === 'fixed' && !defaultPermissionValue.trim()) {
+        message.error(
+          t('settings.assistantDefaultPermissionRequired', {
+            defaultValue: 'Please choose a default permission when using a fixed value.',
+          })
+        );
+        return;
+      }
+
       if (pendingSkills.length > 0) {
         const skillsToImport = pendingSkills.filter(
           (pending) => !availableSkills.some((available) => available.name === pending.name)
@@ -225,6 +271,17 @@ export const useAssistantEditor = ({
 
       const pendingSkillNames = pendingSkills.map((skill) => skill.name);
       const finalCustomSkills = Array.from(new Set([...customSkills, ...pendingSkillNames]));
+      const recommendedPrompts = editRecommendedPromptsText
+        .split('\n')
+        .map((prompt) => prompt.trim())
+        .filter(Boolean);
+      const defaults = {
+        model: defaultModelMode === 'fixed' ? { mode: 'fixed', value: defaultModelValue.trim() } : { mode: 'auto' },
+        permission:
+          defaultPermissionMode === 'fixed'
+            ? { mode: 'fixed', value: defaultPermissionValue.trim() }
+            : { mode: 'auto' },
+      };
 
       if (isCreating) {
         const createRequest: CreateAssistantRequest = {
@@ -235,6 +292,8 @@ export const useAssistantEditor = ({
           enabled_skills: selectedSkills,
           custom_skill_names: finalCustomSkills,
           disabled_builtin_skills: disabledBuiltinSkills.length > 0 ? disabledBuiltinSkills : undefined,
+          recommended_prompts: recommendedPrompts,
+          defaults,
         };
         const created = await ipcBridge.assistants.create.invoke(createRequest);
         await persistAssistantRules(created.id, editContext);
@@ -256,6 +315,8 @@ export const useAssistantEditor = ({
               enabled_skills: selectedSkills,
               custom_skill_names: finalCustomSkills,
               disabled_builtin_skills: disabledBuiltinSkills.length > 0 ? disabledBuiltinSkills : undefined,
+              recommended_prompts: recommendedPrompts,
+              defaults,
             };
         await ipcBridge.assistants.update.invoke(updateRequest);
 
@@ -345,6 +406,16 @@ export const useAssistantEditor = ({
     setEditAvatar,
     editAgent,
     setEditAgent,
+    editRecommendedPromptsText,
+    setEditRecommendedPromptsText,
+    defaultModelMode,
+    setDefaultModelMode,
+    defaultModelValue,
+    setDefaultModelValue,
+    defaultPermissionMode,
+    setDefaultPermissionMode,
+    defaultPermissionValue,
+    setDefaultPermissionValue,
     isCreating,
     deleteConfirmVisible,
     setDeleteConfirmVisible,

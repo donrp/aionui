@@ -135,6 +135,16 @@ const AssistantSettings: React.FC = () => {
               editAvatarImage={editAvatarImage}
               editAgent={editor.editAgent}
               setEditAgent={editor.setEditAgent}
+              editRecommendedPromptsText={editor.editRecommendedPromptsText}
+              setEditRecommendedPromptsText={editor.setEditRecommendedPromptsText}
+              defaultModelMode={editor.defaultModelMode}
+              setDefaultModelMode={editor.setDefaultModelMode}
+              defaultModelValue={editor.defaultModelValue}
+              setDefaultModelValue={editor.setDefaultModelValue}
+              defaultPermissionMode={editor.defaultPermissionMode}
+              setDefaultPermissionMode={editor.setDefaultPermissionMode}
+              defaultPermissionValue={editor.defaultPermissionValue}
+              setDefaultPermissionValue={editor.setDefaultPermissionValue}
               editContext={editor.editContext}
               setEditContext={editor.setEditContext}
               promptViewMode={editor.promptViewMode}

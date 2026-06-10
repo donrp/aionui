@@ -18,6 +18,16 @@ type AssistantEditorPageProps = {
   editAvatarImage?: string;
   editAgent: string;
   setEditAgent: (value: string) => void;
+  editRecommendedPromptsText: string;
+  setEditRecommendedPromptsText: (value: string) => void;
+  defaultModelMode: 'auto' | 'fixed';
+  setDefaultModelMode: (value: 'auto' | 'fixed') => void;
+  defaultModelValue: string;
+  setDefaultModelValue: (value: string) => void;
+  defaultPermissionMode: 'auto' | 'fixed';
+  setDefaultPermissionMode: (value: 'auto' | 'fixed') => void;
+  defaultPermissionValue: string;
+  setDefaultPermissionValue: (value: string) => void;
   editContext: string;
   setEditContext: (value: string) => void;
   promptViewMode: 'edit' | 'preview';
@@ -51,6 +61,16 @@ const AssistantEditorPage: React.FC<AssistantEditorPageProps> = ({
   editAvatarImage,
   editAgent,
   setEditAgent,
+  editRecommendedPromptsText,
+  setEditRecommendedPromptsText,
+  defaultModelMode,
+  setDefaultModelMode,
+  defaultModelValue,
+  setDefaultModelValue,
+  defaultPermissionMode,
+  setDefaultPermissionMode,
+  defaultPermissionValue,
+  setDefaultPermissionValue,
   editContext,
   setEditContext,
   promptViewMode,
@@ -127,6 +147,16 @@ const AssistantEditorPage: React.FC<AssistantEditorPageProps> = ({
             editAvatarImage={editAvatarImage}
             editAgent={editAgent}
             setEditAgent={setEditAgent}
+            editRecommendedPromptsText={editRecommendedPromptsText}
+            setEditRecommendedPromptsText={setEditRecommendedPromptsText}
+            defaultModelMode={defaultModelMode}
+            setDefaultModelMode={setDefaultModelMode}
+            defaultModelValue={defaultModelValue}
+            setDefaultModelValue={setDefaultModelValue}
+            defaultPermissionMode={defaultPermissionMode}
+            setDefaultPermissionMode={setDefaultPermissionMode}
+            defaultPermissionValue={defaultPermissionValue}
+            setDefaultPermissionValue={setDefaultPermissionValue}
             editContext={editContext}
             setEditContext={setEditContext}
             promptViewMode={promptViewMode}

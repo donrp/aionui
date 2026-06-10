@@ -76,6 +76,13 @@ export interface AssistantDefaults {
   mcps: AssistantDefaultList;
 }
 
+export interface AssistantDefaultsRequest {
+  model?: AssistantDefaultScalar;
+  permission?: AssistantDefaultScalar;
+  skills?: AssistantDefaultList;
+  mcps?: AssistantDefaultList;
+}
+
 export interface AssistantCapabilities {
   default_skill_ids: string[];
   custom_skill_names: string[];
@@ -117,6 +124,9 @@ export interface CreateAssistantRequest {
   name_i18n?: Record<string, string>;
   description_i18n?: Record<string, string>;
   prompts_i18n?: Record<string, string[]>;
+  recommended_prompts?: string[];
+  recommended_prompts_i18n?: Record<string, string[]>;
+  defaults?: AssistantDefaultsRequest;
 }
 
 export type UpdateAssistantRequest = Partial<Omit<CreateAssistantRequest, 'id'>> & {

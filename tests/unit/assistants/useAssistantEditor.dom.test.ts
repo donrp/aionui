@@ -67,12 +67,12 @@ describe('useAssistantEditor', () => {
       storage_mode: 'user_file',
     },
     prompts: {
-      recommended: [],
+      recommended: ['Prompt one', 'Prompt two'],
       recommended_i18n: {},
     },
     defaults: {
-      model: { mode: 'auto', value: undefined },
-      permission: { mode: 'auto', value: undefined },
+      model: { mode: 'fixed', value: 'gemini-2.5-pro' },
+      permission: { mode: 'fixed', value: 'acceptEdits' },
       skills: { mode: 'fixed', value: [] },
       mcps: { mode: 'fixed', value: [] },
     },
@@ -149,6 +149,11 @@ describe('useAssistantEditor', () => {
     expect(result.current.editDescription).toBe('Test desc');
     expect(result.current.editAvatar).toBe('🤖');
     expect(result.current.editAgent).toBe('claude');
+    expect(result.current.editRecommendedPromptsText).toBe('Prompt one\nPrompt two');
+    expect(result.current.defaultModelMode).toBe('fixed');
+    expect(result.current.defaultModelValue).toBe('gemini-2.5-pro');
+    expect(result.current.defaultPermissionMode).toBe('fixed');
+    expect(result.current.defaultPermissionValue).toBe('acceptEdits');
     expect(result.current.isCreating).toBe(false);
   });
 
@@ -182,6 +187,11 @@ describe('useAssistantEditor', () => {
     act(() => {
       result.current.handleCreate();
       result.current.setEditName('NewAssistant');
+      result.current.setEditRecommendedPromptsText('Prompt A\n\nPrompt B');
+      result.current.setDefaultModelMode('fixed');
+      result.current.setDefaultModelValue('gpt-4.1');
+      result.current.setDefaultPermissionMode('fixed');
+      result.current.setDefaultPermissionValue('plan');
     });
 
     await act(async () => {
@@ -189,6 +199,15 @@ describe('useAssistantEditor', () => {
     });
 
     await waitFor(() => expect(ipcBridge.assistants.create.invoke).toHaveBeenCalled());
+    expect(ipcBridge.assistants.create.invoke).toHaveBeenCalledWith(
+      expect.objectContaining({
+        recommended_prompts: ['Prompt A', 'Prompt B'],
+        defaults: {
+          model: { mode: 'fixed', value: 'gpt-4.1' },
+          permission: { mode: 'fixed', value: 'plan' },
+        },
+      })
+    );
     expect(mockMessage.success).toHaveBeenCalled();
     expect(loadAssistantsMock).toHaveBeenCalled();
     expect(setActiveAssistantIdMock).toHaveBeenCalledWith('new-id');

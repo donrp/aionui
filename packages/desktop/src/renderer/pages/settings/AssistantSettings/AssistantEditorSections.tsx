@@ -1,7 +1,9 @@
 import type { AssistantListItem, BuiltinAutoSkill, SkillInfo } from './types';
 import type { AvailableBackend } from '@/renderer/hooks/assistant';
+import { useModelProviderList } from '@/renderer/hooks/agent/useModelProviderList';
 import EmojiPicker from '@/renderer/components/chat/EmojiPicker';
 import MarkdownView from '@/renderer/components/Markdown';
+import { getAgentModes } from '@/renderer/utils/model/agentModes';
 import { Avatar, Button, Checkbox, Collapse, Input, Select, Tag, Typography } from '@arco-design/web-react';
 import { Delete, Info, Plus, Robot } from '@icon-park/react';
 import React, { useEffect, useRef, useState } from 'react';
@@ -19,6 +21,16 @@ export type AssistantEditorSectionsProps = {
   editAvatarImage?: string;
   editAgent: string;
   setEditAgent: (value: string) => void;
+  editRecommendedPromptsText: string;
+  setEditRecommendedPromptsText: (value: string) => void;
+  defaultModelMode: 'auto' | 'fixed';
+  setDefaultModelMode: (value: 'auto' | 'fixed') => void;
+  defaultModelValue: string;
+  setDefaultModelValue: (value: string) => void;
+  defaultPermissionMode: 'auto' | 'fixed';
+  setDefaultPermissionMode: (value: 'auto' | 'fixed') => void;
+  defaultPermissionValue: string;
+  setDefaultPermissionValue: (value: string) => void;
   editContext: string;
   setEditContext: (value: string) => void;
   promptViewMode: 'edit' | 'preview';
@@ -49,6 +61,16 @@ const AssistantEditorSections: React.FC<AssistantEditorSectionsProps> = ({
   editAvatarImage,
   editAgent,
   setEditAgent,
+  editRecommendedPromptsText,
+  setEditRecommendedPromptsText,
+  defaultModelMode,
+  setDefaultModelMode,
+  defaultModelValue,
+  setDefaultModelValue,
+  defaultPermissionMode,
+  setDefaultPermissionMode,
+  defaultPermissionValue,
+  setDefaultPermissionValue,
   editContext,
   setEditContext,
   promptViewMode,
@@ -69,6 +91,7 @@ const AssistantEditorSections: React.FC<AssistantEditorSectionsProps> = ({
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { providers, getAvailableModels } = useModelProviderList();
   const textareaWrapperRef = useRef<HTMLDivElement>(null);
   const [rulesExpanded, setRulesExpanded] = useState(false);
 
@@ -120,11 +143,20 @@ const AssistantEditorSections: React.FC<AssistantEditorSectionsProps> = ({
   const isSkillsEditable = isCreating || (!isBuiltin && !isExtension);
   const isProfileEditable = !isBuiltin && !isExtension;
   const isAgentEditable = !isExtension;
+  const isDefaultsEditable = !isBuiltin && !isExtension;
   const rulesContainerHeight = rulesExpanded
     ? '420px'
     : isRuleEditable && promptViewMode === 'edit'
       ? '260px'
       : '220px';
+  const modelOptions = providers.flatMap((provider) =>
+    getAvailableModels(provider).map((modelName) => ({
+      key: `${provider.id}-${modelName}`,
+      value: modelName,
+      label: `${provider.name || provider.id} · ${modelName}`,
+    }))
+  );
+  const permissionOptions = getAgentModes(editAgent);
 
   return (
     <div className='flex flex-col gap-16px bg-fill-2 rounded-16px p-20px'>
@@ -237,6 +269,103 @@ const AssistantEditorSections: React.FC<AssistantEditorSectionsProps> = ({
             </Select.Option>
           ))}
         </Select>
+      </div>
+
+      <div className='grid gap-16px md:grid-cols-2'>
+        <div className='flex-shrink-0'>
+          <Typography.Text bold>
+            {t('settings.assistantDefaultModelLabel', { defaultValue: 'Default Model' })}
+          </Typography.Text>
+          <div className='mt-10px flex flex-col gap-10px'>
+            <Select
+              value={defaultModelMode}
+              onChange={(value) => setDefaultModelMode(value as 'auto' | 'fixed')}
+              disabled={!isDefaultsEditable}
+              data-testid='select-assistant-default-model-mode'
+            >
+              <Select.Option value='auto'>
+                {t('settings.assistantRememberLastUsed', { defaultValue: 'Remember last used' })}
+              </Select.Option>
+              <Select.Option value='fixed'>
+                {t('settings.assistantUseFixedValue', { defaultValue: 'Use fixed value' })}
+              </Select.Option>
+            </Select>
+            <Select
+              value={defaultModelMode === 'fixed' ? defaultModelValue || undefined : undefined}
+              onChange={(value) => setDefaultModelValue(value as string)}
+              disabled={!isDefaultsEditable || defaultModelMode !== 'fixed'}
+              allowClear
+              placeholder={t('settings.assistantSelectDefaultModel', { defaultValue: 'Select a model' })}
+              notFoundContent={t('settings.assistantNoAvailableModels', {
+                defaultValue: 'No available models configured',
+              })}
+              data-testid='select-assistant-default-model'
+            >
+              {modelOptions.map((option) => (
+                <Select.Option key={option.key} value={option.value}>
+                  {option.label}
+                </Select.Option>
+              ))}
+            </Select>
+          </div>
+        </div>
+
+        <div className='flex-shrink-0'>
+          <Typography.Text bold>
+            {t('settings.assistantDefaultPermissionLabel', { defaultValue: 'Default Permission' })}
+          </Typography.Text>
+          <div className='mt-10px flex flex-col gap-10px'>
+            <Select
+              value={defaultPermissionMode}
+              onChange={(value) => setDefaultPermissionMode(value as 'auto' | 'fixed')}
+              disabled={!isDefaultsEditable}
+              data-testid='select-assistant-default-permission-mode'
+            >
+              <Select.Option value='auto'>
+                {t('settings.assistantRememberLastUsed', { defaultValue: 'Remember last used' })}
+              </Select.Option>
+              <Select.Option value='fixed'>
+                {t('settings.assistantUseFixedValue', { defaultValue: 'Use fixed value' })}
+              </Select.Option>
+            </Select>
+            <Select
+              value={defaultPermissionMode === 'fixed' ? defaultPermissionValue || undefined : undefined}
+              onChange={(value) => setDefaultPermissionValue(value as string)}
+              disabled={!isDefaultsEditable || defaultPermissionMode !== 'fixed'}
+              allowClear
+              placeholder={t('settings.assistantSelectDefaultPermission', {
+                defaultValue: 'Select a permission mode',
+              })}
+              notFoundContent={t('settings.assistantNoPermissionModes', {
+                defaultValue: 'This main agent has no switchable permission modes.',
+              })}
+              data-testid='select-assistant-default-permission'
+            >
+              {permissionOptions.map((option) => (
+                <Select.Option key={option.value} value={option.value}>
+                  {option.label}
+                </Select.Option>
+              ))}
+            </Select>
+          </div>
+        </div>
+      </div>
+
+      <div className='flex-shrink-0'>
+        <Typography.Text bold>
+          {t('settings.assistantRecommendedPromptsLabel', { defaultValue: 'Recommended Prompts' })}
+        </Typography.Text>
+        <Input.TextArea
+          className='mt-10px rounded-4px bg-bg-1'
+          value={editRecommendedPromptsText}
+          onChange={(value) => setEditRecommendedPromptsText(value)}
+          disabled={!isDefaultsEditable}
+          autoSize={{ minRows: 3, maxRows: 6 }}
+          data-testid='textarea-assistant-recommended-prompts'
+          placeholder={t('settings.assistantRecommendedPromptsPlaceholder', {
+            defaultValue: 'Enter one suggested prompt per line',
+          })}
+        />
       </div>
 
       <div className='flex flex-wrap items-center gap-8px p-10px rd-10px bg-fill-1'>
