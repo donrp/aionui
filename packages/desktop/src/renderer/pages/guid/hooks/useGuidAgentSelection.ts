@@ -54,7 +54,7 @@ export type GuidAgentSelectionResult = {
   findAgentByKey: (key: string) => AvailableAgent | undefined;
   resolvePresetRulesAndSkills: (
     agentInfo: { agent_type: string; backend?: string; custom_agent_id?: string; context?: string } | undefined
-  ) => Promise<{ rules?: string; skills?: string }>;
+  ) => Promise<{ rules?: string }>;
   resolvePresetContext: (
     agentInfo: { agent_type: string; backend?: string; custom_agent_id?: string; context?: string } | undefined
   ) => Promise<string | undefined>;
