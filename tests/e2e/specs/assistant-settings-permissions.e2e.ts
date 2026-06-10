@@ -41,17 +41,26 @@ test.describe('Assistant Settings Permissions', () => {
 
       const deleteBtn = page.locator(BTN_DELETE_ASSISTANT);
       const saveBtn = page.locator(BTN_SAVE_ASSISTANT);
+      const agentSelect = page.locator('[data-testid="select-assistant-agent"]');
       const nameInput = page.locator('[data-testid="input-assistant-name"]');
       const isNameDisabled = await nameInput.isDisabled().catch(() => true);
       const hasDelete = await deleteBtn.isVisible().catch(() => false);
       const isSaveVisible = await saveBtn.isVisible().catch(() => false);
       const isSaveDisabled = isSaveVisible ? await saveBtn.isDisabled().catch(() => false) : true;
+      const isAgentDisabled =
+        (await agentSelect
+          .locator('.arco-select-view-disabled')
+          .count()
+          .catch(() => 0)) > 0;
 
-      // Detection: builtin = name disabled + no delete; extension = name enabled + no delete; custom = name enabled + has delete
+      // Detection:
+      // builtin = profile readonly + main agent editable + no delete
+      // extension = profile readonly + main agent readonly + save disabled + no delete
+      // custom = editable profile + delete
       let detected: 'builtin' | 'extension' | 'custom' = 'custom';
-      if (isNameDisabled && !hasDelete) {
+      if (isNameDisabled && !hasDelete && !isAgentDisabled && !isSaveDisabled) {
         detected = 'builtin';
-      } else if (!isNameDisabled && !hasDelete) {
+      } else if (isNameDisabled && !hasDelete && isAgentDisabled && isSaveDisabled) {
         detected = 'extension';
       }
 
@@ -143,7 +152,7 @@ test.describe('Assistant Settings Permissions', () => {
     await closeDrawer(page);
   });
 
-  test('extension — name/desc/save all editable', async ({ page }) => {
+  test('extension — name/desc/save all read-only', async ({ page }) => {
     await goToAssistantSettings(page);
     await page.locator('[data-testid^="assistant-card-"]').first().waitFor({ state: 'visible', timeout: 10_000 });
 
@@ -159,9 +168,9 @@ test.describe('Assistant Settings Permissions', () => {
     const descInput = page.locator('[data-testid="input-assistant-desc"]');
     const saveBtn = page.locator(BTN_SAVE_ASSISTANT);
 
-    await expect(nameInput).not.toBeDisabled();
-    await expect(descInput).not.toBeDisabled();
-    await expect(saveBtn).not.toBeDisabled();
+    await expect(nameInput).toBeDisabled();
+    await expect(descInput).toBeDisabled();
+    await expect(saveBtn).toBeDisabled();
 
     await closeDrawer(page);
   });

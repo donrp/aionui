@@ -75,75 +75,77 @@ const AssistantEditorPage: React.FC<AssistantEditorPageProps> = ({
   const isReadOnlyExtension = !isCreating && activeAssistant !== null && isExtensionAssistant(activeAssistant);
 
   return (
-    <div className='flex h-full min-h-0 flex-col bg-fill-2 rounded-24px p-20px' data-testid='assistant-editor-page'>
-      <div className='mb-16px flex items-center justify-between gap-12px'>
-        <div className='flex items-center gap-8px'>
-          <Button type='text' icon={<ArrowLeft size={16} />} onClick={onBack} data-testid='btn-back-assistant-editor'>
-            {t('common.back', { defaultValue: 'Back' })}
-          </Button>
-          <div className='text-18px font-600 text-t-primary'>
-            {isCreating
-              ? t('settings.createAssistant', { defaultValue: 'Create Assistant' })
-              : t('settings.editAssistant', { defaultValue: 'Assistant Details' })}
+    <div data-testid='assistant-edit-drawer'>
+      <div className='flex h-full min-h-0 flex-col bg-fill-2 rounded-24px p-20px' data-testid='assistant-editor-page'>
+        <div className='mb-16px flex items-center justify-between gap-12px'>
+          <div className='flex items-center gap-8px'>
+            <Button type='text' icon={<ArrowLeft size={16} />} onClick={onBack} data-testid='btn-back-assistant-editor'>
+              {t('common.back', { defaultValue: 'Back' })}
+            </Button>
+            <div className='text-18px font-600 text-t-primary'>
+              {isCreating
+                ? t('settings.createAssistant', { defaultValue: 'Create Assistant' })
+                : t('settings.editAssistant', { defaultValue: 'Assistant Details' })}
+            </div>
+          </div>
+          <div className='flex items-center gap-8px'>
+            {!isCreating && activeAssistant?.source !== 'builtin' && !isExtensionAssistant(activeAssistant) && (
+              <Button
+                status='danger'
+                className='rounded-[100px]'
+                style={{ backgroundColor: 'rgb(var(--danger-1))' }}
+                onClick={handleDeleteClick}
+                data-testid='btn-delete-assistant'
+              >
+                {t('common.delete', { defaultValue: 'Delete' })}
+              </Button>
+            )}
+            <Button onClick={onBack} className='rounded-[100px] bg-fill-1' data-testid='btn-cancel-assistant-editor'>
+              {t('common.cancel', { defaultValue: 'Cancel' })}
+            </Button>
+            <Button
+              type='primary'
+              onClick={handleSave}
+              disabled={isReadOnlyExtension}
+              data-testid='btn-save-assistant'
+              className='rounded-[100px]'
+            >
+              {isCreating ? t('common.create', { defaultValue: 'Create' }) : t('common.save', { defaultValue: 'Save' })}
+            </Button>
           </div>
         </div>
-        <div className='flex items-center gap-8px'>
-          {!isCreating && activeAssistant?.source !== 'builtin' && !isExtensionAssistant(activeAssistant) && (
-            <Button
-              status='danger'
-              className='rounded-[100px]'
-              style={{ backgroundColor: 'rgb(var(--danger-1))' }}
-              onClick={handleDeleteClick}
-              data-testid='btn-delete-assistant'
-            >
-              {t('common.delete', { defaultValue: 'Delete' })}
-            </Button>
-          )}
-          <Button onClick={onBack} className='rounded-[100px] bg-fill-1'>
-            {t('common.cancel', { defaultValue: 'Cancel' })}
-          </Button>
-          <Button
-            type='primary'
-            onClick={handleSave}
-            disabled={isReadOnlyExtension}
-            data-testid='btn-save-assistant'
-            className='rounded-[100px]'
-          >
-            {isCreating ? t('common.create', { defaultValue: 'Create' }) : t('common.save', { defaultValue: 'Save' })}
-          </Button>
-        </div>
-      </div>
 
-      <div className='min-h-0 flex-1 overflow-auto'>
-        <AssistantEditorSections
-          isCreating={isCreating}
-          editName={editName}
-          setEditName={setEditName}
-          editDescription={editDescription}
-          setEditDescription={setEditDescription}
-          editAvatar={editAvatar}
-          setEditAvatar={setEditAvatar}
-          editAvatarImage={editAvatarImage}
-          editAgent={editAgent}
-          setEditAgent={setEditAgent}
-          editContext={editContext}
-          setEditContext={setEditContext}
-          promptViewMode={promptViewMode}
-          setPromptViewMode={setPromptViewMode}
-          availableSkills={availableSkills}
-          selectedSkills={selectedSkills}
-          setSelectedSkills={setSelectedSkills}
-          pendingSkills={pendingSkills}
-          setDeletePendingSkillName={setDeletePendingSkillName}
-          setDeleteCustomSkillName={setDeleteCustomSkillName}
-          builtinAutoSkills={builtinAutoSkills}
-          disabledBuiltinSkills={disabledBuiltinSkills}
-          setDisabledBuiltinSkills={setDisabledBuiltinSkills}
-          activeAssistant={activeAssistant}
-          isExtensionAssistant={isExtensionAssistant}
-          availableBackends={availableBackends}
-          handleDuplicate={handleDuplicate}
-        />
+        <div className='min-h-0 flex-1 overflow-auto'>
+          <AssistantEditorSections
+            isCreating={isCreating}
+            editName={editName}
+            setEditName={setEditName}
+            editDescription={editDescription}
+            setEditDescription={setEditDescription}
+            editAvatar={editAvatar}
+            setEditAvatar={setEditAvatar}
+            editAvatarImage={editAvatarImage}
+            editAgent={editAgent}
+            setEditAgent={setEditAgent}
+            editContext={editContext}
+            setEditContext={setEditContext}
+            promptViewMode={promptViewMode}
+            setPromptViewMode={setPromptViewMode}
+            availableSkills={availableSkills}
+            selectedSkills={selectedSkills}
+            setSelectedSkills={setSelectedSkills}
+            pendingSkills={pendingSkills}
+            setDeletePendingSkillName={setDeletePendingSkillName}
+            setDeleteCustomSkillName={setDeleteCustomSkillName}
+            builtinAutoSkills={builtinAutoSkills}
+            disabledBuiltinSkills={disabledBuiltinSkills}
+            setDisabledBuiltinSkills={setDisabledBuiltinSkills}
+            activeAssistant={activeAssistant}
+            isExtensionAssistant={isExtensionAssistant}
+            availableBackends={availableBackends}
+            handleDuplicate={handleDuplicate}
+          />
+        </div>
       </div>
     </div>
   );

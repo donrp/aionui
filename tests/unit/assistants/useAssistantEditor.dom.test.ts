@@ -14,13 +14,20 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 vi.mock('@/common', () => ({
   ipcBridge: {
     assistants: {
+      get: { invoke: vi.fn() },
       create: { invoke: vi.fn() },
       update: { invoke: vi.fn() },
       delete: { invoke: vi.fn() },
+      setState: { invoke: vi.fn() },
     },
     fs: {
       readAssistantRule: { invoke: vi.fn() },
       readAssistantSkill: { invoke: vi.fn() },
+      listAvailableSkills: { invoke: vi.fn() },
+      listBuiltinAutoSkills: { invoke: vi.fn() },
+      writeAssistantRule: { invoke: vi.fn() },
+      deleteAssistantRule: { invoke: vi.fn() },
+      importSkillWithSymlink: { invoke: vi.fn() },
     },
   },
 }));
@@ -38,6 +45,51 @@ import { ipcBridge } from '@/common';
 import type { AssistantListItem } from '@/renderer/pages/settings/AssistantSettings/types';
 
 describe('useAssistantEditor', () => {
+  const mockAssistantDetail = {
+    id: 'a1',
+    source: 'user',
+    profile: {
+      name: 'TestAssistant',
+      name_i18n: {},
+      description: 'Test desc',
+      description_i18n: {},
+      avatar: '🤖',
+    },
+    state: {
+      enabled: true,
+      sort_order: 1,
+    },
+    engine: {
+      agent_backend: 'claude',
+    },
+    rules: {
+      content: 'Rule content',
+      storage_mode: 'user_file',
+    },
+    prompts: {
+      recommended: [],
+      recommended_i18n: {},
+    },
+    defaults: {
+      model: { mode: 'auto', value: undefined },
+      permission: { mode: 'auto', value: undefined },
+      skills: { mode: 'fixed', value: [] },
+      mcps: { mode: 'fixed', value: [] },
+    },
+    capabilities: {
+      default_skill_ids: [],
+      custom_skill_names: [],
+      default_disabled_builtin_skill_ids: [],
+    },
+    preferences: {
+      last_model_id: undefined,
+      last_permission_value: undefined,
+      last_skill_ids: [],
+      last_disabled_builtin_skill_ids: [],
+      last_mcp_ids: [],
+    },
+  } as const;
+
   const mockMessage = {
     success: vi.fn(),
     error: vi.fn(),
@@ -57,6 +109,12 @@ describe('useAssistantEditor', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    (ipcBridge.assistants.get.invoke as any).mockResolvedValue(mockAssistantDetail);
+    (ipcBridge.fs.listAvailableSkills.invoke as any).mockResolvedValue([]);
+    (ipcBridge.fs.listBuiltinAutoSkills.invoke as any).mockResolvedValue([]);
+    (ipcBridge.fs.writeAssistantRule.invoke as any).mockResolvedValue(true);
+    (ipcBridge.fs.deleteAssistantRule.invoke as any).mockResolvedValue(true);
+    (ipcBridge.fs.importSkillWithSymlink.invoke as any).mockResolvedValue(true);
   });
 
   it('initializes with default state (no active assistant)', () => {
@@ -79,9 +137,6 @@ describe('useAssistantEditor', () => {
       enabled: true,
     };
 
-    (ipcBridge.fs.readAssistantRule.invoke as any).mockResolvedValue('Rule content');
-    (ipcBridge.fs.readAssistantSkill.invoke as any).mockResolvedValue('Skill content');
-
     const { result } = renderHook(() => useAssistantEditor(defaultParams));
 
     await act(async () => {
@@ -97,11 +152,11 @@ describe('useAssistantEditor', () => {
     expect(result.current.isCreating).toBe(false);
   });
 
-  it('calls handleCreate and initializes empty form', () => {
+  it('calls handleCreate and initializes empty form', async () => {
     const { result } = renderHook(() => useAssistantEditor(defaultParams));
 
-    act(() => {
-      result.current.handleCreate();
+    await act(async () => {
+      await result.current.handleCreate();
     });
 
     expect(result.current.isCreating).toBe(true);
@@ -149,8 +204,6 @@ describe('useAssistantEditor', () => {
       enabled: true,
     };
 
-    (ipcBridge.fs.readAssistantRule.invoke as any).mockResolvedValue('');
-    (ipcBridge.fs.readAssistantSkill.invoke as any).mockResolvedValue('');
     (ipcBridge.assistants.update.invoke as any).mockResolvedValue({ id: 'a1' });
 
     const loadAssistantsMock = vi.fn();

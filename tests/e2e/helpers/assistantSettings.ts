@@ -5,6 +5,8 @@ import type { Page } from '@playwright/test';
 import { expect } from '../fixtures';
 import { navigateTo } from './navigation';
 
+const ASSISTANT_EDITOR = '[data-testid="assistant-edit-drawer"]';
+
 // ── Navigation ──────────────────────────────────────────────────────────────
 
 /** Navigate to the assistant settings page via UI clicks. */
@@ -16,19 +18,18 @@ export async function goToAssistantSettings(page: Page): Promise<void> {
 export async function openAssistantDrawer(page: Page, assistant_id: string): Promise<void> {
   const card = page.locator(`[data-testid="assistant-card-${assistant_id}"]`);
   await card.click();
-  await page.locator('[data-testid="assistant-edit-drawer"]').waitFor({ state: 'visible', timeout: 5_000 });
+  await page.locator(ASSISTANT_EDITOR).waitFor({ state: 'visible', timeout: 5_000 });
 }
 
 /** Click the Create Assistant button. */
 export async function clickCreateAssistant(page: Page): Promise<void> {
-  // Close any stale drawer left from a previous test
-  const drawer = page.locator('[data-testid="assistant-edit-drawer"]');
-  if (await drawer.isVisible().catch(() => false)) {
-    await page.keyboard.press('Escape');
-    await drawer.waitFor({ state: 'hidden', timeout: 3_000 }).catch(() => {});
+  const editor = page.locator(ASSISTANT_EDITOR);
+  if (await editor.isVisible().catch(() => false)) {
+    await closeDrawer(page);
+    await editor.waitFor({ state: 'hidden', timeout: 3_000 }).catch(() => {});
   }
   await page.locator('[data-testid="btn-create-assistant"]').click();
-  await drawer.waitFor({ state: 'visible', timeout: 5_000 });
+  await editor.waitFor({ state: 'visible', timeout: 5_000 });
 }
 
 // ── CRUD helpers ────────────────────────────────────────────────────────────
@@ -67,7 +68,7 @@ export async function duplicateAssistant(page: Page, assistant_id: string): Prom
   await card.hover();
   const dupBtn = page.locator(`[data-testid="btn-duplicate-${assistant_id}"]`);
   await dupBtn.click();
-  await page.locator('[data-testid="assistant-edit-drawer"]').waitFor({ state: 'visible', timeout: 5_000 });
+  await page.locator(ASSISTANT_EDITOR).waitFor({ state: 'visible', timeout: 5_000 });
 }
 
 /** Toggle the enabled/disabled switch for an assistant. */
@@ -143,31 +144,45 @@ export async function getVisibleAssistantNames(page: Page): Promise<string[]> {
 /** Check if the assistant edit drawer is visible. */
 export async function isDrawerVisible(page: Page): Promise<boolean> {
   return page
-    .locator('[data-testid="assistant-edit-drawer"]')
+    .locator(ASSISTANT_EDITOR)
     .isVisible()
     .catch(() => false);
 }
 
 /** Wait for the drawer to close (max 5s). */
 export async function waitForDrawerClose(page: Page): Promise<void> {
-  await expect(page.locator('[data-testid="assistant-edit-drawer"]')).not.toBeVisible({ timeout: 5_000 });
+  await expect(page.locator(ASSISTANT_EDITOR)).not.toBeVisible({ timeout: 5_000 });
 }
 
-/** Force-close the drawer by clicking its mask overlay. */
+/** Force-close the editor via full-page controls or drawer dismissal. */
 export async function closeDrawer(page: Page): Promise<void> {
+  const editor = page.locator(ASSISTANT_EDITOR);
+  if (!(await editor.isVisible().catch(() => false))) return;
+
+  const backButton = page.locator('[data-testid="btn-back-assistant-editor"]');
+  if (await backButton.isVisible().catch(() => false)) {
+    await backButton.click();
+    await editor.waitFor({ state: 'hidden', timeout: 5_000 }).catch(() => {});
+    return;
+  }
+
+  const cancelButton = page.locator('[data-testid="btn-cancel-assistant-editor"]');
+  if (await cancelButton.isVisible().catch(() => false)) {
+    await cancelButton.click();
+    await editor.waitFor({ state: 'hidden', timeout: 5_000 }).catch(() => {});
+    return;
+  }
+
   const drawerWrapper = page.locator('.arco-drawer-wrapper');
   if (!(await drawerWrapper.isVisible().catch(() => false))) return;
 
-  // Click the mask overlay — Arco Drawer renders a .arco-drawer-mask sibling
   const mask = page.locator('.arco-drawer-mask');
   if (await mask.isVisible().catch(() => false)) {
     await mask.click({ force: true });
   } else {
-    // Fallback: press Escape at the body level
     await page.locator('body').press('Escape');
   }
 
-  // Wait for the drawer wrapper to disappear
   await page
     .locator('.arco-drawer-wrapper')
     .waitFor({ state: 'hidden', timeout: 5_000 })
