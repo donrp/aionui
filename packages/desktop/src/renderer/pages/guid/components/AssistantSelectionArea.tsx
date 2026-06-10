@@ -5,6 +5,7 @@
  */
 
 import coworkSvg from '@/renderer/assets/icons/cowork.svg';
+import { ipcBridge } from '@/common';
 import { useDetectedAgents, useAssistantEditor, useAssistantList } from '@/renderer/hooks/assistant';
 import AssistantEditDrawer from '@/renderer/pages/settings/AssistantSettings/AssistantEditDrawer';
 import DeleteAssistantModal from '@/renderer/pages/settings/AssistantSettings/DeleteAssistantModal';
@@ -14,12 +15,14 @@ import { CUSTOM_AVATAR_IMAGE_MAP } from '../constants';
 import styles from '../index.module.css';
 import type { AvailableAgent, EffectiveAgentInfo } from '../types';
 import type { Assistant } from '@/common/types/agent/assistantTypes';
+import type { AssistantDetail } from '@/common/types/agent/assistantTypes';
 import { Message } from '@arco-design/web-react';
 import { Plus, Robot } from '@icon-park/react';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { resolveExtensionAssetUrl } from '@/renderer/utils/platform';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import useSWR from 'swr';
 
 type AssistantSelectionAreaProps = {
   is_presetAgent: boolean;
@@ -88,6 +91,15 @@ const AssistantSelectionArea: React.FC<AssistantSelectionAreaProps> = ({
   });
 
   const editAvatarImage = resolveAvatarImageSrc(editor.editAvatar, avatarImageMap);
+  const selectedAssistantId = selectedAgentInfo?.custom_agent_id ?? null;
+  const { data: selectedAssistantDetail } = useSWR(
+    is_presetAgent && selectedAssistantId ? `guid.assistant.detail.${selectedAssistantId}.${localeKey}` : null,
+    async (): Promise<AssistantDetail | null> =>
+      ipcBridge.assistants
+        .get
+        .invoke({ id: selectedAssistantId!, locale: localeKey })
+        .catch((_error: unknown): AssistantDetail | null => null)
+  );
 
   const modalTree = (
     <>
@@ -250,7 +262,11 @@ const AssistantSelectionArea: React.FC<AssistantSelectionAreaProps> = ({
           {/* Prompts Section */}
           {(() => {
             const agent = assistants.find((a) => a.id === selectedAgentInfo.custom_agent_id);
-            const prompts = agent?.prompts_i18n?.[localeKey] || agent?.prompts_i18n?.['en-US'] || agent?.prompts;
+            const prompts =
+              selectedAssistantDetail?.prompts.recommended ||
+              agent?.prompts_i18n?.[localeKey] ||
+              agent?.prompts_i18n?.['en-US'] ||
+              agent?.prompts;
             if (prompts && prompts.length > 0) {
               return (
                 <div className='mt-16px'>
