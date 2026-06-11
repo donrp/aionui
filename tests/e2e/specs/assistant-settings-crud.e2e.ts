@@ -352,46 +352,23 @@ test.describe('Assistant Settings CRUD', () => {
   });
 
   test('disabled builtin assistant removed from guid page presets', async ({ page }) => {
-    await goToAssistantSettings(page);
-    await page.locator('[data-testid^="assistant-card-"]').first().waitFor({ state: 'visible', timeout: 15_000 });
+    await goToGuidListView(page);
+    await page.locator('[data-agent-pill="true"]').first().waitFor({ state: 'visible', timeout: 8_000 });
 
-    // Find an enabled builtin assistant that is currently visible in settings.
-    const ids = await getVisibleAssistantIds(page);
+    const visiblePresetIds = await page
+      .locator('[data-testid^="preset-pill-"]')
+      .evaluateAll((elements) =>
+        elements
+          .map((element) => element.getAttribute('data-testid')?.replace('preset-pill-', '') ?? '')
+          .filter(Boolean)
+      );
     const builtinCandidateIds = new Set(
       (await fetchAssistantCatalog(page))
         .filter((assistant) => assistant.source === 'builtin' && assistant.enabled !== false)
         .map((assistant) => assistant.id)
     );
-    let builtinId = '';
-    for (const id of ids) {
-      if (!builtinCandidateIds.has(id)) continue;
-      const sw = page.locator(`[data-testid="switch-enabled-${id}"]`);
-      if (await sw.isVisible().catch(() => false)) {
-        const isChecked = await sw.locator('.arco-switch-checked, .arco-switch[aria-checked="true"]').count();
-        if (isChecked > 0 || (await sw.getAttribute('aria-checked')) === 'true') {
-          builtinId = id;
-          break;
-        }
-      }
-    }
-    if (!builtinId) {
-      test.skip(true, 'No enabled builtin assistant with toggle found');
-      return;
-    }
-
-    // Go to guid first and check if this assistant's preset pill is visible
-    await goToGuid(page);
-    await page.locator('[data-agent-pill="true"]').first().waitFor({ state: 'visible', timeout: 8_000 });
-    const presetBefore = await page
-      .locator(`[data-testid="preset-pill-${builtinId}"]`)
-      .isVisible()
-      .catch(() => false);
-
-    // If the preset pill isn't visible on guid, skip (not all builtin show as presets)
-    if (!presetBefore) {
-      test.skip(true, 'Builtin assistant does not appear as preset pill on guid');
-      return;
-    }
+    const builtinId = visiblePresetIds.find((id) => builtinCandidateIds.has(id)) ?? '';
+    test.skip(!builtinId, 'No visible builtin assistant found on guid');
 
     // Disable it in settings
     await goToAssistantSettings(page);
@@ -399,7 +376,7 @@ test.describe('Assistant Settings CRUD', () => {
     await toggleAssistantEnabled(page, builtinId);
 
     // Go to guid and verify it's gone
-    await goToGuid(page);
+    await goToGuidListView(page);
     await page.locator('[data-agent-pill="true"]').first().waitFor({ state: 'visible', timeout: 8_000 });
     await expect
       .poll(

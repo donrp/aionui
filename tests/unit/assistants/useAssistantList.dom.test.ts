@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  *
  * Unit tests for renderer/hooks/assistant/useAssistantList.ts (A1 in N4a).
- * Tests useAssistantList hook: load, sort, active selection, and isExtensionAssistant predicate.
+ * Tests useAssistantList hook: load, sort, and active selection behavior.
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -28,7 +28,7 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-import { useAssistantList, isExtensionAssistant } from '@/renderer/hooks/assistant/useAssistantList';
+import { useAssistantList } from '@/renderer/hooks/assistant/useAssistantList';
 import { ipcBridge } from '@/common';
 import type { Assistant } from '@/common/types/agent/assistantTypes';
 
@@ -187,24 +187,5 @@ describe('useAssistantList', () => {
     expect(consoleErrorSpy).toHaveBeenCalled();
 
     consoleErrorSpy.mockRestore();
-  });
-
-  describe('isExtensionAssistant predicate', () => {
-    it('returns true for extension-sourced assistant', () => {
-      const ext: Assistant = { id: 'e1', name: 'Ext', sort_order: 1, source: 'extension', enabled: true };
-      expect(isExtensionAssistant(ext)).toBe(true);
-    });
-
-    it('returns false for builtin/user assistants', () => {
-      const builtin: Assistant = { id: 'b1', name: 'B', sort_order: 1, source: 'builtin', enabled: true };
-      const user: Assistant = { id: 'u1', name: 'U', sort_order: 1, source: 'user', enabled: true };
-      expect(isExtensionAssistant(builtin)).toBe(false);
-      expect(isExtensionAssistant(user)).toBe(false);
-    });
-
-    it('returns false for null/undefined', () => {
-      expect(isExtensionAssistant(null)).toBe(false);
-      expect(isExtensionAssistant(undefined)).toBe(false);
-    });
   });
 });

@@ -107,7 +107,6 @@ describe('useAssistantEditor', () => {
   const defaultParams = {
     localeKey: 'en',
     activeAssistant: null,
-    isExtensionAssistant: () => false,
     setActiveAssistantId: vi.fn(),
     loadAssistants: vi.fn(),
     refreshAgentDetection: vi.fn(),

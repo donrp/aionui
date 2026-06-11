@@ -58,6 +58,8 @@
   "assistantNameAvatar": "名稱及頭像",
   "assistantDescription": "助理描述",
   "assistantDescriptionPlaceholder": "能幫你解決什麼問題",
+  "assistantAvatarUploadImage": "上傳圖片",
+  "assistantAvatarImageFiles": "圖片檔案",
   "assistantPrompt": "提示詞",
   "assistantPromptPlaceholder": "請輸入提示詞或規則",
   "saveAssistant": "儲存設定",
@@ -141,7 +143,6 @@
   "extensionSkillsBadge": "擴充",
   "autoInjectedSkills": "自動注入技能",
   "autoInjectedSkillsBadge": "自動",
-  "assistantExtensionReadonlyTip": "擴充助理在助手設定中為唯讀。",
   "skillFolderPath": "技能資料夾路徑",
   "skillPathPlaceholder": "輸入或瀏覽技能資料夾路徑",
   "pleaseSelectSkillPath": "請選擇技能資料夾路徑",
@@ -940,7 +941,6 @@
     "agent": "對話 Agent",
     "agentDesc": "用於企業微信對話"
   },
-  "extensionAssistantReadonly": "擴展助手為唯讀，你可以複製它並編輯副本。",
   "agentManagement": {
     "localAgents": "本機 Agents",
     "remoteAgents": "遠端 Agents",

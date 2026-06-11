@@ -33,6 +33,7 @@ describe('AssistantEditorPage', () => {
           setEditDescription={vi.fn()}
           editAvatar='🤖'
           setEditAvatar={vi.fn()}
+          setEditAvatarPreview={vi.fn()}
           editAgent='claude'
           setEditAgent={vi.fn()}
           editRecommendedPromptsText=''
@@ -65,7 +66,6 @@ describe('AssistantEditorPage', () => {
           builtinAutoSkills={[]}
           disabledBuiltinSkills={[]}
           setDisabledBuiltinSkills={vi.fn()}
-          isExtensionAssistant={() => false}
           availableBackends={[]}
           handleSave={vi.fn()}
           handleDeleteClick={vi.fn()}

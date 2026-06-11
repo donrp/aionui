@@ -58,6 +58,8 @@
   "assistantNameAvatar": "İsim & Avatar",
   "assistantDescription": "Asistan Açıklaması",
   "assistantDescriptionPlaceholder": "Bu asistan neye yardımcı olabilir?",
+  "assistantAvatarUploadImage": "Görsel yükle",
+  "assistantAvatarImageFiles": "Görsel dosyaları",
   "assistantPrompt": "İstem (Prompt)",
   "assistantPromptPlaceholder": "Kural veya istem girin...",
   "saveAssistant": "Ayarları Kaydet",
@@ -141,7 +143,6 @@
   "extensionSkillsBadge": "Uzantı",
   "autoInjectedSkills": "Otomatik Eklenen Beceriler",
   "autoInjectedSkillsBadge": "Otomatik",
-  "assistantExtensionReadonlyTip": "Uzantı asistanları asistan ayarlarında salt okunurdur.",
   "skillFolderPath": "Yetenek Klasör Yolu",
   "skillPathPlaceholder": "Yetenek klasör yolunu girin veya göz atın (virgülle ayırın)",
   "pleaseSelectSkillPath": "Lütfen bir yetenek klasör yolu seçin",
@@ -926,7 +927,6 @@
     "agent": "Ajan",
     "agentDesc": "WeCom sohbetleri için kullanılır"
   },
-  "extensionAssistantReadonly": "Uzantı asistanları salt okunurdur. Kopyalayıp düzenleyebilirsiniz.",
   "agentManagement": {
     "localAgents": "Yerel Ajanlar",
     "remoteAgents": "Uzak Ajanlar",

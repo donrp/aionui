@@ -1,3 +1,4 @@
+import { ipcBridge } from '@/common';
 import type { AssistantListItem, BuiltinAutoSkill, SkillInfo } from './types';
 import type { IMcpServer } from '@/common/config/storage';
 import type { AvailableBackend } from '@/renderer/hooks/assistant';
@@ -19,6 +20,7 @@ export type AssistantEditorSectionsProps = {
   setEditDescription: (value: string) => void;
   editAvatar: string;
   setEditAvatar: (value: string) => void;
+  setEditAvatarPreview: (value: string | undefined) => void;
   editAvatarImage?: string;
   editAgent: string;
   setEditAgent: (value: string) => void;
@@ -53,7 +55,6 @@ export type AssistantEditorSectionsProps = {
   disabledBuiltinSkills: string[];
   setDisabledBuiltinSkills: (value: string[]) => void;
   activeAssistant: AssistantListItem | null;
-  isExtensionAssistant: (assistant: AssistantListItem | null | undefined) => boolean;
   availableBackends: AvailableBackend[];
   handleDuplicate: (assistant: AssistantListItem) => void;
 };
@@ -150,6 +151,7 @@ const AssistantEditorSections: React.FC<AssistantEditorSectionsProps> = ({
   setEditDescription,
   editAvatar,
   setEditAvatar,
+  setEditAvatarPreview,
   editAvatarImage,
   editAgent,
   setEditAgent,
@@ -184,7 +186,6 @@ const AssistantEditorSections: React.FC<AssistantEditorSectionsProps> = ({
   disabledBuiltinSkills,
   setDisabledBuiltinSkills,
   activeAssistant,
-  isExtensionAssistant,
   availableBackends,
   handleDuplicate,
 }) => {
@@ -200,14 +201,13 @@ const AssistantEditorSections: React.FC<AssistantEditorSectionsProps> = ({
   const [mcpPopupVisible, setMcpPopupVisible] = useState(false);
 
   const isBuiltin = activeAssistant?.source === 'builtin';
-  const isExtension = activeAssistant?.source === 'extension';
-  const isProfileEditable = !isBuiltin && !isExtension;
-  const isAgentEditable = !isExtension;
-  const canEditDefaultModelAndPermission = !isExtension;
-  const canEditDefaultSkillsAndMcps = !isBuiltin && !isExtension;
-  const isPromptEditable = !isBuiltin && !isExtension;
-  const isRuleEditable = !isBuiltin && !isExtension;
-  const showSkills = isCreating || (activeAssistant !== null && activeAssistant.source !== 'extension');
+  const isProfileEditable = !isBuiltin;
+  const isAgentEditable = true;
+  const canEditDefaultModelAndPermission = true;
+  const canEditDefaultSkillsAndMcps = !isBuiltin;
+  const isPromptEditable = !isBuiltin;
+  const isRuleEditable = !isBuiltin;
+  const showSkills = isCreating || activeAssistant !== null;
   const currentBackend = availableBackends.find((option) => option.id === editAgent);
   const providerModelOptions = providers.flatMap((provider) =>
     getAvailableModels(provider).map((modelName) => ({
@@ -255,6 +255,27 @@ const AssistantEditorSections: React.FC<AssistantEditorSectionsProps> = ({
       defaultValue: 'Selected {{count}} items',
       count,
     });
+  const handlePickAvatarImage = async () => {
+    try {
+      const selectedFiles = await ipcBridge.dialog.showOpen.invoke({
+        properties: ['openFile'],
+        filters: [
+          {
+            name: t('settings.assistantAvatarImageFiles', { defaultValue: 'Image files' }),
+            extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'],
+          },
+        ],
+      });
+      const nextAvatar = selectedFiles?.[0];
+      if (nextAvatar) {
+        const previewBase64 = await ipcBridge.fs.getImageBase64.invoke({ path: nextAvatar });
+        setEditAvatar(nextAvatar);
+        setEditAvatarPreview(previewBase64 || undefined);
+      }
+    } catch (error) {
+      console.error('Failed to pick assistant avatar image:', error);
+    }
+  };
   const editableSkillOptions = useMemo(() => {
     const optionMap = new Map<string, { value: string; label: string; isAuto?: boolean; disabled?: boolean }>();
 
@@ -338,6 +359,25 @@ const AssistantEditorSections: React.FC<AssistantEditorSectionsProps> = ({
     setDisabledBuiltinSkills(nextDisabledAuto);
   };
 
+  const renderAvatarPreview = () => {
+    if (editAvatarImage) {
+      return (
+        <img
+          src={editAvatarImage}
+          alt=''
+          className='h-full w-full rounded-inherit object-cover'
+          style={{ display: 'block' }}
+        />
+      );
+    }
+
+    if (editAvatar) {
+      return <span className='text-20px'>{editAvatar}</span>;
+    }
+
+    return <Robot theme='outline' size={20} />;
+  };
+
   return (
     <div className='flex flex-col gap-16px pb-24px'>
       {isBuiltin && activeAssistant ? (
@@ -378,35 +418,45 @@ const AssistantEditorSections: React.FC<AssistantEditorSectionsProps> = ({
           label: t('settings.assistantEffectiveImmediately', { defaultValue: 'Applies immediately' }),
           tone: 'now',
         }}
-        readOnly={isBuiltin || isExtension}
+        readOnly={isBuiltin}
         readOnlyLabel={readOnlyLabel}
         testId='assistant-card-identity'
       >
         <div className='flex items-start gap-14px'>
           {!isProfileEditable ? (
             <Avatar shape='square' size={42} className='!rounded-10px bg-fill-1'>
-              {editAvatarImage ? (
-                <img src={editAvatarImage} alt='' width={24} height={24} style={{ objectFit: 'contain' }} />
-              ) : editAvatar ? (
-                <span className='text-20px'>{editAvatar}</span>
-              ) : (
-                <Robot theme='outline' size={20} />
-              )}
+              {renderAvatarPreview()}
             </Avatar>
           ) : (
-            <EmojiPicker value={editAvatar} onChange={(emoji) => setEditAvatar(emoji)} placement='br'>
-              <Button type='text' className='!h-42px !w-42px !rounded-10px !bg-fill-1 !p-0'>
-                <Avatar shape='square' size={42} className='!rounded-10px bg-fill-1'>
-                  {editAvatarImage ? (
-                    <img src={editAvatarImage} alt='' width={24} height={24} style={{ objectFit: 'contain' }} />
-                  ) : editAvatar ? (
-                    <span className='text-20px'>{editAvatar}</span>
-                  ) : (
-                    <Robot theme='outline' size={20} />
-                  )}
-                </Avatar>
+            <div className='flex flex-col items-center gap-8px'>
+              <EmojiPicker
+                value={editAvatar}
+                onChange={(emoji) => {
+                  setEditAvatarPreview(undefined);
+                  setEditAvatar(emoji);
+                }}
+                placement='br'
+              >
+                <Button
+                  type='text'
+                  data-testid='btn-assistant-avatar-emoji'
+                  className='!h-42px !w-42px !rounded-10px !bg-fill-1 !p-0'
+                >
+                  <Avatar shape='square' size={42} className='!rounded-10px bg-fill-1'>
+                    {renderAvatarPreview()}
+                  </Avatar>
+                </Button>
+              </EmojiPicker>
+              <Button
+                type='outline'
+                size='mini'
+                data-testid='btn-assistant-avatar-upload'
+                className='!rounded-8px !border-border-2 !bg-base !px-8px !text-11px'
+                onClick={() => void handlePickAvatarImage()}
+              >
+                {t('settings.assistantAvatarUploadImage', { defaultValue: 'Upload image' })}
               </Button>
-            </EmojiPicker>
+            </div>
           )}
           <div className='min-w-0 flex-1 space-y-10px'>
             <div className='flex items-center gap-12px'>
@@ -443,7 +493,7 @@ const AssistantEditorSections: React.FC<AssistantEditorSectionsProps> = ({
           label: t('settings.assistantEffectiveImmediately', { defaultValue: 'Applies immediately' }),
           tone: 'now',
         }}
-        readOnly={!isPromptEditable}
+        readOnly={isBuiltin}
         readOnlyLabel={readOnlyLabel}
         extra={
           isPromptEditable ? (
@@ -609,7 +659,7 @@ const AssistantEditorSections: React.FC<AssistantEditorSectionsProps> = ({
           label: t('settings.assistantOnlyNewConversation', { defaultValue: 'New conversations only' }),
           tone: 'next',
         }}
-        readOnly={isBuiltin || isExtension}
+        readOnly={isBuiltin}
         readOnlyLabel={readOnlyLabel}
         testId='assistant-card-defaults'
       >
@@ -915,7 +965,7 @@ const AssistantEditorSections: React.FC<AssistantEditorSectionsProps> = ({
           label: t('settings.assistantOnlyNewConversation', { defaultValue: 'New conversations only' }),
           tone: 'next',
         }}
-        readOnly={isBuiltin || isExtension}
+        readOnly={isBuiltin}
         readOnlyLabel={readOnlyLabel}
         extra={
           <div className='flex items-center gap-6px'>
@@ -982,14 +1032,6 @@ const AssistantEditorSections: React.FC<AssistantEditorSectionsProps> = ({
           )}
         </div>
       </SectionCard>
-
-      {activeAssistant && isExtensionAssistant(activeAssistant) ? (
-        <div className='px-4px text-12px text-t-tertiary'>
-          {t('settings.assistantExtensionReadonlyTip', {
-            defaultValue: 'Extension assistants are read-only in assistant settings.',
-          })}
-        </div>
-      ) : null}
     </div>
   );
 };

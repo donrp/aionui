@@ -1,7 +1,7 @@
 import { resolveExtensionAssetUrl } from '@/renderer/utils/platform';
 import type { AssistantListItem } from './types';
 
-export type AssistantListFilter = 'all' | 'enabled' | 'disabled' | 'builtin' | 'user' | 'extension';
+export type AssistantListFilter = 'all' | 'enabled' | 'disabled' | 'builtin' | 'user';
 export const ASSISTANT_SORT_ORDER_GAP = 1000;
 
 /**
@@ -26,9 +26,32 @@ export const resolveAvatarImageSrc = (
   const mapped = avatarImageMap[value];
   if (mapped) return mapped;
 
+  const isLocalAbsolutePath = isLikelyLocalFilePath(value);
+  if (isLocalAbsolutePath) {
+    const isImageLocalPath = /\.(svg|png|jpe?g|webp|gif)$/i.test(value) || isLikelyLocalFilePath(value);
+    return isImageLocalPath ? toFileUrl(value) : undefined;
+  }
+
   const resolved = resolveExtensionAssetUrl(value) || value;
   const isImage = /\.(svg|png|jpe?g|webp|gif)$/i.test(resolved) || /^(https?:|file:\/\/|data:|\/)/i.test(resolved);
   return isImage ? resolved : undefined;
+};
+
+const toFileUrl = (path: string): string => {
+  if (path.startsWith('file://')) return path;
+  if (/^[A-Za-z]:[\\/]/.test(path)) {
+    return `file:///${encodeURI(path.replace(/\\/g, '/'))}`;
+  }
+  return `file://${encodeURI(path)}`;
+};
+
+const isLikelyLocalFilePath = (value: string): boolean => {
+  if (value.startsWith('file://')) return true;
+  if (/^[A-Za-z]:[\\/]/.test(value)) return true;
+
+  const unixLocalPathPrefixes = ['/Users/', '/home/', '/var/', '/tmp/', '/private/', '/Volumes/', '/mnt/'];
+
+  return unixLocalPathPrefixes.some((prefix) => value.startsWith(prefix));
 };
 
 /**
@@ -115,8 +138,6 @@ export const filterAssistants = (
         return assistant.source === 'builtin';
       case 'user':
         return assistant.source === 'user';
-      case 'extension':
-        return assistant.source === 'extension';
       case 'all':
       default:
         return true;

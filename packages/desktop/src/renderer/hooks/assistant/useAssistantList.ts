@@ -10,15 +10,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 /**
- * Pure predicate: an assistant is extension-sourced.
- */
-export const isExtensionAssistant = (assistant: Assistant | null | undefined): boolean =>
-  assistant?.source === 'extension';
-
-/**
  * Manages the assistant list: loading from backend, sorting, and tracking the
- * active selection. The backend merges builtin + user + extension into a single
- * ordered list, so no client-side merge logic is needed.
+ * active selection. The backend returns a single ordered builtin + user catalog,
+ * so no client-side merge logic is needed.
  */
 export const useAssistantList = () => {
   const { i18n } = useTranslation();
@@ -78,7 +72,6 @@ export const useAssistantList = () => {
     activeAssistantId,
     setActiveAssistantId,
     activeAssistant,
-    isExtensionAssistant,
     loadAssistants,
     reorderAssistants,
     localeKey,

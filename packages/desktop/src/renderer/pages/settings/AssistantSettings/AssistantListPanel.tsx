@@ -18,7 +18,6 @@ type AssistantListPanelProps = {
   assistants: AssistantListItem[];
   localeKey: string;
   avatarImageMap: Record<string, string>;
-  isExtensionAssistant: (assistant: AssistantListItem | null | undefined) => boolean;
   onEdit: (assistant: AssistantListItem) => void;
   onDuplicate: (assistant: AssistantListItem) => void;
   onDelete: (assistant: AssistantListItem) => void;
@@ -37,7 +36,6 @@ type SortableAssistantCardProps = {
   localeKey: string;
   avatarImageMap: Record<string, string>;
   highlightedId: string | null;
-  isExtensionAssistant: (assistant: AssistantListItem | null | undefined) => boolean;
   onEdit: (assistant: AssistantListItem) => void;
   onDuplicate: (assistant: AssistantListItem) => void;
   onDelete: (assistant: AssistantListItem) => void;
@@ -53,7 +51,6 @@ const SortableAssistantCard: React.FC<SortableAssistantCardProps> = ({
   localeKey,
   avatarImageMap,
   highlightedId,
-  isExtensionAssistant,
   onEdit,
   onDuplicate,
   onDelete,
@@ -64,8 +61,7 @@ const SortableAssistantCard: React.FC<SortableAssistantCardProps> = ({
   sortingEnabled,
 }) => {
   const { t } = useTranslation();
-  const assistantIsExtension = isExtensionAssistant(assistant);
-  const canDelete = assistant.source === 'user' && !assistantIsExtension;
+  const canDelete = assistant.source === 'user';
   const canDuplicate = assistant.source !== 'user';
   const { attributes, listeners, setActivatorNodeRef, setNodeRef, transform, transition, isDragging } = useSortable({
     id: assistant.id,
@@ -126,8 +122,7 @@ const SortableAssistantCard: React.FC<SortableAssistantCardProps> = ({
         <Switch
           size='small'
           data-testid={`switch-enabled-${assistant.id}`}
-          checked={assistantIsExtension ? true : assistant.enabled !== false}
-          disabled={assistantIsExtension}
+          checked={assistant.enabled !== false}
           onChange={(checked) => {
             onToggleEnabled(assistant, checked);
           }}
@@ -179,7 +174,6 @@ const AssistantListPanel: React.FC<AssistantListPanelProps> = ({
   assistants,
   localeKey,
   avatarImageMap,
-  isExtensionAssistant,
   onEdit,
   onDuplicate,
   onDelete,
@@ -244,10 +238,6 @@ const AssistantListPanel: React.FC<AssistantListPanelProps> = ({
       );
     }
 
-    if (assistant.source === 'extension') {
-      return null;
-    }
-
     return (
       <Tag
         size='small'
@@ -279,7 +269,6 @@ const AssistantListPanel: React.FC<AssistantListPanelProps> = ({
         localeKey={localeKey}
         avatarImageMap={avatarImageMap}
         highlightedId={highlightedId}
-        isExtensionAssistant={isExtensionAssistant}
         onEdit={onEdit}
         onDuplicate={onDuplicate}
         onDelete={onDelete}

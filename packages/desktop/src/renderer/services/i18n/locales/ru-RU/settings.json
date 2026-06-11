@@ -58,6 +58,8 @@
   "assistantNameAvatar": "Название и аватар",
   "assistantDescription": "Описание ассистента",
   "assistantDescriptionPlaceholder": "С какими задачами помогает этот ассистент?",
+  "assistantAvatarUploadImage": "Загрузить изображение",
+  "assistantAvatarImageFiles": "Файлы изображений",
   "assistantPrompt": "Промпт",
   "assistantPromptPlaceholder": "Введите промпт или правила...",
   "saveAssistant": "Сохранить настройки",
@@ -141,7 +143,6 @@
   "extensionSkillsBadge": "Расширение",
   "autoInjectedSkills": "Автоматически добавленные навыки",
   "autoInjectedSkillsBadge": "Авто",
-  "assistantExtensionReadonlyTip": "Ассистенты расширений доступны только для чтения в настройках ассистентов.",
   "skillFolderPath": "Путь к папке навыков",
   "skillPathPlaceholder": "Введите или выберите пути к папкам навыков, разделённые запятыми",
   "pleaseSelectSkillPath": "Выберите путь к папке навыков",
@@ -919,7 +920,6 @@
     "agentDesc": "Для диалогов WeCom"
   },
   "addAssistant": "Добавить ассистента",
-  "extensionAssistantReadonly": "Расширения ассистента доступны только для чтения. Вы можете дублировать их и редактировать копию.",
   "agentManagement": {
     "localAgents": "Локальные агенты",
     "remoteAgents": "Удалённые агенты",

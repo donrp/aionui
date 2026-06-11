@@ -217,7 +217,7 @@ export function usePresetAssistantInfo(conversation: TChatConversation | undefin
 } {
   const { i18n } = useTranslation();
 
-  // Merged assistant catalog (builtin + user + extension) from backend
+  // Merged assistant catalog (builtin + user) from backend
   const { data: assistantsList, isLoading: isLoadingAssistants } = useSWR('assistants', () =>
     ipcBridge.assistants.list.invoke().catch(() => [] as Assistant[])
   );
@@ -287,7 +287,7 @@ export function usePresetAssistantInfo(conversation: TChatConversation | undefin
       return { info: null, isLoading: false };
     }
 
-    // Assistant lookup: backend returns merged builtin + user + extension list.
+    // Assistant lookup: backend returns merged builtin + user list.
     // Accept either the bare id or the legacy `builtin-` / `ext-` prefixed forms.
     if (assistantsList && Array.isArray(assistantsList)) {
       const assistantMatch = assistantsList.find(

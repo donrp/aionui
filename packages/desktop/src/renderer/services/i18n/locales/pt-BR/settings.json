@@ -58,6 +58,8 @@
   "assistantNameAvatar": "Name & Avatar",
   "assistantDescription": "Assistant Description",
   "assistantDescriptionPlaceholder": "What can this assistant help with?",
+  "assistantAvatarUploadImage": "Enviar imagem",
+  "assistantAvatarImageFiles": "Arquivos de imagem",
   "assistantPrompt": "Prompt",
   "assistantPromptPlaceholder": "Enter prompt or rules...",
   "saveAssistant": "Save Settings",
@@ -141,7 +143,6 @@
   "extensionSkillsBadge": "Extensão",
   "autoInjectedSkills": "Habilidades Injetadas Automaticamente",
   "autoInjectedSkillsBadge": "Auto",
-  "assistantExtensionReadonlyTip": "Assistentes de extensão são somente leitura nas configurações de assistente.",
   "skillFolderPath": "Caminho da Pasta da Habilidade",
   "skillPathPlaceholder": "Insira ou navegue pelos caminhos da pasta da habilidade, separados por vírgula",
   "pleaseSelectSkillPath": "Por favor, selecione o caminho de uma pasta de habilidade",
@@ -938,7 +939,6 @@
     "agent": "Agente",
     "agentDesc": "Usado para conversas no WeCom"
   },
-  "extensionAssistantReadonly": "Assistentes de extensão são somente leitura. Você pode duplicá-lo e editar a cópia.",
   "agentManagement": {
     "localAgents": "Agentes Locais",
     "remoteAgents": "Agentes Remotos",

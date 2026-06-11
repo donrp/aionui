@@ -34,7 +34,7 @@ export type GuidAgentSelectionResult = {
   selectedAgentInfo: AvailableAgent | undefined;
   is_presetAgent: boolean;
   availableAgents: AvailableAgent[] | undefined;
-  /** Backend-merged preset catalog: builtin + user + extension. */
+  /** Backend-merged preset catalog: builtin + user. */
   assistants: Assistant[];
   /** User-defined ACP engine rows (agent_source === 'custom') from the backend. */
   customAgents: AgentMetadata[];

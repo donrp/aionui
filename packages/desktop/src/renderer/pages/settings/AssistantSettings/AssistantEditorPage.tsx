@@ -16,6 +16,7 @@ type AssistantEditorPageProps = {
   setEditDescription: (value: string) => void;
   editAvatar: string;
   setEditAvatar: (value: string) => void;
+  setEditAvatarPreview: (value: string | undefined) => void;
   editAvatarImage?: string;
   editAgent: string;
   setEditAgent: (value: string) => void;
@@ -49,7 +50,6 @@ type AssistantEditorPageProps = {
   builtinAutoSkills: BuiltinAutoSkill[];
   disabledBuiltinSkills: string[];
   setDisabledBuiltinSkills: (value: string[]) => void;
-  isExtensionAssistant: (assistant: AssistantListItem | null | undefined) => boolean;
   availableBackends: AvailableBackend[];
   handleSave: () => void;
   handleDeleteClick: () => void;
@@ -66,6 +66,7 @@ const AssistantEditorPage: React.FC<AssistantEditorPageProps> = ({
   setEditDescription,
   editAvatar,
   setEditAvatar,
+  setEditAvatarPreview,
   editAvatarImage,
   editAgent,
   setEditAgent,
@@ -99,7 +100,6 @@ const AssistantEditorPage: React.FC<AssistantEditorPageProps> = ({
   builtinAutoSkills,
   disabledBuiltinSkills,
   setDisabledBuiltinSkills,
-  isExtensionAssistant,
   availableBackends,
   handleSave,
   handleDeleteClick,
@@ -107,7 +107,6 @@ const AssistantEditorPage: React.FC<AssistantEditorPageProps> = ({
   onBack,
 }) => {
   const { t } = useTranslation();
-  const isReadOnlyExtension = !isCreating && activeAssistant !== null && isExtensionAssistant(activeAssistant);
 
   return (
     <div data-testid='assistant-editor-page' className='flex h-full min-h-0 flex-col overflow-hidden bg-transparent'>
@@ -133,7 +132,7 @@ const AssistantEditorPage: React.FC<AssistantEditorPageProps> = ({
           </div>
         </div>
         <div className='ml-auto flex items-center gap-8px'>
-          {!isCreating && activeAssistant?.source !== 'builtin' && !isExtensionAssistant(activeAssistant) && (
+          {!isCreating && activeAssistant?.source !== 'builtin' && (
             <Button
               status='danger'
               className='!rounded-8px'
@@ -147,13 +146,7 @@ const AssistantEditorPage: React.FC<AssistantEditorPageProps> = ({
           <Button onClick={onBack} className='!rounded-8px bg-fill-1' data-testid='btn-cancel-assistant-editor'>
             {t('common.cancel', { defaultValue: 'Cancel' })}
           </Button>
-          <Button
-            type='primary'
-            onClick={handleSave}
-            disabled={isReadOnlyExtension}
-            data-testid='btn-save-assistant'
-            className='!rounded-8px'
-          >
+          <Button type='primary' onClick={handleSave} data-testid='btn-save-assistant' className='!rounded-8px'>
             {isCreating ? t('common.create', { defaultValue: 'Create' }) : t('common.save', { defaultValue: 'Save' })}
           </Button>
         </div>
@@ -169,6 +162,7 @@ const AssistantEditorPage: React.FC<AssistantEditorPageProps> = ({
             setEditDescription={setEditDescription}
             editAvatar={editAvatar}
             setEditAvatar={setEditAvatar}
+            setEditAvatarPreview={setEditAvatarPreview}
             editAvatarImage={editAvatarImage}
             editAgent={editAgent}
             setEditAgent={setEditAgent}
@@ -203,7 +197,6 @@ const AssistantEditorPage: React.FC<AssistantEditorPageProps> = ({
             disabledBuiltinSkills={disabledBuiltinSkills}
             setDisabledBuiltinSkills={setDisabledBuiltinSkills}
             activeAssistant={activeAssistant}
-            isExtensionAssistant={isExtensionAssistant}
             availableBackends={availableBackends}
             handleDuplicate={handleDuplicate}
           />

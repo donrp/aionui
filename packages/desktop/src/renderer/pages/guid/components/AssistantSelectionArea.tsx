@@ -84,7 +84,7 @@ const AssistantSelectionArea: React.FC<AssistantSelectionAreaProps> = ({
     }
 
     const candidates = resolveAssistantCandidateIds(assistantId);
-    // `assistants` is the backend-merged catalog (builtin + user + extension)
+    // `assistants` is the backend-merged catalog (builtin + user)
     // and is the only list that yields the Assistant shape the editor expects.
     const targetAssistant = assistants.find((assistant) => candidates.includes(assistant.id));
     if (!targetAssistant) {

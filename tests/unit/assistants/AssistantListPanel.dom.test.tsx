@@ -44,7 +44,6 @@ describe('AssistantListPanel', () => {
     assistants: mockAssistants,
     localeKey: 'en',
     avatarImageMap: {},
-    isExtensionAssistant: () => false,
     onEdit: vi.fn(),
     onDuplicate: vi.fn(),
     onDelete: vi.fn(),

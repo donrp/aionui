@@ -3,19 +3,19 @@
  *
  * Editing permissions by assistant type:
  *
- * | Field          | Builtin | Extension | Custom |
- * |----------------|---------|-----------|--------|
- * | Save button    |  yes    |  no       |  yes   |
- * | Name           |  no     |  no       |  yes   |
- * | Description    |  no     |  no       |  yes   |
- * | Avatar         |  no     |  no       |  yes   |
- * | Main Agent     |  yes    |  no       |  yes   |
- * | Prompt editing |  no     |  no       |  yes   |
- * | Delete         |  no     |  no       |  yes   |
+ * | Field          | Builtin | Custom |
+ * |----------------|---------|--------|
+ * | Save button    |  yes    |  yes   |
+ * | Name           |  no     |  yes   |
+ * | Description    |  no     |  yes   |
+ * | Avatar         |  no     |  yes   |
+ * | Main Agent     |  yes    |  yes   |
+ * | Prompt editing |  no     |  yes   |
+ * | Delete         |  no     |  yes   |
  *
- * Builtin assistants only allow Main Agent overrides. Extension assistants are
- * fully read-only. The full-page editor still renders their skills panel so
- * users can inspect what's bundled.
+ * Builtin assistants only allow Main Agent plus default model / permission
+ * overrides. The full-page editor still renders builtin skills and prompts as
+ * read-only so users can inspect what's bundled.
  */
 import { Message } from '@arco-design/web-react';
 import coworkSvg from '@/renderer/assets/icons/cowork.svg';
@@ -58,7 +58,6 @@ const AssistantSettings: React.FC = () => {
     activeAssistantId,
     setActiveAssistantId,
     activeAssistant,
-    isExtensionAssistant,
     loadAssistants,
     reorderAssistants,
     localeKey,
@@ -69,16 +68,15 @@ const AssistantSettings: React.FC = () => {
   const editor = useAssistantEditor({
     localeKey,
     activeAssistant,
-    isExtensionAssistant,
     setActiveAssistantId,
     loadAssistants,
     refreshAgentDetection,
     message,
   });
 
-  const editAvatarImage = resolveAvatarImageSrc(editor.editAvatar, avatarImageMap);
+  const editAvatarImage = editor.editAvatarPreview || resolveAvatarImageSrc(editor.editAvatar, avatarImageMap);
   const hasConsumedNavigationIntentRef = useRef(false);
-  const showEditor = editor.editVisible && (editor.isCreating || activeAssistant !== null);
+  const showEditor = editor.editVisible && (editor.isCreating || activeAssistantId !== null);
 
   useEffect(() => {
     if (hasConsumedNavigationIntentRef.current) return;
@@ -129,6 +127,7 @@ const AssistantSettings: React.FC = () => {
               setEditDescription={editor.setEditDescription}
               editAvatar={editor.editAvatar}
               setEditAvatar={editor.setEditAvatar}
+              setEditAvatarPreview={editor.setEditAvatarPreview}
               editAvatarImage={editAvatarImage}
               editAgent={editor.editAgent}
               setEditAgent={editor.setEditAgent}
@@ -162,7 +161,6 @@ const AssistantSettings: React.FC = () => {
               builtinAutoSkills={editor.builtinAutoSkills}
               disabledBuiltinSkills={editor.disabledBuiltinSkills}
               setDisabledBuiltinSkills={editor.setDisabledBuiltinSkills}
-              isExtensionAssistant={isExtensionAssistant}
               availableBackends={availableBackends}
               handleSave={editor.handleSave}
               handleDeleteClick={editor.handleDeleteClick}
@@ -174,7 +172,6 @@ const AssistantSettings: React.FC = () => {
               assistants={assistants}
               localeKey={localeKey}
               avatarImageMap={avatarImageMap}
-              isExtensionAssistant={isExtensionAssistant}
               onEdit={(assistant) => void editor.handleEdit(assistant)}
               onDuplicate={(assistant) => void editor.handleDuplicate(assistant)}
               onDelete={(assistant) => editor.handleDeleteRequest(assistant)}

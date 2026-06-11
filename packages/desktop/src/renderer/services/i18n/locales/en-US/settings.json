@@ -58,6 +58,8 @@
   "assistantNameAvatar": "Name & Avatar",
   "assistantDescription": "Assistant Description",
   "assistantDescriptionPlaceholder": "What can this assistant help with?",
+  "assistantAvatarUploadImage": "Upload image",
+  "assistantAvatarImageFiles": "Image files",
   "assistantPrompt": "Prompt",
   "assistantPromptPlaceholder": "Enter prompt or rules...",
   "saveAssistant": "Save Settings",
@@ -141,7 +143,6 @@
   "extensionSkillsBadge": "Extension",
   "autoInjectedSkills": "Auto-injected Skills",
   "autoInjectedSkillsBadge": "Auto",
-  "assistantExtensionReadonlyTip": "Extension assistants are read-only in assistant settings.",
   "skillFolderPath": "Skill Folder Path",
   "skillPathPlaceholder": "Enter or browse skill folder path(s), separated by comma",
   "pleaseSelectSkillPath": "Please select a skill folder path",
@@ -938,7 +939,6 @@
     "agent": "Agent",
     "agentDesc": "Used for WeCom conversations"
   },
-  "extensionAssistantReadonly": "Extension assistants are read-only. You can duplicate it and edit the copy.",
   "agentManagement": {
     "localAgents": "Local Agents",
     "remoteAgents": "Remote Agents",

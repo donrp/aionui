@@ -58,6 +58,8 @@
   "assistantNameAvatar": "Ім'я та аватар",
   "assistantDescription": "Опис асистента",
   "assistantDescriptionPlaceholder": "З чим може допомогти цей асистент?",
+  "assistantAvatarUploadImage": "Завантажити зображення",
+  "assistantAvatarImageFiles": "Файли зображень",
   "assistantPrompt": "Промпт",
   "assistantPromptPlaceholder": "Введіть промпт або правила...",
   "saveAssistant": "Зберегти налаштування",
@@ -141,7 +143,6 @@
   "extensionSkillsBadge": "Розширення",
   "autoInjectedSkills": "Автоматично додані навички",
   "autoInjectedSkillsBadge": "Авто",
-  "assistantExtensionReadonlyTip": "Асистенти розширень доступні лише для читання в налаштуваннях асистентів.",
   "skillFolderPath": "Шлях до папки з навичками",
   "skillPathPlaceholder": "Введіть або виберіть шлях(и) до папок з навичками, розділені комами",
   "pleaseSelectSkillPath": "Будь ласка, виберіть шлях до папки з навичками",
@@ -846,7 +847,6 @@
     "loginRequired": "Спочатку увійдіть через QR-код WeChat"
   },
   "addAssistant": "Додати асистента",
-  "extensionAssistantReadonly": "Розширення асистента доступні лише для читання. Ви можете дублювати їх і редагувати копію.",
   "agentManagement": {
     "localAgents": "Локальні агенти",
     "remoteAgents": "Віддалені агенти",

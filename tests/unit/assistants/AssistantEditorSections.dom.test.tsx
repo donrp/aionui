@@ -1,7 +1,7 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ConfigProvider } from '@arco-design/web-react';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import AssistantEditorSections from '@/renderer/pages/settings/AssistantSettings/AssistantEditorSections';
 
@@ -9,6 +9,8 @@ const mockUseModelProviderList = vi.fn(() => ({
   providers: [],
   getAvailableModels: () => [],
 }));
+const showOpenInvokeMock = vi.fn();
+const getImageBase64InvokeMock = vi.fn();
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -31,6 +33,21 @@ vi.mock('@/renderer/components/Markdown', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
+vi.mock('@/common', () => ({
+  ipcBridge: {
+    dialog: {
+      showOpen: {
+        invoke: (...args: unknown[]) => showOpenInvokeMock(...args),
+      },
+    },
+    fs: {
+      getImageBase64: {
+        invoke: (...args: unknown[]) => getImageBase64InvokeMock(...args),
+      },
+    },
+  },
+}));
+
 const renderWithProviders = (ui: React.ReactElement) =>
   render(
     <MemoryRouter>
@@ -40,6 +57,9 @@ const renderWithProviders = (ui: React.ReactElement) =>
 
 describe('AssistantEditorSections', () => {
   beforeEach(() => {
+    showOpenInvokeMock.mockReset();
+    getImageBase64InvokeMock.mockReset();
+    getImageBase64InvokeMock.mockResolvedValue('data:image/png;base64,preview');
     mockUseModelProviderList.mockReturnValue({
       providers: [],
       getAvailableModels: () => [],
@@ -56,6 +76,7 @@ describe('AssistantEditorSections', () => {
         setEditDescription={vi.fn()}
         editAvatar='✍️'
         setEditAvatar={vi.fn()}
+        setEditAvatarPreview={vi.fn()}
         editAgent='claude'
         setEditAgent={vi.fn()}
         editRecommendedPromptsText={'Prompt one\nPrompt two'}
@@ -91,7 +112,6 @@ describe('AssistantEditorSections', () => {
         disabledBuiltinSkills={[]}
         setDisabledBuiltinSkills={vi.fn()}
         activeAssistant={null}
-        isExtensionAssistant={() => false}
         availableBackends={[]}
         handleDuplicate={vi.fn()}
       />
@@ -120,6 +140,7 @@ describe('AssistantEditorSections', () => {
         setEditDescription={vi.fn()}
         editAvatar='✍️'
         setEditAvatar={vi.fn()}
+        setEditAvatarPreview={vi.fn()}
         editAgent='claude'
         setEditAgent={vi.fn()}
         editRecommendedPromptsText={'Prompt one\nPrompt two'}
@@ -153,7 +174,6 @@ describe('AssistantEditorSections', () => {
         disabledBuiltinSkills={[]}
         setDisabledBuiltinSkills={vi.fn()}
         activeAssistant={null}
-        isExtensionAssistant={() => false}
         availableBackends={[]}
         handleDuplicate={vi.fn()}
       />
@@ -166,6 +186,69 @@ describe('AssistantEditorSections', () => {
     expect(promptScope.getByRole('button', { name: 'Add' })).toBeInTheDocument();
   });
 
+  it('lets users pick an avatar image from the file dialog', async () => {
+    const setEditAvatar = vi.fn();
+    const setEditAvatarPreview = vi.fn();
+    showOpenInvokeMock.mockResolvedValue(['/tmp/avatar.png']);
+
+    renderWithProviders(
+      <AssistantEditorSections
+        isCreating={true}
+        editName='Writer'
+        setEditName={vi.fn()}
+        editDescription='desc'
+        setEditDescription={vi.fn()}
+        editAvatar='✍️'
+        setEditAvatar={setEditAvatar}
+        setEditAvatarPreview={setEditAvatarPreview}
+        editAgent='claude'
+        setEditAgent={vi.fn()}
+        editRecommendedPromptsText=''
+        setEditRecommendedPromptsText={vi.fn()}
+        defaultModelMode='auto'
+        setDefaultModelMode={vi.fn()}
+        defaultModelValue=''
+        setDefaultModelValue={vi.fn()}
+        defaultPermissionMode='auto'
+        setDefaultPermissionMode={vi.fn()}
+        defaultPermissionValue=''
+        setDefaultPermissionValue={vi.fn()}
+        defaultSkillsMode='fixed'
+        setDefaultSkillsMode={vi.fn()}
+        defaultMcpMode='auto'
+        setDefaultMcpMode={vi.fn()}
+        availableMcpServers={[]}
+        selectedMcpIds={[]}
+        setSelectedMcpIds={vi.fn()}
+        editContext='rules'
+        setEditContext={vi.fn()}
+        promptViewMode='preview'
+        setPromptViewMode={vi.fn()}
+        availableSkills={[]}
+        selectedSkills={[]}
+        setSelectedSkills={vi.fn()}
+        pendingSkills={[]}
+        setDeletePendingSkillName={vi.fn()}
+        setDeleteCustomSkillName={vi.fn()}
+        builtinAutoSkills={[]}
+        disabledBuiltinSkills={[]}
+        setDisabledBuiltinSkills={vi.fn()}
+        activeAssistant={null}
+        availableBackends={[]}
+        handleDuplicate={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByTestId('btn-assistant-avatar-upload'));
+
+    expect(showOpenInvokeMock).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(setEditAvatar).toHaveBeenCalledWith('/tmp/avatar.png');
+      expect(getImageBase64InvokeMock).toHaveBeenCalledWith({ path: '/tmp/avatar.png' });
+      expect(setEditAvatarPreview).toHaveBeenCalledWith('data:image/png;base64,preview');
+    });
+  });
+
   it('keeps builtin default model and permission editable while showing prompts as read-only content', () => {
     const { container } = renderWithProviders(
       <AssistantEditorSections
@@ -176,6 +259,7 @@ describe('AssistantEditorSections', () => {
         setEditDescription={vi.fn()}
         editAvatar='🤝'
         setEditAvatar={vi.fn()}
+        setEditAvatarPreview={vi.fn()}
         editAgent='claude'
         setEditAgent={vi.fn()}
         editRecommendedPromptsText={'Prompt one\nPrompt two'}
@@ -218,7 +302,6 @@ describe('AssistantEditorSections', () => {
           enabled: true,
           preset_agent_type: 'claude',
         }}
-        isExtensionAssistant={() => false}
         availableBackends={[{ id: 'claude', name: 'Claude', isExtension: false, modelOptions: [] }]}
         handleDuplicate={vi.fn()}
       />
@@ -254,6 +337,7 @@ describe('AssistantEditorSections', () => {
         setEditDescription={vi.fn()}
         editAvatar='✍️'
         setEditAvatar={vi.fn()}
+        setEditAvatarPreview={vi.fn()}
         editAgent='claude'
         setEditAgent={vi.fn()}
         editRecommendedPromptsText=''
@@ -289,7 +373,6 @@ describe('AssistantEditorSections', () => {
         disabledBuiltinSkills={[]}
         setDisabledBuiltinSkills={vi.fn()}
         activeAssistant={null}
-        isExtensionAssistant={() => false}
         availableBackends={[]}
         handleDuplicate={vi.fn()}
       />
@@ -311,6 +394,7 @@ describe('AssistantEditorSections', () => {
         setEditDescription={vi.fn()}
         editAvatar='✍️'
         setEditAvatar={vi.fn()}
+        setEditAvatarPreview={vi.fn()}
         editAgent='claude'
         setEditAgent={vi.fn()}
         editRecommendedPromptsText=''
@@ -344,7 +428,6 @@ describe('AssistantEditorSections', () => {
         disabledBuiltinSkills={[]}
         setDisabledBuiltinSkills={vi.fn()}
         activeAssistant={null}
-        isExtensionAssistant={() => false}
         availableBackends={[]}
         handleDuplicate={vi.fn()}
       />

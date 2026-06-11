@@ -15,7 +15,6 @@ import { mutate as swrMutate } from 'swr';
 type UseAssistantEditorParams = {
   localeKey: string;
   activeAssistant: AssistantListItem | null;
-  isExtensionAssistant: (assistant: AssistantListItem | null | undefined) => boolean;
   setActiveAssistantId: (id: string | null) => void;
   loadAssistants: () => Promise<void>;
   refreshAgentDetection: () => Promise<void>;
@@ -47,7 +46,6 @@ const resolveLocalizedRecommendedPrompts = (
 export const useAssistantEditor = ({
   localeKey,
   activeAssistant,
-  isExtensionAssistant,
   setActiveAssistantId,
   loadAssistants,
   refreshAgentDetection,
@@ -60,6 +58,7 @@ export const useAssistantEditor = ({
   const [editDescription, setEditDescription] = useState('');
   const [editContext, setEditContext] = useState('');
   const [editAvatar, setEditAvatar] = useState('');
+  const [editAvatarPreview, setEditAvatarPreview] = useState<string | undefined>(undefined);
   const [editAgent, setEditAgentState] = useState<string>('claude');
   const [editRecommendedPromptsText, setEditRecommendedPromptsText] = useState('');
   const [defaultModelMode, setDefaultModelMode] = useState<AssistantScalarDefaultMode>('unset');
@@ -157,10 +156,11 @@ export const useAssistantEditor = ({
     setIsCreating(false);
     setActiveAssistantId(assistant.id);
     setEditVisible(true);
-    setPromptViewMode(assistant.source === 'extension' ? 'preview' : 'edit');
+    setPromptViewMode(isBuiltinAssistant(assistant) ? 'preview' : 'edit');
     setEditName(assistant.name || '');
     setEditDescription(assistant.description || '');
     setEditAvatar(assistant.avatar || '');
+    setEditAvatarPreview(undefined);
     setEditAgent(assistant.preset_agent_type || 'claude');
     resetDefaultConfigState();
     resetSkillEditorState();
@@ -170,6 +170,7 @@ export const useAssistantEditor = ({
       setEditName(detail.profile.name || assistant.name || '');
       setEditDescription(detail.profile.description || '');
       setEditAvatar(detail.profile.avatar || '');
+      setEditAvatarPreview(undefined);
       setEditAgent(detail.engine.agent_backend || assistant.preset_agent_type || 'claude');
       setEditContext(detail.rules.content || '');
       setEditRecommendedPromptsText(resolveLocalizedRecommendedPrompts(detail, localeKey).join('\n'));
@@ -216,6 +217,7 @@ export const useAssistantEditor = ({
     setEditDescription('');
     setEditContext('');
     setEditAvatar('\u{1F916}');
+    setEditAvatarPreview(undefined);
     setEditAgent('claude');
     resetDefaultConfigState();
     resetSkillEditorState();
@@ -245,6 +247,7 @@ export const useAssistantEditor = ({
     setEditName(`${assistant.name_i18n?.[localeKey] || assistant.name} (Copy)`);
     setEditDescription(assistant.description_i18n?.[localeKey] || assistant.description || '');
     setEditAvatar(assistant.avatar || '\u{1F916}');
+    setEditAvatarPreview(undefined);
     setEditAgent(assistant.preset_agent_type || 'claude');
     resetDefaultConfigState();
     resetSkillEditorState();
@@ -308,15 +311,6 @@ export const useAssistantEditor = ({
     try {
       if (!editName.trim()) {
         message.error(t('settings.assistantNameRequired', { defaultValue: 'Assistant name is required' }));
-        return;
-      }
-
-      if (!isCreating && activeAssistant && isExtensionAssistant(activeAssistant)) {
-        message.warning(
-          t('settings.extensionAssistantReadonly', {
-            defaultValue: 'Extension assistants are read-only. You can duplicate it and edit the copy.',
-          })
-        );
         return;
       }
 
@@ -454,15 +448,6 @@ export const useAssistantEditor = ({
       return;
     }
 
-    if (isExtensionAssistant(activeAssistant)) {
-      message.warning(
-        t('settings.extensionAssistantReadonly', {
-          defaultValue: 'Extension assistants are read-only. You can duplicate it and edit the copy.',
-        })
-      );
-      return;
-    }
-
     setDeleteConfirmVisible(true);
   };
 
@@ -471,15 +456,6 @@ export const useAssistantEditor = ({
 
     if (isBuiltinAssistant(assistant)) {
       message.warning(t('settings.cannotDeleteBuiltin', { defaultValue: 'Cannot delete builtin assistants' }));
-      return;
-    }
-
-    if (isExtensionAssistant(assistant)) {
-      message.warning(
-        t('settings.extensionAssistantReadonly', {
-          defaultValue: 'Extension assistants are read-only. You can duplicate it and edit the copy.',
-        })
-      );
       return;
     }
 
@@ -503,15 +479,6 @@ export const useAssistantEditor = ({
   };
 
   const handleToggleEnabled = async (assistant: AssistantListItem, enabled: boolean) => {
-    if (isExtensionAssistant(assistant)) {
-      message.warning(
-        t('settings.extensionAssistantReadonly', {
-          defaultValue: 'Extension assistants are read-only. You can duplicate it and edit the copy.',
-        })
-      );
-      return;
-    }
-
     try {
       await swrMutate(
         'assistants.list',
@@ -543,6 +510,8 @@ export const useAssistantEditor = ({
     setEditContext,
     editAvatar,
     setEditAvatar,
+    editAvatarPreview,
+    setEditAvatarPreview,
     editAgent,
     setEditAgent,
     editRecommendedPromptsText,

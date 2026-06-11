@@ -43,7 +43,6 @@ vi.mock('@/renderer/hooks/assistant', () => ({
     activeAssistantId: null,
     setActiveAssistantId: vi.fn(),
     activeAssistant: null,
-    isExtensionAssistant: () => false,
     loadAssistants: vi.fn(),
   }),
   useDetectedAgents: () => ({

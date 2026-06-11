@@ -1,8 +1,7 @@
 /**
  * Assistant Settings Permissions — E2E tests.
  *
- * Covers: field-level permissions for builtin, extension, and custom
- * assistant types.
+ * Covers: field-level permissions for builtin and custom assistant types.
  */
 import { test, expect } from '../fixtures';
 import {
@@ -22,7 +21,7 @@ test.describe('Assistant Settings Permissions', () => {
   // Uses ID prefix heuristics to minimise drawer open/close cycles.
   async function findAssistantByType(
     page: import('@playwright/test').Page,
-    type: 'builtin' | 'extension' | 'custom'
+    type: 'builtin' | 'custom'
   ): Promise<string | null> {
     const ids = await getVisibleAssistantIds(page);
 
@@ -30,7 +29,6 @@ test.describe('Assistant Settings Permissions', () => {
     const prioritised = ids.toSorted((a, b) => {
       const score = (id: string) => {
         if (type === 'builtin' && id.startsWith('builtin-')) return 0;
-        if (type === 'extension' && id.startsWith('ext-')) return 0;
         if (type === 'custom' && id.startsWith('custom-')) return 0;
         return 1;
       };
@@ -56,13 +54,10 @@ test.describe('Assistant Settings Permissions', () => {
 
       // Detection:
       // builtin = profile readonly + main agent editable + no delete
-      // extension = profile readonly + main agent readonly + save disabled + no delete
       // custom = editable profile + delete
-      let detected: 'builtin' | 'extension' | 'custom' = 'custom';
+      let detected: 'builtin' | 'custom' = 'custom';
       if (isNameDisabled && !hasDelete && !isAgentDisabled && !isSaveDisabled) {
         detected = 'builtin';
-      } else if (isNameDisabled && !hasDelete && isAgentDisabled && isSaveDisabled) {
-        detected = 'extension';
       }
 
       if (detected === type) {
@@ -148,66 +143,6 @@ test.describe('Assistant Settings Permissions', () => {
 
     const saveBtn = page.locator(BTN_SAVE_ASSISTANT);
     await expect(saveBtn).not.toBeDisabled();
-
-    await closeAssistantEditor(page);
-  });
-
-  test('extension — name/desc/save all read-only', async ({ page }) => {
-    await goToAssistantSettings(page);
-    await page.locator('[data-testid^="assistant-card-"]').first().waitFor({ state: 'visible', timeout: 10_000 });
-
-    const extId = await findAssistantByType(page, 'extension');
-    if (!extId) {
-      test.skip(true, 'No extension assistant found');
-      return;
-    }
-
-    await openAssistantEditor(page, extId);
-
-    const nameInput = page.locator('[data-testid="input-assistant-name"]');
-    const descInput = page.locator('[data-testid="input-assistant-desc"]');
-    const saveBtn = page.locator(BTN_SAVE_ASSISTANT);
-
-    await expect(nameInput).toBeDisabled();
-    await expect(descInput).toBeDisabled();
-    await expect(saveBtn).toBeDisabled();
-
-    await closeAssistantEditor(page);
-  });
-
-  test('extension — no delete button', async ({ page }) => {
-    await goToAssistantSettings(page);
-    await page.locator('[data-testid^="assistant-card-"]').first().waitFor({ state: 'visible', timeout: 10_000 });
-
-    const extId = await findAssistantByType(page, 'extension');
-    if (!extId) {
-      test.skip(true, 'No extension assistant found');
-      return;
-    }
-
-    await openAssistantEditor(page, extId);
-
-    const deleteBtn = page.locator(BTN_DELETE_ASSISTANT);
-    await expect(deleteBtn).not.toBeVisible();
-
-    await closeAssistantEditor(page);
-  });
-
-  test('extension — can duplicate', async ({ page }) => {
-    await goToAssistantSettings(page);
-    await page.locator('[data-testid^="assistant-card-"]').first().waitFor({ state: 'visible', timeout: 10_000 });
-
-    const extId = await findAssistantByType(page, 'extension');
-    if (!extId) {
-      test.skip(true, 'No extension assistant found');
-      return;
-    }
-
-    const dupBtn = page.locator(`[data-testid="btn-duplicate-${extId}"]`);
-    const card = page.locator(`[data-testid="assistant-card-${extId}"]`);
-    await card.hover();
-
-    await expect(dupBtn).toBeVisible();
 
     await closeAssistantEditor(page);
   });
