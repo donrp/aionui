@@ -258,6 +258,48 @@ describe('useAssistantEditor', () => {
     expect(result.current.editRecommendedPromptsText).toBe('中文提示词');
   });
 
+  it('uses localized builtin profile fields when opening the editor', async () => {
+    const builtinAssistant: AssistantListItem = {
+      id: 'builtin-2',
+      name: 'English Dashboard',
+      name_i18n: { 'en-US': 'English Dashboard', 'zh-CN': '仪表板助手' },
+      description: 'English description',
+      description_i18n: { 'en-US': 'English description', 'zh-CN': '中文描述' },
+      avatar: '📊',
+      preset_agent_type: 'claude',
+      sort_order: 1,
+      source: 'builtin',
+      enabled: true,
+    };
+
+    (ipcBridge.assistants.get.invoke as any).mockResolvedValue({
+      ...mockAssistantDetail,
+      id: 'builtin-2',
+      source: 'builtin',
+      profile: {
+        name: 'English Dashboard',
+        name_i18n: { 'en-US': 'English Dashboard', 'zh-CN': '仪表板助手' },
+        description: 'English description',
+        description_i18n: { 'en-US': 'English description', 'zh-CN': '中文描述' },
+        avatar: '📊',
+      },
+    });
+
+    const { result } = renderHook(() =>
+      useAssistantEditor({
+        ...defaultParams,
+        localeKey: 'zh-CN',
+      })
+    );
+
+    await act(async () => {
+      await result.current.handleEdit(builtinAssistant);
+    });
+
+    await waitFor(() => expect(result.current.editName).toBe('仪表板助手'));
+    expect(result.current.editDescription).toBe('中文描述');
+  });
+
   it('calls handleCreate and initializes empty form', async () => {
     const { result } = renderHook(() => useAssistantEditor(defaultParams));
 

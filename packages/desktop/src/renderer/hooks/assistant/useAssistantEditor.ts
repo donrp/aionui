@@ -40,6 +40,13 @@ const resolveLocalizedRecommendedPrompts = (
   );
 };
 
+const resolveLocalizedProfileField = (
+  baseValue: string | undefined,
+  localizedValues: Record<string, string> | undefined,
+  localeKey: string,
+  fallbackValue = ''
+): string => localizedValues?.[localeKey] ?? localizedValues?.['en-US'] ?? baseValue ?? fallbackValue;
+
 /**
  * Manages all assistant editing state and handlers:
  * create, edit, duplicate, save, delete, and toggle enabled.
@@ -129,8 +136,22 @@ export const useAssistantEditor = ({
       .then((detail) => {
         if (cancelled) return;
 
-        setEditName(detail.profile.name || activeAssistant.name_i18n?.[localeKey] || activeAssistant.name || '');
-        setEditDescription(detail.profile.description || activeAssistant.description || '');
+        setEditName(
+          resolveLocalizedProfileField(
+            detail.profile.name,
+            detail.profile.name_i18n,
+            localeKey,
+            activeAssistant.name_i18n?.[localeKey] || activeAssistant.name || ''
+          )
+        );
+        setEditDescription(
+          resolveLocalizedProfileField(
+            detail.profile.description,
+            detail.profile.description_i18n,
+            localeKey,
+            activeAssistant.description_i18n?.[localeKey] || activeAssistant.description || ''
+          )
+        );
         setEditContext(detail.rules.content || '');
         setEditRecommendedPromptsText(resolveLocalizedRecommendedPrompts(detail, localeKey).join('\n'));
       })
@@ -197,8 +218,17 @@ export const useAssistantEditor = ({
 
     try {
       const { detail, skillsList, autoSkills, mcpServers } = await loadEditorResources(assistant.id);
-      setEditName(detail.profile.name || assistant.name || '');
-      setEditDescription(detail.profile.description || '');
+      setEditName(
+        resolveLocalizedProfileField(detail.profile.name, detail.profile.name_i18n, localeKey, assistant.name || '')
+      );
+      setEditDescription(
+        resolveLocalizedProfileField(
+          detail.profile.description,
+          detail.profile.description_i18n,
+          localeKey,
+          assistant.description || ''
+        )
+      );
       setEditAvatar(detail.profile.avatar || '');
       setEditAvatarPreview(undefined);
       setEditAgent(detail.engine.agent_backend || assistant.preset_agent_type || 'claude');
