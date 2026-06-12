@@ -325,14 +325,6 @@ const AssistantListPanel: React.FC<AssistantListPanelProps> = ({
               </Button>
             </div>
           </div>
-          {listAssistants.length > 0 ? (
-            <div className='mt-12px text-12px text-t-secondary'>
-              {t('settings.assistantListHint', {
-                defaultValue:
-                  'Drag the handle on each row to update assistant order. Changes affect the home assistant list immediately.',
-              })}
-            </div>
-          ) : null}
         </div>
       </div>
 

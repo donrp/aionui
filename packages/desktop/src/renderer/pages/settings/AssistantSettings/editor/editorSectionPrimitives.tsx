@@ -4,7 +4,7 @@ type SectionCardProps = {
   title: string;
   legend?: { label: string; tone: 'now' | 'next' };
   readOnly?: boolean;
-  readOnlyLabel: string;
+  readOnlyLabel?: string;
   extra?: React.ReactNode;
   testId?: string;
   children: React.ReactNode;
@@ -37,7 +37,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
             {legend.label}
           </span>
         ) : null}
-        {readOnly ? (
+        {readOnly && readOnlyLabel ? (
           <span className='ml-auto rounded-8px bg-fill-1 px-8px py-3px text-10px font-500 text-t-tertiary'>
             {readOnlyLabel}
           </span>

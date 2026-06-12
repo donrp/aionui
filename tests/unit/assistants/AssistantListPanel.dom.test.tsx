@@ -144,11 +144,10 @@ describe('AssistantListPanel', () => {
     expect(screen.queryByTestId('btn-duplicate-2')).not.toBeInTheDocument();
   });
 
-  it('renders the reorder hint in the header area instead of a bottom hint card', () => {
+  it('does not render the legacy reorder hint copy', () => {
     renderWithProviders(<AssistantListPanel {...defaultProps} />);
 
-    const header = screen.getByTestId('assistant-list-header');
-    expect(header).toHaveTextContent('settings.assistantListHint');
+    expect(screen.getByTestId('assistant-list-header')).not.toHaveTextContent('settings.assistantListHint');
     expect(screen.getByTestId('assistant-list-body')).not.toHaveTextContent('settings.assistantListHint');
   });
 

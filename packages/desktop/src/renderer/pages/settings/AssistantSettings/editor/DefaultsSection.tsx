@@ -43,7 +43,6 @@ type DefaultsSectionProps = {
   selectedMcpIds: string[];
   setSelectedMcpIds: (value: string[]) => void;
   handleSkillSelectionChange: (values: string[]) => void;
-  readOnlyLabel: string;
   selectedItemsLabel: (count: number) => string;
   autoDefaultOptionLabel: string;
   readonlySelectionSummary: (items: string[], emptyLabel: string) => string;
@@ -72,7 +71,6 @@ const DefaultsSection: React.FC<DefaultsSectionProps> = ({
   selectedMcpIds,
   setSelectedMcpIds,
   handleSkillSelectionChange,
-  readOnlyLabel,
   selectedItemsLabel,
   autoDefaultOptionLabel,
   readonlySelectionSummary,
@@ -89,8 +87,6 @@ const DefaultsSection: React.FC<DefaultsSectionProps> = ({
         label: t('settings.assistantOnlyNewConversation', { defaultValue: 'New conversations only' }),
         tone: 'next',
       }}
-      readOnly={isBuiltin}
-      readOnlyLabel={readOnlyLabel}
       testId='assistant-card-defaults'
     >
       <div className='space-y-16px'>
