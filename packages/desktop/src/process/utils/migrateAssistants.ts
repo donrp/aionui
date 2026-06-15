@@ -83,6 +83,7 @@ const PRESET_ID_WHITELIST = new Set<string>([
   'moltbook',
   'beautiful-mermaid',
   'story-roleplay',
+  'aionui-assistant',
 ]);
 
 function isLegacyBuiltin(a: Record<string, unknown>): boolean {
