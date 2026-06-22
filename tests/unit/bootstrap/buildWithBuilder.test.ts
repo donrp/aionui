@@ -113,4 +113,76 @@ childProcess.execSync = function mockedExecSync(command) {
       rmSync(tempDir, { recursive: true, force: true });
     }
   });
+
+  it('prints phase timing logs for CI build diagnosis', () => {
+    const tempDir = mkdtempSync(join(tmpdir(), 'aionui-build-timing-test-'));
+    const hookPath = join(tempDir, 'hook.cjs');
+
+    writeFileSync(
+      hookPath,
+      `
+const childProcess = require('node:child_process');
+const fs = require('node:fs');
+const Module = require('node:module');
+const path = require('node:path');
+
+const originalLoad = Module._load;
+
+function recordPrepareCall() {
+  return { prepared: true, dir: 'mock-bundled-aioncore', sourceType: 'mock' };
+}
+
+Module._load = function patchedLoad(request, parent, isMain) {
+  if (request.endsWith('packages/shared-scripts/src/prepare-aioncore.js')) {
+    return { prepareAioncore: recordPrepareCall };
+  }
+
+  if (request === './resolveAioncoreVersion.js' || request.endsWith('/resolveAioncoreVersion.js')) {
+    return { resolveAioncoreVersion: () => 'v-test' };
+  }
+
+  return originalLoad.call(this, request, parent, isMain);
+};
+
+function ensurePlaceholder(relativePath) {
+  const target = path.join(process.cwd(), relativePath);
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  if (!fs.existsSync(target)) {
+    fs.writeFileSync(target, '');
+  }
+}
+
+childProcess.execSync = function mockedExecSync(command) {
+  const commandText = String(command);
+  if (commandText.includes('electron-vite build')) {
+    ensurePlaceholder('out/main/index.js');
+    ensurePlaceholder('out/renderer/index.html');
+  }
+  return Buffer.from('');
+};
+`,
+      'utf8'
+    );
+
+    try {
+      const result = spawnSync(process.execPath, ['scripts/build-with-builder.js', 'x64', '--win', '--x64'], {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          CI: 'true',
+          NODE_OPTIONS: [process.env.NODE_OPTIONS, `--require=${hookPath}`].filter(Boolean).join(' '),
+        },
+      });
+
+      expect(result.status, result.stderr || result.stdout).toBe(0);
+      expect(result.stdout).toContain('TIMING START electron-vite build');
+      expect(result.stdout).toContain('TIMING END electron-vite build');
+      expect(result.stdout).toContain('TIMING START electron-builder');
+      expect(result.stdout).toContain('TIMING SUMMARY');
+      expect(result.stdout).toContain('TOTAL build-with-builder');
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
 });

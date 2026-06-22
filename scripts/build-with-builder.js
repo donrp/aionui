@@ -26,6 +26,98 @@ const DMG_RETRY_DELAY_SEC = 30;
 
 // Incremental build: hash of source files to detect changes
 const INCREMENTAL_CACHE_FILE = 'out/.build-hash';
+const BUILD_STARTED_AT = Date.now();
+const phaseTimings = [];
+
+function formatDuration(ms) {
+  if (!Number.isFinite(ms) || ms < 0) return '0.0s';
+
+  const totalSeconds = ms / 1000;
+  if (totalSeconds < 60) return `${totalSeconds.toFixed(1)}s`;
+
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds - minutes * 60;
+  return `${minutes}m ${seconds.toFixed(1)}s`;
+}
+
+function formatBytes(bytes) {
+  if (!Number.isFinite(bytes) || bytes < 0) return '0 B';
+
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let size = bytes;
+  let unitIndex = 0;
+
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024;
+    unitIndex += 1;
+  }
+
+  return `${size.toFixed(unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`;
+}
+
+function startLogGroup(title) {
+  if (process.env.GITHUB_ACTIONS === 'true') {
+    console.log(`::group::${title}`);
+  }
+}
+
+function endLogGroup() {
+  if (process.env.GITHUB_ACTIONS === 'true') {
+    console.log('::endgroup::');
+  }
+}
+
+function runTimed(label, fn) {
+  const start = Date.now();
+  const startedAt = new Date(start).toISOString();
+  const title = `TIMING START ${label}`;
+  console.log(`[build-timing] ${title} at ${startedAt}`);
+  startLogGroup(title);
+
+  try {
+    const result = fn();
+    const durationMs = Date.now() - start;
+    phaseTimings.push({ label, durationMs, status: 'success' });
+    console.log(`[build-timing] TIMING END ${label} duration=${formatDuration(durationMs)}`);
+    endLogGroup();
+    return result;
+  } catch (error) {
+    const durationMs = Date.now() - start;
+    phaseTimings.push({ label, durationMs, status: 'failed' });
+    console.log(`[build-timing] TIMING FAIL ${label} duration=${formatDuration(durationMs)}`);
+    endLogGroup();
+    throw error;
+  }
+}
+
+function printTimingSummary() {
+  console.log('[build-timing] TIMING SUMMARY');
+  for (const timing of phaseTimings) {
+    console.log(`[build-timing] - ${timing.label}: ${formatDuration(timing.durationMs)} (${timing.status})`);
+  }
+  console.log(`[build-timing] TOTAL build-with-builder: ${formatDuration(Date.now() - BUILD_STARTED_AT)}`);
+}
+
+function printWindowsArtifactSnapshot(outDir) {
+  if (!fs.existsSync(outDir)) return;
+
+  const artifactPattern = /^AionUi-.*-win-(?:x64|arm64)\.(?:exe|zip|yml)$/i;
+  const artifacts = fs
+    .readdirSync(outDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && artifactPattern.test(entry.name))
+    .map((entry) => {
+      const fullPath = path.join(outDir, entry.name);
+      return { name: entry.name, size: fs.statSync(fullPath).size };
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  if (artifacts.length === 0) return;
+
+  console.log('[build-timing] WINDOWS ARTIFACT SIZE SNAPSHOT');
+  for (const artifact of artifacts) {
+    console.log(`[build-timing] - ${artifact.name}: ${formatBytes(artifact.size)}`);
+  }
+}
 
 function walkFiles(dir, acc = []) {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -399,25 +491,27 @@ try {
   }
 
   // 2. Check if we can skip Vite build (incremental build)
-  const skipViteBuild = shouldSkipViteBuild(skipVite, forceBuild);
+  runTimed('electron-vite build', () => {
+    const skipViteBuild = shouldSkipViteBuild(skipVite, forceBuild);
 
-  if (!skipViteBuild) {
-    // Run electron-vite to build all bundles (main + preload + renderer)
-    console.log(`📦 Building ${targetArch}...`);
-    execSync(`bunx electron-vite build --config packages/desktop/electron.vite.config.ts`, {
-      stdio: 'inherit',
-      shell: process.platform === 'win32',
-      env: {
-        ...process.env,
-        ELECTRON_BUILDER_ARCH: targetArch,
-      },
-    });
+    if (!skipViteBuild) {
+      // Run electron-vite to build all bundles (main + preload + renderer)
+      console.log(`📦 Building ${targetArch}...`);
+      execSync(`bunx electron-vite build --config packages/desktop/electron.vite.config.ts`, {
+        stdio: 'inherit',
+        shell: process.platform === 'win32',
+        env: {
+          ...process.env,
+          ELECTRON_BUILDER_ARCH: targetArch,
+        },
+      });
 
-    // Save hash after successful build
-    saveCurrentHash(computeSourceHash());
-  } else {
-    console.log('📦 Using cached Vite build output');
-  }
+      // Save hash after successful build
+      saveCurrentHash(computeSourceHash());
+    } else {
+      console.log('📦 Using cached Vite build output');
+    }
+  });
 
   // Re-bundle builtin MCP server as a fully self-contained CJS bundle so it can
   // be executed by an external `node` process (no Electron ASAR support available).
@@ -426,9 +520,11 @@ try {
   // Uses a dedicated script (build-mcp-servers.js) to avoid shell-quoting issues
   // with special characters in esbuild --define values.
   console.log('📦 Bundling builtin MCP servers (self-contained)...');
-  execSync(`node "${path.join(__dirname, 'build-mcp-servers.js')}"`, {
-    stdio: 'inherit',
-    shell: process.platform === 'win32',
+  runTimed('builtin MCP server bundle', () => {
+    execSync(`node "${path.join(__dirname, 'build-mcp-servers.js')}"`, {
+      stdio: 'inherit',
+      shell: process.platform === 'win32',
+    });
   });
 
   // 3. Verify electron-vite output
@@ -452,6 +548,7 @@ try {
   // If --pack-only, skip electron-builder distributable creation
   if (packOnly) {
     console.log('✅ Package completed! (skipped distributable creation)');
+    printTimingSummary();
     return;
   }
 
@@ -459,15 +556,19 @@ try {
   const { prepareAioncore } = require('../packages/shared-scripts/src/prepare-aioncore.js');
   const { resolveAioncoreVersion } = require('./resolveAioncoreVersion.js');
   const projectRoot = path.resolve(__dirname, '..');
-  prepareAioncore({
-    projectRoot,
-    platform: process.platform,
-    arch: targetArch,
-    version: resolveAioncoreVersion(projectRoot),
+  runTimed('prepare aioncore binary', () => {
+    prepareAioncore({
+      projectRoot,
+      platform: process.platform,
+      arch: targetArch,
+      version: resolveAioncoreVersion(projectRoot),
+    });
   });
 
   // 6. Prepare hub resources (index.json + extension zips for offline fallback)
-  execSync('node scripts/prepareHubResources.js', { stdio: 'inherit', env: process.env });
+  runTimed('prepare hub resources', () => {
+    execSync('node scripts/prepareHubResources.js', { stdio: 'inherit', env: process.env });
+  });
 
   // 6. 运行 electron-builder 生成分发包（DMG/ZIP/EXE等）
   // Run electron-builder to create distributables (DMG/ZIP/EXE, etc.)
@@ -555,7 +656,9 @@ try {
 
   const builderCommand = `bunx electron-builder --config packages/desktop/electron-builder.yml ${builderArgs} ${archFlag} ${nsisInclude} ${publishArg}`;
   try {
-    buildWithDmgRetry(builderCommand, targetArch);
+    runTimed('electron-builder', () => {
+      buildWithDmgRetry(builderCommand, targetArch);
+    });
   } catch (error) {
     const winExePath = path.join(outDir, 'win-unpacked', 'AionUi.exe');
     const firstError = formatExecError(error);
@@ -583,7 +686,9 @@ try {
     cleanupWindowsPackOutput();
 
     try {
-      buildWithDmgRetry(`${builderCommand} --config.win.signAndEditExecutable=false`, targetArch);
+      runTimed('electron-builder retry without executable edit', () => {
+        buildWithDmgRetry(`${builderCommand} --config.win.signAndEditExecutable=false`, targetArch);
+      });
     } catch (retryError) {
       const retryFailure = formatExecError(retryError);
       throw new Error(
@@ -598,8 +703,13 @@ try {
     }
   }
 
+  if (isWindowsBuild) {
+    printWindowsArtifactSnapshot(outDir);
+  }
+  printTimingSummary();
   console.log('✅ Build completed!');
 } catch (error) {
+  printTimingSummary();
   console.error('❌ Build failed:', error.message);
   process.exit(1);
 }

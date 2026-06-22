@@ -364,7 +364,11 @@ jobs:
 
       - name: Prepare aioncore binary
         shell: bash
-        run: node scripts/prepareAioncore.js
+        run: |
+          set -euo pipefail
+          echo "::group::Prepare aioncore binary (${{ matrix.platform }})"
+          trap 'echo "::endgroup::"' EXIT
+          node scripts/prepareAioncore.js
         env:
           # Version is pinned in repo-root package.json (aioncoreVersion).
           # Set AIONUI_BACKEND_VERSION here only to override for ad-hoc builds.
@@ -383,13 +387,18 @@ jobs:
           $BuildFailed = $false
 
           try {
-            Write-Host "Running Windows build command: $Command"
-            iex $Command
-            Write-Host "Windows build completed successfully"
-          } catch {
-            $BuildFailed = $true
-            Write-Warning "${{ matrix.platform }} build failed but will not block the workflow"
-            Write-Host "::notice title=Windows build skipped::${{ matrix.platform }} build failed (see logs above) but workflow is allowed to continue."
+            Write-Host "::group::Windows electron-builder (${{ matrix.platform }})"
+            try {
+              Write-Host "Running Windows build command: $Command"
+              iex $Command
+              Write-Host "Windows build completed successfully"
+            } catch {
+              $BuildFailed = $true
+              Write-Warning "${{ matrix.platform }} build failed but will not block the workflow"
+              Write-Host "::notice title=Windows build skipped::${{ matrix.platform }} build failed (see logs above) but workflow is allowed to continue."
+            }
+          } finally {
+            Write-Host "::endgroup::"
           }
 
           if ($BuildFailed) {
