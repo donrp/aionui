@@ -134,7 +134,7 @@ export function useWorkspaceFileOps(options: UseWorkspaceFileOpsOptions) {
     if (!deleteModal.target) return;
     try {
       setDeleteModal((prev) => ({ ...prev, loading: true }));
-      await removeWorkspaceEntry(deleteModal.target.fullPath);
+      await removeWorkspaceEntry(deleteModal.target.fullPath, workspace);
 
       messageApi.success(t('conversation.workspace.contextMenu.deleteSuccess'));
       setSelected([]);
@@ -217,7 +217,7 @@ export function useWorkspaceFileOps(options: UseWorkspaceFileOpsOptions) {
 
     try {
       setRenameLoading(true);
-      await waitWithTimeout(renameWorkspaceEntry(target.fullPath, trimmedName));
+      await waitWithTimeout(renameWorkspaceEntry(target.fullPath, trimmedName, workspace));
 
       closeRenameModal();
 
