@@ -13,10 +13,12 @@ import classNames from 'classnames';
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { setGlobalNavigate } from '@/renderer/utils/navigation';
 import { LayoutContext } from '@renderer/hooks/context/LayoutContext';
 import { NavigationHistoryProvider } from '@renderer/hooks/context/NavigationHistoryContext';
 import { useDeepLink } from '@renderer/hooks/system/useDeepLink';
-import { useNotificationClick } from '@renderer/hooks/system/useNotificationClick';
+import { useNotificationClick } from '@renderer/hooks/system/notification/useNotificationClick';
+import { useBrowserNotification } from '@renderer/hooks/system/notification/useBrowserNotification';
 import { useDirectorySelection } from '@renderer/hooks/file/useDirectorySelection';
 import { cleanupSiderTooltips } from '@renderer/utils/ui/siderTooltip';
 import { useConversationShortcuts } from '@renderer/hooks/ui/useConversationShortcuts';
@@ -110,8 +112,15 @@ const Layout: React.FC<{
   const { contextHolder: directorySelectionContextHolder } = useDirectorySelection();
   useDeepLink();
   useNotificationClick();
+  useBrowserNotification();
   const navigate = useNavigate();
   useConversationShortcuts({ navigate });
+  // Expose navigate to code running outside the Router tree (e.g. the globally
+  // mounted FeedbackReportModal's "via chat" action).
+  useEffect(() => {
+    setGlobalNavigate(navigate);
+    return () => setGlobalNavigate(null);
+  }, [navigate]);
   const location = useLocation();
   const { t } = useTranslation();
   // The "AionUi" wordmark acts as Home / Back-to-Chat, but only from settings routes.
