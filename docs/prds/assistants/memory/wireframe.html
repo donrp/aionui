@@ -1,0 +1,1290 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>笔记本 · 助手记忆 · 线框图</title>
+    <style>
+      :root {
+        --bg-base: #ffffff;
+        --bg-1: #f9fafb;
+        --bg-2: #f2f3f5;
+        --bg-3: #e5e6eb;
+        --t1: #1d2129;
+        --t2: #454d5f;
+        --t3: #86909c;
+        --t4: #c9cdd4;
+        --border: #e5e6eb;
+        --border-light: #f2f3f5;
+        --aou-1: #eff0f6;
+        --aou-2: #e5e7f0;
+        --aou-6: #7583b2;
+        --aou-7: #596590;
+        --primary: #165dff;
+        --success: #00b42a;
+        --warning: #ff7d00;
+        --danger: #f53f3f;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        background: var(--bg-2);
+        color: var(--t1);
+        font-size: 13px;
+        line-height: 1.5;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .topbar {
+        flex: 0 0 auto;
+        background: var(--bg-base);
+        border-bottom: 1px solid var(--border);
+      }
+      .topbar-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+      }
+      .topbar-row.phases {
+        border-bottom: 1px solid var(--border-light);
+      }
+      .doc-title {
+        font-weight: 600;
+        font-size: 13px;
+        color: var(--aou-7);
+        margin-right: 8px;
+        white-space: nowrap;
+      }
+      .feat-tabs {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 7px 14px;
+        overflow-x: auto;
+      }
+      .feat-btn {
+        flex: 0 0 auto;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        padding: 5px 10px;
+        border-radius: 7px;
+        font-size: 12px;
+        color: var(--t3);
+        white-space: nowrap;
+      }
+      .feat-btn:hover {
+        background: var(--bg-2);
+      }
+      .feat-btn.on {
+        background: var(--aou-1);
+        color: var(--aou-7);
+        font-weight: 600;
+      }
+      .feat-btn .fc {
+        font-family: ui-monospace, monospace;
+        font-size: 10.5px;
+        opacity: 0.65;
+        margin-right: 4px;
+      }
+
+      .split {
+        flex: 1 1 auto;
+        display: flex;
+        min-height: 0;
+      }
+      .left {
+        flex: 1 1 58%;
+        min-width: 0;
+        overflow: auto;
+        padding: 24px;
+        background: var(--bg-2);
+      }
+      .right {
+        flex: 0 0 42%;
+        max-width: 560px;
+        min-width: 0;
+        overflow: auto;
+        background: var(--bg-base);
+        border-left: 1px solid var(--border);
+        padding: 24px 26px;
+      }
+      .split.full .left {
+        flex: 1 1 100%;
+      }
+      .split.full .right {
+        display: none;
+      }
+      @media (max-width: 920px) {
+        .split {
+          flex-direction: column;
+        }
+        .right {
+          flex: none;
+          max-width: none;
+          border-left: none;
+          border-top: 1px solid var(--border);
+        }
+      }
+
+      .req .fcode {
+        font-family: ui-monospace, monospace;
+        font-size: 12px;
+        color: var(--aou-6);
+        font-weight: 600;
+      }
+      .req h2 {
+        font-size: 17px;
+        margin: 3px 0 0;
+      }
+      .req .flags {
+        margin: 9px 0 16px;
+        display: flex;
+        gap: 6px;
+      }
+      .badge {
+        display: inline-block;
+        font-size: 11px;
+        padding: 2px 9px;
+        border-radius: 20px;
+        font-weight: 500;
+      }
+      .badge.new {
+        background: #e8f9ee;
+        color: #0a8a2c;
+      }
+      .badge.mod {
+        background: #fff3e0;
+        color: #cc7000;
+      }
+      .badge.keep {
+        background: var(--bg-2);
+        color: var(--t3);
+      }
+      .req h3 {
+        font-size: 12px;
+        margin: 20px 0 7px;
+        color: var(--t3);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        font-weight: 600;
+      }
+      .req p,
+      .req li {
+        font-size: 13px;
+        color: var(--t2);
+      }
+      .req ul {
+        margin: 6px 0;
+        padding-left: 18px;
+      }
+      .req li {
+        margin-bottom: 5px;
+      }
+      .story {
+        background: var(--aou-1);
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-size: 13px;
+        color: var(--t2);
+        margin: 2px 0 4px;
+      }
+      .story b {
+        color: var(--aou-7);
+      }
+      .ac div {
+        font-size: 12.5px;
+        color: var(--t2);
+        padding: 3px 0 3px 22px;
+        position: relative;
+      }
+      .ac div:before {
+        content: '';
+        position: absolute;
+        left: 4px;
+        top: 8px;
+        width: 11px;
+        height: 11px;
+        border: 1.5px solid var(--t4);
+        border-radius: 3px;
+      }
+      .note {
+        font-size: 12px;
+        color: var(--t3);
+        background: var(--bg-1);
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-top: 12px;
+      }
+      .req table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 8px 0;
+        font-size: 12px;
+      }
+      .req th,
+      .req td {
+        border: 1px solid var(--border);
+        padding: 6px 9px;
+        text-align: left;
+        vertical-align: top;
+      }
+      .req th {
+        background: var(--bg-2);
+        font-weight: 600;
+      }
+
+      .app {
+        background: var(--bg-base);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(29, 33, 41, 0.06);
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      .titlebar {
+        height: 36px;
+        background: var(--bg-2);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        gap: 12px;
+      }
+      .tb-dots {
+        display: flex;
+        gap: 7px;
+      }
+      .tb-dots i {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        display: block;
+      }
+      .tb-dots .r {
+        background: #ff5f57;
+      }
+      .tb-dots .y {
+        background: #febc2e;
+      }
+      .tb-dots .g {
+        background: #28c840;
+      }
+      .tb-ico {
+        color: var(--t3);
+        font-size: 14px;
+      }
+      .tb-brand {
+        flex: 1;
+        text-align: center;
+        font-weight: 600;
+        font-size: 12.5px;
+        color: var(--t2);
+      }
+      .body {
+        display: flex;
+        height: 540px;
+      }
+      .sider {
+        flex: 0 0 200px;
+        background: var(--bg-2);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        padding: 10px 8px;
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-weight: 700;
+        font-size: 14px;
+        color: var(--aou-7);
+        padding: 5px 8px 12px;
+      }
+      .logo .sq {
+        width: 24px;
+        height: 24px;
+        border-radius: 7px;
+        background: linear-gradient(135deg, var(--aou-6), var(--aou-7));
+      }
+      .si {
+        height: 34px;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 0 10px;
+        border-radius: 8px;
+        font-size: 14px;
+        color: var(--t2);
+        cursor: pointer;
+        font-weight: 500;
+      }
+      .si:hover {
+        background: var(--bg-3);
+      }
+      .si.on {
+        background: var(--bg-3);
+        font-weight: 600;
+        color: var(--t1);
+      }
+      .si .di {
+        width: 20px;
+        text-align: center;
+        font-size: 15px;
+        color: var(--t3);
+      }
+      .si.on .di {
+        color: var(--aou-6);
+      }
+      .si-div {
+        height: 1px;
+        background: var(--border);
+        margin: 8px 6px;
+      }
+      .si-grp {
+        font-size: 11px;
+        color: var(--t3);
+        padding: 10px 10px 3px;
+        font-weight: 600;
+      }
+      .si-sp {
+        flex: 1;
+      }
+      .main {
+        flex: 1;
+        min-width: 0;
+        background: var(--bg-base);
+        overflow: auto;
+        position: relative;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border: 1px solid var(--border);
+        background: var(--bg-base);
+        border-radius: 8px;
+        padding: 6px 13px;
+        font-size: 13px;
+        color: var(--t1);
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .btn:hover {
+        background: var(--bg-1);
+      }
+      .btn.pri {
+        background: var(--aou-6);
+        border-color: var(--aou-6);
+        color: #fff;
+      }
+      .btn.sm {
+        padding: 4px 10px;
+        font-size: 12px;
+        border-radius: 6px;
+      }
+      .btn.txt {
+        border-color: transparent;
+        background: transparent;
+        color: var(--aou-7);
+        padding: 4px 6px;
+      }
+
+      .spot {
+        position: relative;
+        outline: 2px solid var(--aou-6);
+        outline-offset: 3px;
+        border-radius: 10px;
+      }
+      .spot-tag {
+        position: absolute;
+        top: -11px;
+        left: 10px;
+        background: var(--aou-6);
+        color: #fff;
+        font-size: 10px;
+        padding: 2px 8px;
+        border-radius: 8px;
+        z-index: 3;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+      }
+
+      /* 编辑页（全屏分区，复用助手详情页骨架） */
+      .ep {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      .ep-bar {
+        flex: 0 0 auto;
+        height: 48px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 0 18px;
+      }
+      .ep-back {
+        color: var(--aou-7);
+        cursor: pointer;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .ep-title {
+        font-weight: 600;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .ep-av {
+        width: 24px;
+        height: 24px;
+        border-radius: 7px;
+        background: var(--aou-1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+      }
+      .ep-tabs {
+        display: flex;
+        gap: 18px;
+        border-bottom: 1px solid var(--border);
+        padding: 0 18px;
+        flex: 0 0 auto;
+      }
+      .ep-tabs span {
+        padding: 10px 0;
+        font-size: 13px;
+        color: var(--t3);
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+      }
+      .ep-tabs span.on {
+        color: var(--aou-7);
+        border-bottom-color: var(--aou-6);
+        font-weight: 600;
+      }
+      .ep-body {
+        flex: 1;
+        overflow: auto;
+        padding: 18px;
+        max-width: 640px;
+        margin: 0 auto;
+        width: 100%;
+      }
+
+      /* 笔记本分组 + 卡片 */
+      .grp-h {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 18px 0 9px;
+      }
+      .grp-h:first-child {
+        margin-top: 2px;
+      }
+      .grp-h .gn {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--t1);
+      }
+      .grp-tag {
+        font-size: 10px;
+        padding: 1px 8px;
+        border-radius: 10px;
+        font-weight: 500;
+      }
+      .grp-tag.global {
+        background: #e8f9ee;
+        color: #0a8a2c;
+      }
+      .grp-tag.proj {
+        background: var(--aou-1);
+        color: var(--aou-7);
+      }
+      .grp-cnt {
+        font-size: 11px;
+        color: var(--t4);
+        margin-left: auto;
+      }
+      .ncard {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--bg-base);
+        padding: 11px 13px;
+        margin-bottom: 9px;
+        display: flex;
+        gap: 11px;
+        align-items: flex-start;
+      }
+      .ncard:hover {
+        background: var(--bg-1);
+      }
+      .ncard .nbody {
+        flex: 1;
+        min-width: 0;
+      }
+      .ncard .ntext {
+        font-size: 13px;
+        color: var(--t1);
+        line-height: 1.55;
+      }
+      .ncard .nmeta {
+        font-size: 11px;
+        color: var(--t4);
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .src {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 10.5px;
+        padding: 1px 7px;
+        border-radius: 9px;
+        background: var(--bg-2);
+        color: var(--t3);
+      }
+      .src .sd {
+        width: 11px;
+        height: 11px;
+        border-radius: 4px;
+        display: inline-block;
+      }
+      .src .sd.claude {
+        background: #d97757;
+      }
+      .src .sd.gemini {
+        background: #4285f4;
+      }
+      .src .sd.user {
+        background: var(--aou-6);
+      }
+      .ndel {
+        color: var(--t4);
+        cursor: pointer;
+        font-size: 14px;
+        flex: 0 0 auto;
+        padding: 2px 4px;
+      }
+      .ndel:hover {
+        color: var(--danger);
+      }
+
+      /* 空状态 */
+      .empty {
+        text-align: center;
+        padding: 52px 24px;
+        color: var(--t3);
+      }
+      .empty .ei {
+        font-size: 34px;
+        margin-bottom: 12px;
+        opacity: 0.5;
+      }
+      .empty .eh {
+        font-size: 14px;
+        color: var(--t2);
+        font-weight: 500;
+        margin-bottom: 6px;
+      }
+      .empty .ed {
+        font-size: 12.5px;
+        color: var(--t4);
+        max-width: 340px;
+        margin: 0 auto;
+        line-height: 1.6;
+      }
+
+      /* 对话场景 */
+      .conv {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      .conv-h {
+        flex: 0 0 auto;
+        height: 44px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 0 16px;
+        font-size: 13px;
+      }
+      .conv-h .av {
+        width: 24px;
+        height: 24px;
+        border-radius: 7px;
+        background: var(--aou-1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+      }
+      .conv-h .nm {
+        font-weight: 600;
+      }
+      .conv-h .ws {
+        font-size: 11px;
+        color: var(--t4);
+        margin-left: auto;
+      }
+      .conv-b {
+        flex: 1;
+        overflow: auto;
+        padding: 18px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .msg {
+        max-width: 78%;
+        font-size: 12.5px;
+        line-height: 1.55;
+        padding: 9px 12px;
+        border-radius: 12px;
+      }
+      .msg.u {
+        align-self: flex-end;
+        background: var(--aou-6);
+        color: #fff;
+        border-bottom-right-radius: 4px;
+      }
+      .msg.a {
+        align-self: flex-start;
+        background: var(--bg-2);
+        color: var(--t1);
+        border-bottom-left-radius: 4px;
+      }
+      .sysline {
+        align-self: center;
+        font-size: 11.5px;
+        color: var(--aou-7);
+        background: var(--aou-1);
+        border: 1px solid var(--aou-2);
+        border-radius: 20px;
+        padding: 5px 13px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        max-width: 90%;
+      }
+      .sysline .si2 {
+        font-size: 13px;
+      }
+      .recall {
+        align-self: center;
+        font-size: 11px;
+        color: var(--t4);
+        background: var(--bg-1);
+        border: 1px dashed var(--border);
+        border-radius: 8px;
+        padding: 7px 12px;
+        max-width: 90%;
+        text-align: center;
+        line-height: 1.5;
+      }
+
+      /* 确认弹窗 */
+      .modal-stage {
+        position: absolute;
+        inset: 0;
+        background: rgba(29, 33, 41, 0.28);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+      .modal {
+        width: 100%;
+        max-width: 340px;
+        background: var(--bg-base);
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        overflow: hidden;
+        box-shadow: 0 16px 48px rgba(29, 33, 41, 0.22);
+      }
+      .modal-h {
+        padding: 18px 20px 6px;
+        font-weight: 600;
+        font-size: 15px;
+      }
+      .modal-b {
+        padding: 0 20px 14px;
+        font-size: 12.5px;
+        color: var(--t3);
+        line-height: 1.6;
+      }
+      .modal-f {
+        padding: 12px 20px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: flex-end;
+        gap: 9px;
+      }
+      .btn.danger {
+        background: var(--danger);
+        border-color: var(--danger);
+        color: #fff;
+      }
+
+      /* overview */
+      .ov {
+        max-width: 880px;
+        margin: 0 auto;
+      }
+      .ov h2 {
+        font-size: 19px;
+        margin: 0 0 4px;
+      }
+      .ov .lead {
+        color: var(--t3);
+        font-size: 13px;
+        margin-bottom: 20px;
+      }
+      .ov h3 {
+        font-size: 14px;
+        margin: 22px 0 9px;
+        color: var(--t1);
+        border-left: 3px solid var(--aou-6);
+        padding-left: 9px;
+      }
+      .ov table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 8px 0;
+        font-size: 12.5px;
+      }
+      .ov th,
+      .ov td {
+        border: 1px solid var(--border);
+        padding: 7px 10px;
+        text-align: left;
+        vertical-align: top;
+      }
+      .ov th {
+        background: var(--bg-2);
+        font-weight: 600;
+      }
+      .ov code {
+        font-family: ui-monospace, monospace;
+        background: var(--bg-2);
+        padding: 1px 5px;
+        border-radius: 4px;
+        font-size: 11.5px;
+        color: var(--aou-7);
+      }
+      .erd {
+        background: var(--bg-1);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 16px;
+        font-family: ui-monospace, monospace;
+        font-size: 12px;
+        line-height: 1.9;
+        color: var(--t2);
+        overflow: auto;
+      }
+      .erd b {
+        color: var(--aou-7);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="topbar">
+      <div class="topbar-row phases">
+        <a href="../index.html" style="font-size: 13px; color: var(--aou-7); text-decoration: none; white-space: nowrap"
+          >← 文档首页</a
+        >
+        <span style="color: var(--border)">|</span>
+        <span class="doc-title">笔记本 · 助手记忆 · 线框图</span>
+      </div>
+      <div class="feat-tabs" id="featTabs"></div>
+    </div>
+    <div class="split" id="split">
+      <div class="left" id="left"></div>
+      <div class="right" id="right"></div>
+    </div>
+
+    <script>
+      /* ============ 外壳：设置 → 助手详情 ============ */
+      function shellSettings(inner, navOn) {
+        return `<div class="app">
+    <div class="titlebar"><span class="tb-dots"><i class="r"></i><i class="y"></i><i class="g"></i></span>
+      <span class="tb-ico">☰</span><span class="tb-brand">AionUi · 设置</span><span class="tb-ico">⤢</span></div>
+    <div class="body">
+      <div class="sider"><div class="logo"><span class="sq"></span>AionUi</div>
+        <div class="si-grp">AI 核心</div>
+        <div class="si"><span class="di">🧩</span>Agents</div>
+        <div class="si"><span class="di">🧠</span>Model</div>
+        <div class="si ${navOn === 'assistants' ? 'on' : ''}"><span class="di">💬</span>Assistants</div>
+        <div class="si"><span class="di">⚡</span>Capabilities</div>
+        <div class="si-grp">应用</div>
+        <div class="si"><span class="di">🎨</span>Display</div>
+        <div class="si"><span class="di">ℹ️</span>About</div>
+        <div class="si-sp"></div>
+        <div class="si"><span class="di">←</span>返回</div>
+      </div>
+      <div class="main">${inner}</div></div></div>`;
+      }
+      /* ============ 外壳：对话 ============ */
+      function shellChat(inner) {
+        return `<div class="app">
+    <div class="titlebar"><span class="tb-dots"><i class="r"></i><i class="y"></i><i class="g"></i></span>
+      <span class="tb-ico">☰</span><span class="tb-brand">AionUi</span><span class="tb-ico">⤢</span></div>
+    <div class="body">
+      <div class="sider"><div class="logo"><span class="sq"></span>AionUi</div>
+        <div class="si"><span class="di">＋</span>新建会话</div>
+        <div class="si"><span class="di">🔍</span>搜索会话</div>
+        <div class="si-div"></div>
+        <div class="si-grp">建模助手 · 办公楼项目</div>
+        <div class="si on">参数化脚本调试</div>
+        <div class="si">幕墙节点核对</div>
+        <div class="si-sp"></div>
+        <div class="si"><span class="di">⚙️</span>设置</div>
+      </div>
+      <div class="main">${inner}</div></div></div>`;
+      }
+
+      /* 助手详情页 tab 条（笔记本高亮） */
+      function detailTabs(active) {
+        const tabs = [
+          ['身份', ''],
+          ['规则', ''],
+          ['工具', ''],
+          ['技能', ''],
+          ['笔记本', 'note'],
+        ];
+        return (
+          `<div class="ep-tabs">` +
+          tabs.map((t) => `<span class="${t[1] === 'note' ? 'on' : ''}">${t[0]}</span>`).join('') +
+          `</div>`
+        );
+      }
+
+      /* 一条笔记卡片 */
+      function note(text, time, src, srcName) {
+        return `<div class="ncard"><div class="nbody">
+    <div class="ntext">${text}</div>
+    <div class="nmeta"><span class="src"><span class="sd ${src}"></span>${srcName}</span><span>· ${time}</span></div>
+  </div><span class="ndel" title="删除">🗑</span></div>`;
+      }
+
+      /* ============ 笔记本主画面 ============ */
+      function sNotebook(opt) {
+        opt = opt || {};
+        let body;
+        if (opt.empty) {
+          body = `<div class="empty">
+      <div class="ei">📓</div>
+      <div class="eh">笔记本还是空的</div>
+      <div class="ed">助手会在对话中自动记录值得保留的事实，记下后会出现在这里。你随时可以查看或删除。</div>
+    </div>`;
+        } else {
+          const delMode = opt.del ? ' del-on' : '';
+          body = `<div class="grp-h">
+        <span class="gn">助手级</span><span class="grp-tag global">所有项目通用</span><span class="grp-cnt">3 条</span>
+      </div>
+      ${note('回复统一使用中文，风格保持简洁、不啰嗦。', '06-12 14:23', 'claude', 'Claude')}
+      ${note('代码遵循 TypeScript strict；样式优先 UnoCSS 工具类。', '06-12 14:25', 'claude', 'Claude')}
+      ${note('建模规范走 LOD 300，单位统一用毫米。', '06-14 09:10', 'gemini', 'Gemini')}
+
+      <div class="grp-h" style="margin-top:24px;">
+        <span class="gn">📁 办公楼项目</span><span class="grp-tag proj">仅本项目</span><span class="grp-cnt">2 条</span>
+      </div>
+      ${note('客户要求标准层层高 3.6 米，地下室除外。', '06-14 09:30', 'gemini', 'Gemini')}
+      ${note('卡在某幕墙插件与主程序的版本兼容问题，待下周复核。', '06-15 17:02', 'claude', 'Claude')}
+
+      <div class="grp-h" style="margin-top:24px;">
+        <span class="gn">📁 别墅项目</span><span class="grp-tag proj">仅本项目</span><span class="grp-cnt">1 条</span>
+      </div>
+      ${note('采用坡屋顶方案 B，已与业主确认。', '06-10 11:40', 'claude', 'Claude')}`;
+        }
+        const inner = `<div class="ep">
+    <div class="ep-bar"><span class="ep-back">← 返回</span>
+      <span class="ep-title"><span class="ep-av">🏗️</span>建模助手</span></div>
+    ${detailTabs('note')}
+    <div class="ep-body ${opt.spot ? '' : ''}">
+      ${opt.spot ? '<div class="spot-tag" style="position:static;display:inline-block;margin-bottom:10px;">本特性区域</div>' : ''}
+      ${body}
+    </div>
+  </div>`;
+        let html = shellSettings(inner, 'assistants');
+        if (opt.delModal) {
+          html = html.replace(
+            '</div></div></div></div>',
+            `</div></div></div>
+      <div class="modal-stage"><div class="modal">
+        <div class="modal-h">删除这条笔记？</div>
+        <div class="modal-b">删除后，这条笔记不会再出现在新对话里。此操作不可撤销。</div>
+        <div class="modal-f"><span class="btn sm">取消</span><span class="btn sm danger">删除</span></div>
+      </div></div></div>`
+          );
+        }
+        return html;
+      }
+
+      /* ============ 对话场景：自动记录 ============ */
+      function sChatWrite() {
+        const inner = `<div class="conv">
+    <div class="conv-h"><span class="av">🏗️</span><span class="nm">建模助手</span>
+      <span style="font-size:11px;color:var(--t4);">· Claude</span>
+      <span class="ws">📁 办公楼项目</span></div>
+    <div class="conv-b">
+      <div class="msg u">这个项目的标准层层高定 3.6 米，地下室不算。</div>
+      <div class="msg a">好的，记下了。标准层 3.6 米、地下室除外。</div>
+      <div class="sysline"><span class="si2">📓</span>已记入笔记本（办公楼项目）：客户要求标准层层高 3.6 米，地下室除外。</div>
+      <div class="msg u">顺便，以后都用中文回我。</div>
+      <div class="msg a">没问题。</div>
+      <div class="sysline"><span class="si2">📓</span>已记入笔记本（助手级）：回复统一使用中文。</div>
+    </div>
+  </div>`;
+        return shellChat(inner);
+      }
+
+      /* ============ 对话场景：自动读回 ============ */
+      function sChatRecall() {
+        const inner = `<div class="conv">
+    <div class="conv-h"><span class="av">🏗️</span><span class="nm">建模助手</span>
+      <span style="font-size:11px;color:var(--t4);">· Gemini</span>
+      <span class="ws">📁 办公楼项目</span></div>
+    <div class="conv-b">
+      <div class="recall">📓 已读回笔记本 · 助手级 3 条 ＋ 办公楼项目 2 条<br>
+        （含「回复用中文」「LOD 300」「层高 3.6 米」「幕墙插件兼容问题」…）</div>
+      <div class="msg u">我们继续上次幕墙那块吧。</div>
+      <div class="msg a">好的。上次卡在幕墙插件与主程序的版本兼容问题，等本周复核——
+        我先按 LOD 300、标准层 3.6 米的设定，把节点重新核对一遍。</div>
+      <div class="recall" style="border-style:solid;background:var(--aou-1);border-color:var(--aou-2);color:var(--aou-7);">
+        注意：底层 CLI 已从 Claude 换成 Gemini，但同一助手的笔记照常读回 —— 换工具不失忆。</div>
+    </div>
+  </div>`;
+        return shellChat(inner);
+      }
+
+      /* ============ 总览 ============ */
+      function sOverview() {
+        return `<div class="ov">
+    <h2>笔记本 · 助手记忆</h2>
+    <div class="lead">助手在对话中自动记下值得长期保留的事实，开新对话时自动读回，让用户「换 CLI 不失忆、换对话不失忆」。</div>
+
+    <h3>要解决的问题</h3>
+    <p>AionUi 同一个助手底下可换不同 CLI 工具，但今天各工具各记各的记忆、互不相通，导致两种失忆：
+    <b>换工具失忆</b>（在 Claude 交代过的，换 Gemini 全不知道）、<b>换对话失忆</b>（同一工具，新对话也是白纸）。</p>
+
+    <h3>核心设计</h3>
+    <table>
+      <tr><th>维度</th><th>结论</th></tr>
+      <tr><td>锚点</td><td>挂在<b>助手</b>上（助手是独立于 CLI、跨会话的一层）→ 换 CLI、换对话都记得</td></tr>
+      <tr><td>分层</td><td>两层：<b>助手级</b>（所有项目通用）/ <b>助手 × 项目级</b>（锁在该工作区）</td></tr>
+      <tr><td>归类</td><td>助手<b>自动</b>判断记哪一层，用户无需指定</td></tr>
+      <tr><td>用户操作</td><td>只<b>看</b>和<b>删</b>，不手动记、不手动分层</td></tr>
+      <tr><td>写入时机</td><td><b>实时</b>随手记（中途中断也不丢）</td></tr>
+      <tr><td>读取时机</td><td>新对话<b>自动读回</b>对应层笔记</td></tr>
+    </table>
+
+    <h3>两层笔记对照</h3>
+    <table>
+      <tr><th>层级</th><th>记什么</th><th>例子</th><th>范围</th></tr>
+      <tr><td>助手级</td><td>关于你/助手的稳定事实</td><td>回复用中文、代码风格极简、LOD 300</td><td>所有项目通用</td></tr>
+      <tr><td>项目级</td><td>关于某一摊活的事实</td><td>办公楼层高 3.6 米、卡在某插件兼容</td><td>锁该工作区</td></tr>
+    </table>
+    <p style="font-size:12px;color:var(--t3);">类比 Claude Code：<code>~/.claude/CLAUDE.md</code>（全局）＋ 仓库内 <code>./CLAUDE.md</code>（项目级）。区别是这里「全局」锚点是<b>助手</b>。</p>
+
+    <h3>读 + 写 双向闭环</h3>
+    <div class="erd">对话中  ──[助手自动记，只记稳定事实 + 查重]──▶  <b>笔记本</b>（助手级 / 项目级）
+新对话  ◀──[自动读回对应层的笔记]──────────────  <b>笔记本</b>
+用户    ──[随时 看 / 删]──▶                      <b>笔记本</b></div>
+
+    <h3>实体关系</h3>
+    <div class="erd"><b>ASSISTANT</b> ||--o{ <b>NOTE_ASSISTANT</b>   : 拥有助手级笔记
+<b>ASSISTANT</b> ||--o{ <b>NOTE_PROJECT</b>     : 在各工作区拥有项目级笔记
+<b>WORKSPACE</b> ||--o{ <b>NOTE_PROJECT</b>     : 归属某工作区
+<b>ASSISTANT</b> ||--o{ <b>CONVERSATION</b>     : 发起对话
+<b>NOTE_*</b>    }o--|| <b>CREATOR</b>          : 由某身份记录
+
+读回一次对话 = 该助手的助手级笔记 ∪ 该助手在当前工作区的项目级笔记</div>
+  </div>`;
+      }
+
+      /* ============ 功能点定义：画面 + 右侧需求 ============ */
+      const FEATS = [
+        { id: 'ov', code: '', name: '总览', full: true, render: sOverview, req: null },
+
+        {
+          id: 'f01',
+          code: 'F-NOTE-01',
+          name: '笔记本入口',
+          badge: 'new',
+          render: () => sNotebook({ spot: true }),
+          req: {
+            title: '笔记本入口：助手详情页的一个分区',
+            story: '作为用户，我希望在助手详情里有一个固定的地方，能看到这个助手都帮我记住了什么。',
+            now: '助手详情页有「身份/规则/工具/技能」分区，但没有承载记忆的地方；只有一个手填的静态 <code>context</code> 字段，不会自动累积、不分项目。',
+            need: [
+              '在助手详情页新增「笔记本」分区，与现有分区并列。',
+              '笔记按<b>两层分组</b>展示：「助手级」（标注"所有项目通用"）＋ 各「项目级」分组（按工作区，标注项目名）。',
+              '每条笔记展示：内容 ＋ 记录时间 ＋ 来源标识（F-NOTE-05）。',
+              '分区始终存在；无笔记时显示空状态（F-NOTE-08）。',
+            ],
+            ac: [
+              '助手详情页有「笔记本」分区，与现有分区并列',
+              '笔记按"助手级 ＋ 各项目级"分组，每组有清晰标题',
+              '每条笔记显示内容、时间、来源标识',
+            ],
+          },
+        },
+
+        {
+          id: 'f02',
+          code: 'F-NOTE-02',
+          name: '两层存储',
+          badge: 'new',
+          render: () => sNotebook({}),
+          req: {
+            title: '两层记忆的存储',
+            story: '作为用户，我不希望「办公楼项目」的事被带到「别墅项目」里去干扰。',
+            now: '',
+            need: [
+              '笔记分两层，锚点不同：',
+              '<b>助手级</b> → 锚点=助手 → 该助手任意对话都读回。',
+              '<b>项目级</b> → 锚点=助手 × 工作区 → 仅该助手在该工作区的对话读回。',
+              '一条笔记只属于一层，不重复。具体存储方案交由技术决定。',
+            ],
+            tableH: ['层级', '锚点', '读回范围'],
+            table: [
+              ['助手级', '助手', '该助手所有对话'],
+              ['项目级', '助手 × 工作区', '仅该助手在该工作区'],
+            ],
+            ac: [
+              '笔记区分助手级与项目级两种存储，锚点正确',
+              '同一助手在不同工作区，项目级笔记互不可见',
+              '助手级笔记在该助手所有工作区对话中都可见',
+            ],
+          },
+        },
+
+        {
+          id: 'f03',
+          code: 'F-NOTE-03',
+          name: '自动记录',
+          badge: 'new',
+          render: sChatWrite,
+          req: {
+            title: '助手自动记录笔记',
+            story: '作为用户，我说一次"用 bun 不用 npm"，希望助手自己记住，而不用我去某个地方手动登记。',
+            now: '',
+            need: [
+              '对话中助手判断"出现了值得长期保留的事实"时，<b>自动写入</b>并<b>自动归层</b>。',
+              '两条内部规矩（用户无感）：①只记稳定事实（偏好/规范/约束/决策），不记寒暄与一次性问答；②写前查重，已记过不重复、有更新则更新原条目。',
+              '写入<b>实时</b>发生 —— 即使对话中途中断，此前记下的也不丢，这正是"换会话还能想起来"。',
+            ],
+            flow: [
+              '用户透露稳定事实（"项目统一用 bun"）',
+              '助手识别值得长期保留、且尚无此条',
+              '写入笔记本，自动归层',
+              '对话中出现一条"已记入笔记本"轻量提示',
+            ],
+            exc: ['助手归错层：用户当前只能删，暂不提供"移动层级"（见待讨论）', '重复事实：被查重拦截，不产生第二条'],
+            ac: [
+              '助手能在对话中自动写入，无需用户手动触发',
+              '写入实时发生，不依赖对话结束',
+              '寒暄、一次性问答不被记入',
+              '同一事实不重复记录',
+              '新写入被自动归到助手级或项目级',
+            ],
+          },
+        },
+
+        {
+          id: 'f04',
+          code: 'F-NOTE-04',
+          name: '自动读回',
+          badge: 'new',
+          render: sChatRecall,
+          req: {
+            title: '新对话自动读回笔记',
+            story: '作为用户，开新对话时我不想再把背景重讲一遍 —— 哪怕这次我换了个底层工具。',
+            now: '',
+            need: [
+              '用某助手在某工作区新建对话时，自动把<b>该助手的助手级笔记</b> ＋ <b>该助手在该工作区的项目级笔记</b>提供给助手。',
+              '读回在对话开始时自动完成，用户无需操作。',
+              '换底层 CLI（Claude→Gemini）后，同一助手仍读回同一批笔记。',
+            ],
+            flow: [
+              '选「建模助手」＋「办公楼项目」新建对话',
+              '读回：助手级全部 ＋ 该助手在办公楼下的项目级',
+              '助手开场即知"用中文/LOD 300"与"办公楼卡在某插件"',
+            ],
+            exc: ['笔记很多可能超出上下文：读回时按相关性/时间裁剪，策略交由技术评估（见待讨论）'],
+            ac: [
+              '新对话开始时自动读回对应的助手级 ＋ 项目级笔记',
+              '换底层 CLI 后同一助手仍读回同一批笔记',
+              '项目级笔记只在对应工作区读回，不串到其他工作区',
+            ],
+          },
+        },
+
+        {
+          id: 'f05',
+          code: 'F-NOTE-05',
+          name: '来源标识',
+          badge: 'new',
+          render: () => sNotebook({}),
+          req: {
+            title: '笔记的来源标识（creator）',
+            story: '作为用户，我想一眼看出这条笔记是哪个工具/谁记下的，好判断要不要信它。',
+            now: '',
+            need: [
+              '每条笔记记录<b>来源身份</b>，用于让用户看出"谁记的"。',
+              '同一助手的笔记可能由不同 CLI 记下（这次 Claude、下次 Gemini），标识体现实际记录身份。',
+              '来源仅用于展示与信任判断，<b>不影响读回逻辑</b>（读回只看层级与锚点）。',
+            ],
+            ac: ['每条笔记带来源标识并在列表展示', '来源不同的笔记可被用户区分'],
+          },
+        },
+
+        {
+          id: 'f06',
+          code: 'F-NOTE-06',
+          name: '记录可见性',
+          badge: 'new',
+          render: sChatWrite,
+          req: {
+            title: '记录笔记时的对话内可见性',
+            story: '作为用户，助手动我的笔记本时我想知道，而不是它偷偷在记。',
+            now: '',
+            need: [
+              '助手自动写入时，在对话流留下一条<b>轻量、可见但不打断</b>的提示（一行"已记入笔记本：…"）。',
+              '目的是建立信任 —— 用户能感知助手在动笔记本。',
+              '提示轻量，不要求确认、不阻断对话。',
+            ],
+            ac: ['助手写入笔记时，对话流出现一条对应的轻量提示', '该提示不打断对话、不要求用户操作'],
+          },
+        },
+
+        {
+          id: 'f07',
+          code: 'F-NOTE-07',
+          name: '看与删',
+          badge: 'new',
+          render: () => sNotebook({ del: true, delModal: true }),
+          req: {
+            title: '用户操作：看与删',
+            story: '作为用户，笔记本我只想做两件事：翻一翻它记了啥、把记错的删掉。',
+            now: '',
+            need: [
+              '用户操作仅限<b>看</b>与<b>删</b>。',
+              '<b>看</b>：在笔记本分区按两层分组浏览。',
+              '<b>删</b>：删除任意一条，删后不再参与读回；删除前给一次确认。',
+              '不提供手动新增、手动编辑内容、手动改层级（保持"自动记录"定位）。',
+            ],
+            exc: ['误删：本期不提供撤销/回收站，靠删前确认兜底'],
+            ac: [
+              '用户可按助手级/项目级分组浏览全部笔记',
+              '用户可删除单条，删除前有确认',
+              '删除后不再参与新对话读回',
+              '界面不提供手动新增/编辑内容/改层级入口',
+            ],
+          },
+        },
+
+        {
+          id: 'f08',
+          code: 'F-NOTE-08',
+          name: '空状态',
+          badge: 'new',
+          render: () => sNotebook({ empty: true }),
+          req: {
+            title: '空状态',
+            story: '作为新用户，笔记本还没东西时，我想知道这地方是干嘛的。',
+            now: '',
+            need: [
+              '尚无笔记时显示空状态，用一句话说明：「助手会在对话中自动记录值得保留的事实，记下后会出现在这里。」',
+            ],
+            ac: ['无笔记时显示空状态及说明文案', '有笔记后空状态消失'],
+          },
+        },
+      ];
+
+      /* ============ 渲染右侧需求 ============ */
+      function renderReq(r) {
+        if (!r) return '';
+        let h = `<div class="req"><h2>${r.title}</h2><div class="flags"><span class="badge new">新增</span></div>`;
+        if (r.story) h += `<div class="story">${r.story}</div>`;
+        if (r.now) h += `<h3>现状</h3><p>${r.now}</p>`;
+        h += `<h3>需求</h3><ul>` + r.need.map((n) => `<li>${n}</li>`).join('') + `</ul>`;
+        if (r.table) {
+          h +=
+            `<table><tr>` +
+            r.tableH.map((x) => `<th>${x}</th>`).join('') +
+            `</tr>` +
+            r.table.map((row) => `<tr>` + row.map((c) => `<td>${c}</td>`).join('') + `</tr>`).join('') +
+            `</table>`;
+        }
+        if (r.flow) {
+          h += `<h3>正常流程</h3><ul>` + r.flow.map((f, i) => `<li>${i + 1}. ${f}</li>`).join('') + `</ul>`;
+        }
+        if (r.exc) {
+          h += `<h3>异常情况</h3><ul>` + r.exc.map((e) => `<li>${e}</li>`).join('') + `</ul>`;
+        }
+        h += `<h3>验收标准</h3><div class="ac">` + r.ac.map((a) => `<div>${a}</div>`).join('') + `</div>`;
+        h += `</div>`;
+        return h;
+      }
+
+      /* ============ 控制器 ============ */
+      const tabsEl = document.getElementById('featTabs');
+      const splitEl = document.getElementById('split');
+      const leftEl = document.getElementById('left');
+      const rightEl = document.getElementById('right');
+      let cur = 'ov';
+      function build() {
+        tabsEl.innerHTML = FEATS.map(
+          (f) => `<button class="feat-btn ${f.id === cur ? 'on' : ''}" data-id="${f.id}">
+    ${f.code ? `<span class="fc">${f.code}</span>` : ''}${f.name}</button>`
+        ).join('');
+        tabsEl.querySelectorAll('.feat-btn').forEach(
+          (b) =>
+            (b.onclick = () => {
+              cur = b.dataset.id;
+              build();
+            })
+        );
+        const f = FEATS.find((x) => x.id === cur);
+        leftEl.innerHTML = f.render();
+        if (f.full) {
+          splitEl.classList.add('full');
+          rightEl.innerHTML = '';
+        } else {
+          splitEl.classList.remove('full');
+          rightEl.innerHTML = renderReq(f.req);
+        }
+      }
+      build();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>任务看板 · Kanban · 线框图</title>
+<style>
+  :root{
+    --bg-base:#ffffff; --bg-1:#f9fafb; --bg-2:#f2f3f5; --bg-3:#e5e6eb;
+    --t1:#1d2129; --t2:#454d5f; --t3:#86909c; --t4:#c9cdd4;
+    --border:#e5e6eb; --border-light:#f2f3f5;
+    --aou-1:#eff0f6; --aou-2:#e5e7f0; --aou-6:#7583b2; --aou-7:#596590;
+    --primary:#165dff; --success:#00b42a; --warning:#ff7d00; --danger:#f53f3f;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg-2); color:var(--t1); font-size:13px; line-height:1.5;
+    display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+
+  .topbar{flex:0 0 auto;background:var(--bg-base);border-bottom:1px solid var(--border);}
+  .topbar-row{display:flex;align-items:center;gap:8px;padding:8px 14px;}
+  .topbar-row.phases{border-bottom:1px solid var(--border-light);}
+  .doc-title{font-weight:600;font-size:13px;color:var(--aou-7);margin-right:8px;white-space:nowrap;}
+  .feat-tabs{display:flex;align-items:center;gap:2px;padding:7px 14px;overflow-x:auto;}
+  .feat-btn{flex:0 0 auto;border:none;background:transparent;cursor:pointer;padding:5px 10px;border-radius:7px;
+    font-size:12px;color:var(--t3);white-space:nowrap;}
+  .feat-btn:hover{background:var(--bg-2);}
+  .feat-btn.on{background:var(--aou-1);color:var(--aou-7);font-weight:600;}
+  .feat-btn .fc{font-family:ui-monospace,monospace;font-size:10.5px;opacity:.65;margin-right:4px;}
+
+  .split{flex:1 1 auto;display:flex;min-height:0;}
+  .left{flex:1 1 60%;min-width:0;overflow:auto;padding:24px;background:var(--bg-2);}
+  .right{flex:0 0 40%;max-width:540px;min-width:0;overflow:auto;background:var(--bg-base);border-left:1px solid var(--border);padding:24px 26px;}
+  .split.full .left{flex:1 1 100%;}
+  .split.full .right{display:none;}
+  @media(max-width:920px){.split{flex-direction:column;}.right{flex:none;max-width:none;border-left:none;border-top:1px solid var(--border);}}
+
+  .req .fcode{font-family:ui-monospace,monospace;font-size:12px;color:var(--aou-6);font-weight:600;}
+  .req h2{font-size:17px;margin:3px 0 0;}
+  .req .flags{margin:9px 0 16px;display:flex;gap:6px;}
+  .badge{display:inline-block;font-size:11px;padding:2px 9px;border-radius:20px;font-weight:500;}
+  .badge.new{background:#e8f9ee;color:#0a8a2c;}
+  .req h3{font-size:12px;margin:20px 0 7px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+  .req p,.req li{font-size:13px;color:var(--t2);}
+  .req ul{margin:6px 0;padding-left:18px;}
+  .req li{margin-bottom:5px;}
+  .story{background:var(--aou-1);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--t2);margin:2px 0 4px;}
+  .story b{color:var(--aou-7);}
+  .ac div{font-size:12.5px;color:var(--t2);padding:3px 0 3px 22px;position:relative;}
+  .ac div:before{content:"";position:absolute;left:4px;top:8px;width:11px;height:11px;border:1.5px solid var(--t4);border-radius:3px;}
+  .req table{width:100%;border-collapse:collapse;margin:8px 0;font-size:12px;}
+  .req th,.req td{border:1px solid var(--border);padding:6px 9px;text-align:left;vertical-align:top;}
+  .req th{background:var(--bg-2);font-weight:600;}
+
+  .app{position:relative;background:var(--bg-base);border:1px solid var(--border);border-radius:14px;overflow:hidden;
+    box-shadow:0 4px 20px rgba(29,33,41,.06);max-width:940px;margin:0 auto;}
+  .titlebar{height:36px;background:var(--bg-2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:12px;}
+  .tb-dots{display:flex;gap:7px;}
+  .tb-dots i{width:11px;height:11px;border-radius:50%;display:block;}
+  .tb-dots .r{background:#ff5f57;}.tb-dots .y{background:#febc2e;}.tb-dots .g{background:#28c840;}
+  .tb-ico{color:var(--t3);font-size:14px;}
+  .tb-brand{flex:1;text-align:center;font-weight:600;font-size:12.5px;color:var(--t2);}
+  .body{display:flex;height:560px;}
+  .sider{flex:0 0 180px;background:var(--bg-2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:10px 8px;}
+  .logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:14px;color:var(--aou-7);padding:5px 8px 12px;}
+  .logo .sq{width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--aou-6),var(--aou-7));}
+  .si{height:32px;display:flex;align-items:center;gap:9px;padding:0 10px;border-radius:8px;font-size:13px;color:var(--t2);cursor:pointer;font-weight:500;}
+  .si:hover{background:var(--bg-3);}
+  .si.on{background:var(--bg-3);font-weight:600;color:var(--t1);}
+  .si .di{width:18px;text-align:center;font-size:14px;color:var(--t3);}
+  .si-div{height:1px;background:var(--border);margin:8px 6px;}
+  .si-grp{font-size:11px;color:var(--t3);padding:10px 10px 3px;font-weight:600;}
+  .si-sp{flex:1;}
+
+  /* 对话页主区：聊天 + 右侧面板 */
+  .conv-wrap{display:flex;height:100%;}
+  .conv{flex:1 1 auto;display:flex;flex-direction:column;min-width:0;border-right:1px solid var(--border);}
+  .conv-h{flex:0 0 auto;height:42px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;padding:0 14px;font-size:13px;}
+  .conv-h .av{width:22px;height:22px;border-radius:6px;background:var(--aou-1);display:flex;align-items:center;justify-content:center;font-size:12px;}
+  .conv-h .nm{font-weight:600;}
+  .conv-b{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:11px;}
+  .msg{max-width:84%;font-size:12px;line-height:1.5;padding:8px 11px;border-radius:11px;}
+  .msg.u{align-self:flex-end;background:var(--aou-6);color:#fff;border-bottom-right-radius:4px;}
+  .msg.a{align-self:flex-start;background:var(--bg-2);color:var(--t1);border-bottom-left-radius:4px;}
+  .sysline{align-self:center;font-size:11px;color:var(--aou-7);background:var(--aou-1);border:1px solid var(--aou-2);
+    border-radius:18px;padding:5px 12px;display:flex;align-items:center;gap:6px;max-width:94%;}
+  .sysline .si2{font-size:12px;}
+
+  /* 右侧面板 */
+  .panel{flex:0 0 340px;display:flex;flex-direction:column;background:var(--bg-1);}
+  .panel-tabs{flex:0 0 auto;display:flex;gap:16px;border-bottom:1px solid var(--border);padding:0 14px;background:var(--bg-base);}
+  .panel-tabs span{padding:10px 0;font-size:12.5px;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
+  .panel-tabs span.on{color:var(--aou-7);border-bottom-color:var(--aou-6);font-weight:600;}
+  .panel-head{flex:0 0 auto;padding:9px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border-light);}
+  .panel-head .pt{font-size:12px;font-weight:600;color:var(--t1);}
+  .panel-head .ws-tag{font-size:10px;color:var(--t4);background:var(--bg-2);border-radius:9px;padding:1px 8px;}
+  .panel-head .add{margin-left:auto;color:var(--aou-7);cursor:pointer;font-size:15px;}
+  .panel-body{flex:1;overflow:auto;padding:10px;}
+
+  /* 看板列（窄面板里纵向堆叠各列） */
+  .col{margin-bottom:12px;}
+  .col-h{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;color:var(--t2);padding:2px 4px 7px;}
+  .col-dot{width:7px;height:7px;border-radius:50%;display:inline-block;}
+  .col-dot.bl{background:var(--t4);}.col-dot.td{background:var(--primary);}
+  .col-dot.ip{background:var(--warning);}.col-dot.dn{background:var(--success);}
+  .col-cnt{margin-left:auto;color:var(--t4);font-weight:500;}
+  .card{background:var(--bg-base);border:1px solid var(--border);border-radius:9px;padding:9px 10px;margin-bottom:7px;cursor:grab;}
+  .card:hover{border-color:var(--t4);box-shadow:0 1px 4px rgba(0,0,0,.05);}
+  .card.drag{opacity:.5;border:1.5px dashed var(--aou-6);}
+  .card .ci{font-size:10px;color:var(--t4);font-family:ui-monospace,monospace;}
+  .card .ct{font-size:12.5px;color:var(--t1);margin:3px 0 7px;line-height:1.45;}
+  .card .cf{display:flex;align-items:center;gap:6px;}
+  .pri{font-size:9.5px;padding:1px 7px;border-radius:8px;font-weight:600;}
+  .pri.low{background:#e8f4ff;color:#2a7fd4;}
+  .pri.med{background:#fff3e0;color:#cc7000;}
+  .pri.high{background:#ffece8;color:#d4380d;}
+  .cre{margin-left:auto;display:inline-flex;align-items:center;gap:4px;font-size:9.5px;color:var(--t4);}
+  .cre .cd{width:10px;height:10px;border-radius:3px;display:inline-block;}
+  .cre .cd.claude{background:#d97757;}.cre .cd.gemini{background:#4285f4;}.cre .cd.user{background:var(--aou-6);}
+
+  /* 全宽看板（独立展示，列横排） */
+  .board{display:flex;gap:12px;padding:16px;height:100%;overflow:auto;background:var(--bg-2);}
+  .bcol{flex:1 1 0;min-width:160px;background:var(--bg-1);border:1px solid var(--border);border-radius:11px;padding:9px;display:flex;flex-direction:column;}
+  .bcol-h{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--t2);padding:3px 4px 9px;}
+
+  /* 空状态（未开启模式） */
+  .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:30px 22px;color:var(--t3);}
+  .empty .ei{font-size:32px;margin-bottom:12px;opacity:.5;}
+  .empty .eh{font-size:13.5px;color:var(--t2);font-weight:600;margin-bottom:6px;}
+  .empty .ed{font-size:12px;color:var(--t4);max-width:260px;line-height:1.6;margin-bottom:16px;}
+  .btn{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);background:var(--bg-base);
+    border-radius:8px;padding:6px 13px;font-size:12.5px;color:var(--t1);cursor:pointer;white-space:nowrap;}
+  .btn:hover{background:var(--bg-1);}
+  .btn.pri-b{background:var(--aou-6);border-color:var(--aou-6);color:#fff;}
+  .btn.sm{padding:4px 10px;font-size:12px;border-radius:6px;}
+  .btn.danger{background:var(--danger);border-color:var(--danger);color:#fff;}
+  .switch-on{font-size:10px;color:var(--success);background:#e8f9ee;border-radius:9px;padding:1px 8px;font-weight:600;}
+
+  .spot-tag2{display:inline-block;background:var(--aou-6);color:#fff;font-size:10px;padding:2px 8px;border-radius:8px;font-weight:500;margin-bottom:10px;}
+
+  /* 新建卡弹窗 */
+  .modal-stage{position:absolute;inset:0;background:rgba(29,33,41,.28);display:flex;align-items:center;justify-content:center;padding:24px;}
+  .modal{width:100%;max-width:360px;background:var(--bg-base);border-radius:14px;border:1px solid var(--border);overflow:hidden;box-shadow:0 16px 48px rgba(29,33,41,.22);}
+  .modal-h{padding:16px 18px 4px;font-weight:600;font-size:15px;}
+  .modal-b{padding:8px 18px 12px;}
+  .flabel{font-size:11.5px;font-weight:600;color:var(--t2);margin:11px 0 5px;}
+  .flabel:first-child{margin-top:0;}
+  .finput{border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:12.5px;color:var(--t3);}
+  .frow{display:flex;gap:8px;}
+  .seg{display:flex;gap:6px;}
+  .seg span{border:1px solid var(--border);border-radius:7px;padding:4px 11px;font-size:11.5px;color:var(--t3);cursor:pointer;}
+  .seg span.on{border-color:var(--aou-6);background:var(--aou-1);color:var(--aou-7);font-weight:600;}
+  .modal-f{padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:9px;}
+
+  /* overview */
+  .ov{max-width:880px;margin:0 auto;}
+  .ov h2{font-size:19px;margin:0 0 4px;}
+  .ov .lead{color:var(--t3);font-size:13px;margin-bottom:20px;}
+  .ov h3{font-size:14px;margin:22px 0 9px;color:var(--t1);border-left:3px solid var(--aou-6);padding-left:9px;}
+  .ov table{width:100%;border-collapse:collapse;margin:8px 0;font-size:12.5px;}
+  .ov th,.ov td{border:1px solid var(--border);padding:7px 10px;text-align:left;vertical-align:top;}
+  .ov th{background:var(--bg-2);font-weight:600;}
+  .ov code{font-family:ui-monospace,monospace;background:var(--bg-2);padding:1px 5px;border-radius:4px;font-size:11.5px;color:var(--aou-7);}
+  .erd{background:var(--bg-1);border:1px solid var(--border);border-radius:10px;padding:16px;font-family:ui-monospace,monospace;font-size:12px;line-height:1.9;color:var(--t2);overflow:auto;}
+  .erd b{color:var(--aou-7);}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-row phases"><a href="../index.html" style="font-size:13px;color:var(--aou-7);text-decoration:none;white-space:nowrap;">← 文档首页</a><span style="color:var(--border);">|</span><span class="doc-title">任务看板 · Kanban · 线框图</span></div>
+  <div class="feat-tabs" id="featTabs"></div>
+</div>
+<div class="split" id="split">
+  <div class="left" id="left"></div>
+  <div class="right" id="right"></div>
+</div>
+
+<script>
+/* ====== 外壳：对话页 ====== */
+function shell(inner){
+  return `<div class="app">
+    <div class="titlebar"><span class="tb-dots"><i class="r"></i><i class="y"></i><i class="g"></i></span>
+      <span class="tb-ico">☰</span><span class="tb-brand">AionUi</span><span class="tb-ico">⤢</span></div>
+    <div class="body">
+      <div class="sider"><div class="logo"><span class="sq"></span>AionUi</div>
+        <div class="si"><span class="di">＋</span>新建会话</div>
+        <div class="si"><span class="di">🔍</span>搜索</div>
+        <div class="si-div"></div>
+        <div class="si-grp">📁 AionUi 工作区</div>
+        <div class="si on">重构方案讨论</div>
+        <div class="si">补充单元测试</div>
+        <div class="si">修复登录 bug</div>
+        <div class="si-sp"></div>
+        <div class="si"><span class="di">⚙️</span>设置</div>
+      </div>
+      <div class="main" style="flex:1;min-width:0;overflow:hidden;">${inner}</div></div></div>`;
+}
+
+/* 右侧面板 tabs */
+function panelTabs(active){
+  const t=[['文件',''],['变更',''],['任务','task']];
+  return `<div class="panel-tabs">`+t.map(x=>`<span class="${x[1]==='task'?'on':''}">${x[0]}</span>`).join('')+`</div>`;
+}
+
+/* 一张卡（窄面板版） */
+function card(id,title,pri,cre,creName,drag){
+  const pm={low:['low','Low'],med:['med','Medium'],high:['high','High']}[pri];
+  return `<div class="card${drag?' drag':''}"><div class="ci">${id}</div>
+    <div class="ct">${title}</div>
+    <div class="cf"><span class="pri ${pm[0]}">${pm[1]}</span>
+      <span class="cre"><span class="cd ${cre}"></span>${creName}</span></div></div>`;
+}
+
+/* 看板（窄面板，纵向堆列） */
+function boardNarrow(opt){
+  opt=opt||{};
+  const ipExtra = opt.moved ? card('TASK-2','拆分 Sider 子组件','high','claude','Claude',true) : '';
+  return `<div class="col">
+      <div class="col-h"><span class="col-dot bl"></span>Backlog<span class="col-cnt">2</span></div>
+      ${card('TASK-6','适配暗色主题','low','user','我')}
+      ${card('TASK-4','补充单元测试','med','user','我')}
+    </div>
+    <div class="col">
+      <div class="col-h"><span class="col-dot td"></span>Todo<span class="col-cnt">2</span></div>
+      ${card('TASK-5','替换 SearchBar 为 Arco Input.Search','med','claude','Claude')}
+      ${card('TASK-1','创建侧栏重构助手','low','gemini','Gemini')}
+    </div>
+    <div class="col">
+      <div class="col-h"><span class="col-dot ip"></span>In Progress<span class="col-cnt">${opt.moved?2:1}</span></div>
+      ${opt.moved?ipExtra:''}
+      ${card('TASK-3','拆分 PeopleSection / FooterSection','high','claude','Claude')}
+    </div>
+    <div class="col">
+      <div class="col-h"><span class="col-dot dn"></span>Done<span class="col-cnt">1</span></div>
+      ${card('TASK-0','分析 Sider 目录结构','low','claude','Claude')}
+    </div>`;
+}
+
+/* 对话内容（默认） */
+function convMsgs(extra){
+  return `<div class="conv-b">
+    <div class="msg u">把侧栏重构拆成几个任务，放到看板上。</div>
+    <div class="msg a">好的，我拆成 4 个任务：分析目录、拆 PeopleSection、替换 SearchBar、适配暗色主题。已建到看板。</div>
+    ${extra||`
+    <div class="sysline"><span class="si2">📋</span>已创建 4 个任务（TASK-3 ~ TASK-6）</div>
+    <div class="msg u">先做拆分那条吧。</div>
+    <div class="msg a">好，我把 TASK-2 移到「进行中」。</div>
+    <div class="sysline"><span class="si2">📋</span>已将 TASK-2 移至「进行中」</div>`}
+  </div>`;
+}
+
+/* ====== 场景：默认看板（面板打开任务 Tab） ====== */
+function sBoard(opt){
+  opt=opt||{};
+  const panelInner = opt.empty ? `
+    <div class="empty">
+      <div class="ei">📋</div>
+      <div class="eh">这个工作区还没开启看板</div>
+      <div class="ed">开启后，你和助手都能在这块「工作区共享」的看板上管理任务进度。</div>
+      <span class="btn pri-b sm">＋ 开启看板模式</span>
+    </div>` : `
+    <div class="panel-head"><span class="pt">AionUi · 任务</span>
+      <span class="ws-tag">工作区共享</span>
+      ${opt.on?'<span class="switch-on" style="margin-left:6px;">看板模式 · 已开启</span>':''}
+      <span class="add">＋</span></div>
+    <div class="panel-body">${boardNarrow(opt)}</div>`;
+  const inner=`<div class="conv-wrap">
+    <div class="conv"><div class="conv-h"><span class="av">🛠️</span><span class="nm">重构助手</span>
+      <span style="font-size:11px;color:var(--t4);margin-left:4px;">· Claude</span></div>
+      ${convMsgs(opt.simpleConv)}</div>
+    <div class="panel">${panelTabs('task')}${panelInner}</div>
+  </div>`;
+  let html=shell(inner);
+  if(opt.modal){
+    html=html.replace('</div></div></div>',
+      `</div></div>
+      <div class="modal-stage"><div class="modal">
+        <div class="modal-h">新建任务</div>
+        <div class="modal-b">
+          <div class="flabel">标题</div><div class="finput">补充设置页的单元测试</div>
+          <div class="flabel">描述（可选）</div><div class="finput" style="min-height:40px;">覆盖 SettingsSider 与持久化逻辑</div>
+          <div class="frow"><div style="flex:1;"><div class="flabel">优先级</div>
+            <div class="seg"><span>Low</span><span class="on">Medium</span><span>High</span></div></div>
+            <div style="flex:1;"><div class="flabel">所在列</div>
+            <div class="seg"><span class="on">Backlog</span><span>Todo</span></div></div></div>
+        </div>
+        <div class="modal-f"><span class="btn sm">取消</span><span class="btn sm pri-b">创建</span></div>
+      </div></div></div>`);
+  }
+  return html;
+}
+
+/* ====== 总览 ====== */
+function sOverview(){
+  return `<div class="ov">
+    <h2>任务看板 · Kanban</h2>
+    <div class="lead">给 AionUi 一块「工作区级的任务看板」，人和 AI 助手共同维护，跟踪"在同一个工作台里处理的多种活"的整体进度。</div>
+
+    <h3>要解决的问题</h3>
+    <p>非典型开发用户在同一个工作台跨多个对话做多种事，但<b>进度被一条条对话切碎</b>，没有一个地方看到"我这摊事整体到哪了"。助手单次对话里的临时计划，关掉就散，不持久、不能跨对话回看、用户也管不了。</p>
+
+    <h3>核心设计</h3>
+    <table>
+      <tr><th>维度</th><th>结论</th></tr>
+      <tr><td>实现形态</td><td>一套<b>各 CLI 通用的任务能力</b>（建/改/移卡）；底层用 Claude/Gemini/Qwen 都能维护同一块板。技术形态（如 MCP）交由技术定</td></tr>
+      <tr><td>层级</td><td><b>工作区级</b>，一个工作区一块板 → 同工作区所有对话看到同一块板，进度有全貌</td></tr>
+      <tr><td>入口</td><td>对话页右侧面板第三个 Tab「<b>任务</b>」，与「文件」「变更」并列，标明工作区共享</td></tr>
+      <tr><td>模式开关</td><td><b>工作区级开关</b>。开=助手拿到任务能力；关=收走能力，<b>数据不删</b></td></tr>
+      <tr><td>共管</td><td>用户与助手都能建/改/拖卡；每卡记 <b>creator</b> 区分谁建的</td></tr>
+    </table>
+
+    <h3>看板形态</h3>
+    <table>
+      <tr><th>要素</th><th>说明</th></tr>
+      <tr><td>列（状态）</td><td>Backlog · Todo · In Progress · Done</td></tr>
+      <tr><td>任务卡字段</td><td>编号 · 标题 · 描述 · 优先级（Low/Med/High）· creator · owner</td></tr>
+    </table>
+
+    <h3>实体关系</h3>
+    <div class="erd"><b>WORKSPACE</b> ||--|| <b>KANBAN</b>      : 一个工作区一块板
+<b>KANBAN</b>    ||--o{ <b>TASK_CARD</b>   : 包含多张任务卡
+<b>WORKSPACE</b> ||--o{ <b>CONVERSATION</b>: 下含多个对话
+<b>CONVERSATION</b> }o--|| <b>KANBAN</b>   : 共享同一块板
+<b>TASK_CARD</b> }o--|| <b>CREATOR</b>     : 由某身份创建
+
+现状衔接：已有团队任务表（状态/负责人/依赖）结构与任务卡高度一致，可泛化复用，避免两套任务系统。</div>
+  </div>`;
+}
+
+/* ====== 功能点 ====== */
+const FEATS=[
+  {id:'ov',code:'',name:'总览',full:true,render:sOverview,req:null},
+
+  {id:'f01',code:'F-KANBAN-01',name:'看板入口',
+   render:()=>sBoard({on:true}),
+   req:{title:'看板入口：对话页右侧面板的「任务」Tab',
+    story:'作为用户，我在对话里干活时，想抬眼就能看到这摊活的任务进度，而不用跳到别的页面。',
+    now:'对话页右侧面板已有「文件」「变更」两个 Tab，没有承载任务的地方；助手的临时计划只在消息流里，关掉就没了。',
+    need:['右侧面板新增第三个 Tab「任务」，与「文件」「变更」并列，点开即当前工作区的看板。',
+      'Tab 顶部标注这块板是<b>当前工作区共享</b>（如"AionUi · 任务"），不是这条对话私有。',
+      '同一工作区任意对话打开此 Tab，看到的是<b>同一块板</b>。',
+      'Tab 始终常驻；未开启模式时显示空状态 ＋ 开启引导。'],
+    ac:['右侧面板有「任务」Tab，与「文件」「变更」并列',
+      'Tab 内标明该板为当前工作区共享',
+      '同一工作区不同对话打开「任务」Tab，看到同一块板']}},
+
+  {id:'f02',code:'F-KANBAN-02',name:'模式开关',
+   render:()=>sBoard({empty:true,simpleConv:`
+     <div class="msg u">这个项目挺多事的，能帮我盯着点进度吗？</div>
+     <div class="msg a">可以。右边「任务」开启看板模式后，我就能帮你把任务建到看板上、推进时更新状态。</div>`}),
+   req:{title:'看板模式开关（工作区级）',
+    story:'作为用户，我只想简单问个问题时，不希望助手煞有介事地建一堆任务；要用时再开。',
+    now:'',
+    need:['看板由<b>工作区级开关</b>控制。',
+      '<b>开启</b>：助手获得任务能力 ＋ 被提示合适时机把任务写上板；Tab 进入可用。',
+      '<b>关闭</b>：助手不再拥有任务能力、不会建任务；Tab 仍在显示引导；<b>板上已有数据不删</b>。',
+      '开关作用于整个工作区：开启后其下所有对话都进入看板模式。'],
+    flow:['用户在「任务」Tab 看到引导，点「开启看板模式」','该工作区进入看板模式，助手获得任务能力','之后该工作区任意对话中助手都可维护看板'],
+    exc:['关闭模式：Tab 变引导态，板与卡数据保留，助手不再操作','重新开启：数据原样恢复可用'],
+    ac:['看板由工作区级开关控制，开启后该工作区所有对话进入看板模式',
+      '关闭后助手不再拥有任务能力、不会建任务',
+      '关闭不删除已有板与卡片；重新开启数据原样可用']}},
+
+  {id:'f03',code:'F-KANBAN-03',name:'列与任务卡',
+   render:()=>sBoard({on:true}),
+   req:{title:'看板的列与任务卡',
+    story:'作为用户，我希望一眼看清哪些待办、哪些在做、哪些做完了。',
+    now:'',
+    need:['看板按状态分列，固定四列：<b>Backlog / Todo / In Progress / Done</b>。',
+      '每张任务卡展示：编号（TASK-5）＋ 标题 ＋ 描述（可选）＋ 优先级 ＋ 创建者标识。'],
+    tableH:['字段','含义','取值'],
+    table:[['标题','任务名','文本'],['描述','说明','文本（可选）'],['状态','所在列','Backlog/Todo/In Progress/Done'],
+      ['优先级','紧急程度','Low/Medium/High'],['creator','谁建的','用户/某助手'],['owner','归谁干','用户/某助手（团队）']],
+    ac:['看板有 Backlog/Todo/In Progress/Done 四列',
+      '任务卡展示编号、标题、描述、优先级、创建者',
+      '卡片数据包含上述全部字段']}},
+
+  {id:'f04',code:'F-KANBAN-04',name:'助手建/改卡',
+   render:()=>sBoard({on:true,moved:true}),
+   req:{title:'助手自动建/改任务卡',
+    story:'作为用户，我和助手商定一份清单后，希望它自己把任务建上板、推进时更新状态，而不用我手动一条条录。',
+    now:'',
+    need:['看板模式开启时，助手可通过任务能力<b>创建、修改、移动</b>任务卡。',
+      '典型：商定清单后助手建到 Backlog/Todo；推进时把卡从 Todo→In Progress→Done。',
+      '建/改卡通过通用任务能力完成，底层不论哪个 CLI 都一致。',
+      '助手创建的卡，creator 标记为对应助手身份。'],
+    flow:['用户："帮我把这周要做的拆成任务"','助手确认清单后逐条建卡到 Todo','对话流出现轻量提示"已创建 N 个任务"','推进中助手把完成的卡移到 Done'],
+    exc:['模式未开启：助手没有任务能力、不建卡，可提示用户先开启','助手建错：用户可手动改或删（F-KANBAN-05）'],
+    ac:['模式开启时助手能创建/修改/移动任务卡',
+      '助手创建的卡 creator 标记为对应助手',
+      '模式关闭时助手不会建卡']}},
+
+  {id:'f05',code:'F-KANBAN-05',name:'用户管卡',
+   render:()=>sBoard({on:true,modal:true}),
+   req:{title:'用户手动管理任务卡',
+    story:'作为用户，助手建错或漏了，我得能自己上手加、改、拖、删。',
+    now:'',
+    need:['用户可在看板上直接管理卡片，与助手共管同一块板：',
+      '<b>建</b>：手动新增（标题、描述、优先级、所在列）。',
+      '<b>改</b>：编辑内容、调整优先级。',
+      '<b>移</b>：拖动卡片在列间流转（改状态）。',
+      '<b>删</b>：删除任务卡。',
+      '用户手动建的卡，creator 标记为"用户"。'],
+    ac:['用户可手动新增、编辑、拖动、删除任务卡',
+      '用户手动建的卡 creator 标记为用户',
+      '用户与助手对同一块板的改动都即时反映在看板上']}},
+
+  {id:'f06',code:'F-KANBAN-06',name:'操作可见性',
+   render:()=>sBoard({on:true,moved:true}),
+   req:{title:'助手操作看板时的对话内可见性',
+    story:'作为用户，助手动我的看板时我想知道，而不是它悄悄改。',
+    now:'',
+    need:['助手建/改/移卡时，在对话流留下一条<b>轻量、可见但不打断</b>的提示（"已创建任务 TASK-5：…""已将 TASK-3 移至进行中"）。',
+      '目的是建立信任 —— 用户能感知助手在动看板。',
+      '提示轻量，不要求确认、不阻断对话。'],
+    ac:['助手建/改/移卡时，对话流出现对应的轻量提示',
+      '该提示不打断对话、不要求用户操作']}},
+
+  {id:'f07',code:'F-KANBAN-07',name:'空状态',
+   render:()=>sBoard({empty:true}),
+   req:{title:'未开启模式的空状态',
+    story:'作为新用户，看板还没开时，我想知道这地方是干嘛的、怎么开。',
+    now:'',
+    need:['工作区未开启看板模式时，「任务」Tab 显示空状态，说明这块板是什么，并提供开启入口。',
+      '文案：这是当前工作区共享的任务看板，开启后你和助手都能在这里管理任务进度。',
+      '提供「开启看板模式」按钮（对应 F-KANBAN-02）。'],
+    ac:['未开启模式时「任务」Tab 显示空状态及说明',
+      '空状态提供「开启看板模式」入口',
+      '开启后进入正常看板视图']}},
+];
+
+/* ====== 渲染右侧需求 ====== */
+function renderReq(r){
+  if(!r) return '';
+  let h=`<div class="req"><h2>${r.title}</h2><div class="flags"><span class="badge new">新增</span></div>`;
+  if(r.story) h+=`<div class="story">${r.story}</div>`;
+  if(r.now) h+=`<h3>现状</h3><p>${r.now}</p>`;
+  h+=`<h3>需求</h3><ul>`+r.need.map(n=>`<li>${n}</li>`).join('')+`</ul>`;
+  if(r.table){h+=`<table><tr>`+r.tableH.map(x=>`<th>${x}</th>`).join('')+`</tr>`+
+    r.table.map(row=>`<tr>`+row.map(c=>`<td>${c}</td>`).join('')+`</tr>`).join('')+`</table>`;}
+  if(r.flow){h+=`<h3>正常流程</h3><ul>`+r.flow.map((f,i)=>`<li>${i+1}. ${f}</li>`).join('')+`</ul>`;}
+  if(r.exc){h+=`<h3>异常情况</h3><ul>`+r.exc.map(e=>`<li>${e}</li>`).join('')+`</ul>`;}
+  h+=`<h3>验收标准</h3><div class="ac">`+r.ac.map(a=>`<div>${a}</div>`).join('')+`</div></div>`;
+  return h;
+}
+
+/* ====== 控制器 ====== */
+const tabsEl=document.getElementById('featTabs');
+const splitEl=document.getElementById('split');
+const leftEl=document.getElementById('left');
+const rightEl=document.getElementById('right');
+let cur='ov';
+function build(){
+  tabsEl.innerHTML=FEATS.map(f=>`<button class="feat-btn ${f.id===cur?'on':''}" data-id="${f.id}">
+    ${f.code?`<span class="fc">${f.code}</span>`:''}${f.name}</button>`).join('');
+  tabsEl.querySelectorAll('.feat-btn').forEach(b=>b.onclick=()=>{cur=b.dataset.id;build();});
+  const f=FEATS.find(x=>x.id===cur);
+  leftEl.innerHTML=f.render();
+  if(f.full){splitEl.classList.add('full');rightEl.innerHTML='';}
+  else{splitEl.classList.remove('full');rightEl.innerHTML=renderReq(f.req);}
+}
+build();
+</script>
+</body>
+</html>

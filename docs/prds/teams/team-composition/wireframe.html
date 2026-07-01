@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>团队组建 · 多助手成员 · 线框图</title>
+<style>
+  :root{
+    --bg-base:#ffffff; --bg-1:#f9fafb; --bg-2:#f2f3f5; --bg-3:#e5e6eb;
+    --t1:#1d2129; --t2:#454d5f; --t3:#86909c; --t4:#c9cdd4;
+    --border:#e5e6eb; --border-light:#f2f3f5;
+    --aou-1:#eff0f6; --aou-2:#e5e7f0; --aou-6:#7583b2; --aou-7:#596590;
+    --primary:#165dff; --success:#00b42a; --warning:#ff7d00; --danger:#f53f3f;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg-2); color:var(--t1); font-size:13px; line-height:1.5;
+    display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+
+  .topbar{flex:0 0 auto;background:var(--bg-base);border-bottom:1px solid var(--border);}
+  .topbar-row{display:flex;align-items:center;gap:8px;padding:8px 14px;}
+  .topbar-row.phases{border-bottom:1px solid var(--border-light);}
+  .doc-title{font-weight:600;font-size:13px;color:var(--aou-7);margin-right:8px;white-space:nowrap;}
+  .feat-tabs{display:flex;align-items:center;gap:2px;padding:7px 14px;overflow-x:auto;}
+  .feat-btn{flex:0 0 auto;border:none;background:transparent;cursor:pointer;padding:5px 10px;border-radius:7px;
+    font-size:12px;color:var(--t3);white-space:nowrap;}
+  .feat-btn:hover{background:var(--bg-2);}
+  .feat-btn.on{background:var(--aou-1);color:var(--aou-7);font-weight:600;}
+  .feat-btn .fc{font-family:ui-monospace,monospace;font-size:10.5px;opacity:.65;margin-right:4px;}
+
+  .split{flex:1 1 auto;display:flex;min-height:0;}
+  .left{flex:1 1 60%;min-width:0;overflow:auto;padding:24px;background:var(--bg-2);}
+  .right{flex:0 0 40%;max-width:540px;min-width:0;overflow:auto;background:var(--bg-base);border-left:1px solid var(--border);padding:24px 26px;}
+  .split.full .left{flex:1 1 100%;}
+  .split.full .right{display:none;}
+  @media(max-width:920px){.split{flex-direction:column;}.right{flex:none;max-width:none;border-left:none;border-top:1px solid var(--border);}}
+
+  .req h2{font-size:17px;margin:3px 0 0;}
+  .req .flags{margin:9px 0 16px;display:flex;gap:6px;}
+  .badge{display:inline-block;font-size:11px;padding:2px 9px;border-radius:20px;font-weight:500;}
+  .badge.new{background:#e8f9ee;color:#0a8a2c;}
+  .badge.mod{background:#fff3e0;color:#cc7000;}
+  .req h3{font-size:12px;margin:20px 0 7px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+  .req p,.req li{font-size:13px;color:var(--t2);}
+  .req ul{margin:6px 0;padding-left:18px;}
+  .req li{margin-bottom:5px;}
+  .story{background:var(--aou-1);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--t2);margin:2px 0 4px;}
+  .story b{color:var(--aou-7);}
+  .ac div{font-size:12.5px;color:var(--t2);padding:3px 0 3px 22px;position:relative;}
+  .ac div:before{content:"";position:absolute;left:4px;top:8px;width:11px;height:11px;border:1.5px solid var(--t4);border-radius:3px;}
+  .req table{width:100%;border-collapse:collapse;margin:8px 0;font-size:12px;}
+  .req th,.req td{border:1px solid var(--border);padding:6px 9px;text-align:left;vertical-align:top;}
+  .req th{background:var(--bg-2);font-weight:600;}
+
+  .app{position:relative;background:var(--bg-base);border:1px solid var(--border);border-radius:14px;overflow:hidden;
+    box-shadow:0 4px 20px rgba(29,33,41,.06);max-width:940px;margin:0 auto;}
+  .titlebar{height:36px;background:var(--bg-2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:12px;}
+  .tb-dots{display:flex;gap:7px;}
+  .tb-dots i{width:11px;height:11px;border-radius:50%;display:block;}
+  .tb-dots .r{background:#ff5f57;}.tb-dots .y{background:#febc2e;}.tb-dots .g{background:#28c840;}
+  .tb-ico{color:var(--t3);font-size:14px;}
+  .tb-brand{flex:1;text-align:center;font-weight:600;font-size:12.5px;color:var(--t2);}
+  .body{display:flex;height:560px;}
+  .sider{flex:0 0 168px;background:var(--bg-2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:10px 8px;}
+  .logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:14px;color:var(--aou-7);padding:5px 8px 12px;}
+  .logo .sq{width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--aou-6),var(--aou-7));}
+  .si{height:30px;display:flex;align-items:center;gap:8px;padding:0 10px;border-radius:8px;font-size:12.5px;color:var(--t2);cursor:pointer;font-weight:500;}
+  .si:hover{background:var(--bg-3);}
+  .si.on{background:var(--bg-3);font-weight:600;color:var(--t1);}
+  .si .di{width:16px;text-align:center;font-size:13px;color:var(--t3);}
+  .si-grp{font-size:11px;color:var(--t3);padding:10px 10px 3px;font-weight:600;display:flex;align-items:center;justify-content:space-between;}
+  .si-grp .add{color:var(--aou-7);cursor:pointer;font-size:14px;}
+  .si-sp{flex:1;}
+  .main{flex:1;min-width:0;background:var(--bg-base);overflow:hidden;}
+
+  /* 团队群聊：多窗口 + Tab 栏 */
+  .team{display:flex;flex-direction:column;height:100%;}
+  .tabbar{flex:0 0 auto;display:flex;align-items:center;gap:4px;height:44px;border-bottom:1px solid var(--border);padding:0 10px;background:var(--bg-1);}
+  .tab{display:flex;align-items:center;gap:7px;padding:6px 11px;border-radius:8px 8px 0 0;font-size:12.5px;color:var(--t2);cursor:pointer;position:relative;background:transparent;}
+  .tab.on{background:var(--bg-base);border:1px solid var(--border);border-bottom-color:var(--bg-base);color:var(--t1);font-weight:600;margin-bottom:-1px;}
+  .tab .mav{width:20px;height:20px;border-radius:6px;background:var(--aou-1);display:flex;align-items:center;justify-content:center;font-size:11px;position:relative;}
+  .tab.leader .mav:after{content:"";position:absolute;right:-3px;bottom:-3px;width:10px;height:10px;border-radius:50%;background:var(--success);border:1.5px solid #fff;}
+  .tab .x{color:var(--t4);font-size:12px;margin-left:2px;}
+  .tab .x:hover{color:var(--danger);}
+  .tabadd{width:28px;height:28px;border-radius:8px;border:1px dashed var(--t4);background:var(--bg-base);color:var(--aou-7);
+    display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex:0 0 auto;position:relative;}
+  .tabadd:hover{border-color:var(--aou-6);background:var(--aou-1);}
+  .slots{flex:1;display:flex;min-height:0;}
+  .slot{flex:1 1 0;min-width:0;border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--bg-base);}
+  .slot:last-child{border-right:none;}
+  .slot.leader{box-shadow:inset 3px 0 0 var(--primary);}
+  .slot-h{flex:0 0 auto;height:36px;display:flex;align-items:center;gap:7px;padding:0 11px;border-bottom:1px solid var(--border-light);font-size:12px;font-weight:600;}
+  .slot-h .mav{width:20px;height:20px;border-radius:6px;background:var(--aou-1);display:flex;align-items:center;justify-content:center;font-size:11px;position:relative;}
+  .slot-h .lead-badge{font-size:9px;background:#e8f9ee;color:#0a8a2c;border-radius:8px;padding:1px 7px;font-weight:600;}
+  .slot-b{flex:1;overflow:auto;padding:11px;display:flex;flex-direction:column;gap:9px;}
+  .msg{font-size:11.5px;line-height:1.5;padding:7px 10px;border-radius:10px;max-width:92%;}
+  .msg.a{align-self:flex-start;background:var(--bg-2);color:var(--t1);}
+  .msg.sys{align-self:center;font-size:10.5px;color:var(--aou-7);background:var(--aou-1);border:1px solid var(--aou-2);border-radius:16px;padding:4px 10px;text-align:center;}
+
+  /* 下拉选人（群聊加号） */
+  .dropdown{position:absolute;top:40px;right:10px;width:230px;background:var(--bg-base);border:1px solid var(--border);
+    border-radius:11px;box-shadow:0 12px 36px rgba(29,33,41,.16);z-index:10;overflow:hidden;}
+  .dd-search{padding:9px 11px;border-bottom:1px solid var(--border-light);font-size:12px;color:var(--t4);display:flex;align-items:center;gap:6px;}
+  .dd-list{max-height:230px;overflow:auto;padding:5px;}
+  .dd-item{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:8px;cursor:pointer;font-size:12.5px;color:var(--t1);}
+  .dd-item:hover{background:var(--bg-2);}
+  .dd-item .mav{width:24px;height:24px;border-radius:7px;background:var(--aou-1);display:flex;align-items:center;justify-content:center;font-size:12px;flex:0 0 auto;}
+  .dd-item .in-team{margin-left:auto;font-size:9.5px;color:var(--t4);background:var(--bg-2);border-radius:8px;padding:1px 6px;}
+  .dd-hint{padding:7px 11px;border-top:1px solid var(--border-light);font-size:10.5px;color:var(--t4);line-height:1.5;}
+
+  /* 创建团队弹窗 */
+  .modal-stage{position:absolute;inset:0;background:rgba(29,33,41,.30);display:flex;align-items:center;justify-content:center;padding:20px;}
+  .modal{width:100%;max-width:640px;background:var(--bg-base);border-radius:14px;overflow:hidden;box-shadow:0 20px 56px rgba(29,33,41,.28);}
+  .modal-h{padding:16px 20px 6px;}
+  .modal-h .mt{font-weight:600;font-size:16px;}
+  .modal-h .ms{font-size:12px;color:var(--t3);margin-top:3px;}
+  .modal-x{position:absolute;top:16px;right:18px;color:var(--t3);cursor:pointer;font-size:16px;}
+  .modal-cols{display:flex;gap:0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-top:10px;}
+  .mcol{flex:1 1 50%;padding:12px 14px;}
+  .mcol.l{border-right:1px solid var(--border);}
+  .mcol-h{font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.03em;margin-bottom:9px;}
+  .msearch{border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;color:var(--t4);margin-bottom:9px;display:flex;align-items:center;gap:6px;}
+  .avail{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:8px;cursor:pointer;font-size:12.5px;}
+  .avail:hover{background:var(--bg-2);}
+  .avail .mav{width:26px;height:26px;border-radius:7px;background:var(--aou-1);display:flex;align-items:center;justify-content:center;font-size:12px;flex:0 0 auto;}
+  .avail .ck{margin-left:auto;width:16px;height:16px;border-radius:5px;border:1.5px solid var(--t4);display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;}
+  .avail .ck.on{background:var(--aou-6);border-color:var(--aou-6);}
+  .selrow{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;font-size:12.5px;}
+  .selrow:hover{background:var(--bg-1);}
+  .selrow .mav{width:26px;height:26px;border-radius:7px;background:var(--aou-1);display:flex;align-items:center;justify-content:center;font-size:12px;flex:0 0 auto;position:relative;}
+  .selrow .nm{flex:1;min-width:0;}
+  .flag{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;color:var(--t4);}
+  .flag.on{color:var(--success);}
+  .selrow .rmv{color:var(--t4);cursor:pointer;font-size:13px;}
+  .selrow .rmv:hover{color:var(--danger);}
+  .mcol-h .cnt{color:var(--t4);font-weight:500;text-transform:none;}
+  .mform{padding:12px 14px;display:flex;flex-direction:column;gap:9px;}
+  .mfield{display:flex;align-items:center;gap:10px;}
+  .mfield .lab{font-size:12px;color:var(--t2);width:64px;flex:0 0 auto;}
+  .mfield .inp{flex:1;border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12.5px;color:var(--t3);}
+  .mfield .inp.ph{color:var(--t4);}
+  .modal-f{padding:12px 18px;display:flex;justify-content:flex-end;gap:9px;background:var(--bg-1);}
+  .btn{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);background:var(--bg-base);border-radius:8px;padding:6px 15px;font-size:12.5px;color:var(--t1);cursor:pointer;}
+  .btn:hover{background:var(--bg-1);}
+  .btn.pri{background:var(--aou-6);border-color:var(--aou-6);color:#fff;}
+  .sel-hint{font-size:10.5px;color:var(--t4);margin-top:8px;line-height:1.5;padding:8px;background:var(--bg-1);border-radius:8px;}
+
+  .spot-tag2{display:inline-block;background:var(--aou-6);color:#fff;font-size:10px;padding:2px 8px;border-radius:8px;font-weight:500;margin-bottom:10px;}
+
+  /* overview */
+  .ov{max-width:880px;margin:0 auto;}
+  .ov h2{font-size:19px;margin:0 0 4px;}
+  .ov .lead{color:var(--t3);font-size:13px;margin-bottom:20px;}
+  .ov h3{font-size:14px;margin:22px 0 9px;color:var(--t1);border-left:3px solid var(--aou-6);padding-left:9px;}
+  .ov table{width:100%;border-collapse:collapse;margin:8px 0;font-size:12.5px;}
+  .ov th,.ov td{border:1px solid var(--border);padding:7px 10px;text-align:left;vertical-align:top;}
+  .ov th{background:var(--bg-2);font-weight:600;}
+  .ov code{font-family:ui-monospace,monospace;background:var(--bg-2);padding:1px 5px;border-radius:4px;font-size:11.5px;color:var(--aou-7);}
+  .erd{background:var(--bg-1);border:1px solid var(--border);border-radius:10px;padding:16px;font-family:ui-monospace,monospace;font-size:12px;line-height:1.9;color:var(--t2);overflow:auto;}
+  .erd b{color:var(--aou-7);}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-row phases"><span class="doc-title">团队组建 · 多助手成员 · 线框图</span></div>
+  <div class="feat-tabs" id="featTabs"></div>
+</div>
+<div class="split" id="split">
+  <div class="left" id="left"></div>
+  <div class="right" id="right"></div>
+</div>
+
+<script>
+/* 外壳 */
+function shell(inner, opt){
+  opt=opt||{};
+  return `<div class="app">
+    <div class="titlebar"><span class="tb-dots"><i class="r"></i><i class="y"></i><i class="g"></i></span>
+      <span class="tb-ico">☰</span><span class="tb-brand">AionUi</span><span class="tb-ico">⤢</span></div>
+    <div class="body">
+      <div class="sider"><div class="logo"><span class="sq"></span>AionUi</div>
+        <div class="si"><span class="di">＋</span>新建会话</div>
+        <div class="si"><span class="di">🔍</span>搜索</div>
+        <div class="si-grp">团队 <span class="add">＋</span></div>
+        <div class="si ${opt.teamOn?'on':''}">🛠️ 开发攻坚小队</div>
+        <div class="si">📊 数据分析组</div>
+        <div class="si-sp"></div>
+        <div class="si"><span class="di">⚙️</span>设置</div>
+      </div>
+      <div class="main">${inner}</div></div></div>`;
+}
+
+/* 成员窗口 */
+function slot(icon,name,leader,msgs){
+  return `<div class="slot ${leader?'leader':''}">
+    <div class="slot-h"><span class="mav">${icon}</span>${name}${leader?'<span class="lead-badge">Leader</span>':''}</div>
+    <div class="slot-b">${msgs}</div>
+  </div>`;
+}
+
+/* 群聊场景 */
+function sTeam(opt){
+  opt=opt||{};
+  const tabs = [
+    ['🛠️','Cowork',true],
+    ['🎨','UI 设计师',false],
+    ['🧪','测试工程师',false],
+  ];
+  const extraTab = opt.added ? '<div class="tab"><span class="mav">🎨</span>UI 设计师<span class="x">✕</span></div>' : '';
+  const tabHtml = tabs.map((t,i)=>`<div class="tab ${i===0?'on':''} ${t[2]?'leader':''}">
+      <span class="mav">${t[0]}</span>${t[1]}${t[2]?'':'<span class="x">✕</span>'}</div>`).join('') + extraTab;
+
+  const slots = slot('🛠️','Cowork',true,`
+      <div class="msg sys">开发攻坚小队 · 3 位成员</div>
+      <div class="msg a">我来协调。@UI 设计师 先出方案，@测试工程师 准备用例。</div>`)
+    + slot('🎨','UI 设计师',false,`<div class="msg a">收到，正在画侧栏重构方案…</div>`)
+    + slot('🧪','测试工程师',false,`<div class="msg a">好的，我先列测试点。</div>`)
+    + (opt.added ? slot('🎨','UI 设计师',false,`<div class="msg sys">已加入团队</div><div class="msg a">我是第二个 UI 设计师，接手图标细节。</div>`) : '');
+
+  const dropdown = opt.dropdown ? `
+    <div class="dropdown">
+      <div class="dd-search">🔍 搜索助手…</div>
+      <div class="dd-list">
+        <div class="dd-item"><span class="mav">🎨</span>UI 设计师 <span class="in-team">已在团队</span></div>
+        <div class="dd-item"><span class="mav">📝</span>文档编写</div>
+        <div class="dd-item"><span class="mav">🔍</span>代码审查</div>
+        <div class="dd-item"><span class="mav">🛠️</span>Cowork <span class="in-team">已在团队</span></div>
+        <div class="dd-item"><span class="mav">🌐</span>翻译助手</div>
+      </div>
+      <div class="dd-hint">显示所有助手；同一助手可反复添加，各自成为独立成员。</div>
+    </div>` : '';
+
+  const inner = `<div class="team">
+    <div class="tabbar">${tabHtml}<div class="tabadd">＋</div>${dropdown}</div>
+    <div class="slots">${slots}</div>
+  </div>`;
+  return shell(inner,{teamOn:true});
+}
+
+/* 创建团队弹窗场景 */
+function sCreate(){
+  const avail=[['🛠️','Cowork',true],['🎨','UI 设计师',true],['🧪','测试工程师',true],['📝','文档编写',false],['🔍','代码审查',false],['🌐','翻译助手',false]];
+  const availHtml = avail.map(a=>`<div class="avail"><span class="mav">${a[0]}</span>${a[1]}<span class="ck ${a[2]?'on':''}">${a[2]?'✓':''}</span></div>`).join('');
+  const sel=[['🛠️','Cowork',true],['🎨','UI 设计师',false],['🧪','测试工程师',false]];
+  const selHtml = sel.map(s=>`<div class="selrow"><span class="mav">${s[0]}</span><span class="nm">${s[1]}</span>
+      <span class="flag ${s[2]?'on':''}" title="设为 Leader">⚑</span><span class="rmv">✕</span></div>`).join('');
+  const modal = `<div class="modal-stage"><div class="modal" style="position:relative;">
+    <span class="modal-x">✕</span>
+    <div class="modal-h"><div class="mt">新建团队</div><div class="ms">选择成员，并指定一个 Leader。同一助手可多次加入。</div></div>
+    <div class="modal-cols">
+      <div class="mcol l">
+        <div class="mcol-h">所有助手 (6)</div>
+        <div class="msearch">🔍 搜索助手…</div>
+        ${availHtml}
+      </div>
+      <div class="mcol">
+        <div class="mcol-h">已选成员 <span class="cnt">3 · ⚑ = Leader</span></div>
+        ${selHtml}
+        <div class="sel-hint">没有合适的助手当队员？创建后可让 Leader 在对话中创建临时队员。</div>
+      </div>
+    </div>
+    <div class="mform">
+      <div class="mfield"><span class="lab">团队名 *</span><span class="inp">开发攻坚小队</span></div>
+      <div class="mfield"><span class="lab">工作空间</span><span class="inp ph">（可选）选择文件夹　📁</span></div>
+    </div>
+    <div class="modal-f"><span class="btn">取消</span><span class="btn pri">确认创建</span></div>
+  </div></div>`;
+  return shell(modal,{});
+}
+
+/* 总览 */
+function sOverview(){
+  return `<div class="ov">
+    <h2>团队组建 · 多助手成员</h2>
+    <div class="lead">创建团队时一次选多个助手并指定一个 Leader；群聊过程中用一个加号快速补充更多成员。群聊界面保持现有多窗口形态不变。</div>
+
+    <h3>要解决的问题</h3>
+    <p>现状创建团队<b>只能选一个 Leader</b>，初始团队就一个人，其他成员得靠 Leader 在对话中动态生成；群聊里也<b>没有加人的界面入口</b>（底层有能力但点不到）。组建团队的控制权不在用户手里。</p>
+
+    <h3>核心设计：两个场景，两种交互重量</h3>
+    <table>
+      <tr><th>场景</th><th>交互</th><th>为什么</th></tr>
+      <tr><td>创建团队</td><td>成员管理弹窗：左选助手 / 右已选 / Leader 单选 / 团队名 / 工作空间</td><td>郑重配一个团队，一次定好人、队长、名字</td></tr>
+      <tr><td>群聊补人</td><td>Tab 栏尾部加号 → 下拉助手列表 → 点一个立刻拉进来</td><td>顺手加帮手，要清爽、一步到位</td></tr>
+    </table>
+
+    <h3>关键规则</h3>
+    <table>
+      <tr><th>规则</th><th>说明</th></tr>
+      <tr><td>成员可重复</td><td>同一助手可被多次加入，每次都是一个独立成员（独立对话、独立状态）</td></tr>
+      <tr><td>Leader</td><td>团队有且仅一个，创建时指定（第一个加入者默认，可切换）；群聊补入的都是队友</td></tr>
+      <tr><td>加号下拉</td><td>显示所有助手（含已在团队的），点一个即刻加入为队友</td></tr>
+      <tr><td>界面不动</td><td>群聊仍是多窗口 + Tab，本期只加"补人"入口</td></tr>
+    </table>
+
+    <h3>与现状衔接</h3>
+    <div class="erd"><b>TTeam</b>.assistants[]  ← 成员本就是数组（含 role: leader|teammate、slot_id、conversation_id、assistant_id）
+创建参数 <b>ICreateTeamParams</b>.assistants  ← 已接受成员列表（当前前端只塞了 1 个 Leader）
+<b>POST /api/teams/{id}/agents</b>  ← 加成员端点已存在（当前无 UI 入口）
+
+→ 本功能主要是把已有能力暴露到界面。技术确认：创建接口需能一次 spawn 多个成员。</div>
+
+    <h3>实体关系</h3>
+    <div class="erd"><b>TEAM</b> ||--o{ <b>TEAM_MEMBER</b> : 包含多个成员
+<b>TEAM_MEMBER</b> }o--|| <b>ASSISTANT</b> : 选自某助手（可重复）
+<b>TEAM_MEMBER</b> ||--|| <b>CONVERSATION</b> : 各对应一个对话窗口
+<b>TEAM</b> ||--|| <b>LEADER</b> : 有且仅一个 Leader</div>
+  </div>`;
+}
+
+const FEATS=[
+  {id:'ov',code:'',name:'总览',full:true,render:sOverview,req:null},
+
+  {id:'f01',code:'F-TEAM-01',name:'创建·多选+Leader',
+   render:()=>sCreate(),
+   req:{title:'创建团队：成员管理弹窗（多选 + 指定 Leader）',
+    story:'作为用户，我想一次把 A、B、C 三个助手组个队、指定 A 当头，而不是只能选一个头、其余靠它生成。',
+    now:'创建弹窗只让选一个助手当 Leader，团队初始只有一个人。',
+    need:['弹窗左侧：所有助手列表（可搜索），点击即加入右侧。',
+      '右侧：已选成员，可 ✕ 移除；Leader 单选（⚑），一个团队仅一个。',
+      '第一个加入的成员<b>自动 Leader</b>，可手动切换。',
+      '底部：团队名（必填）+ 工作空间（可选）+ 取消 / 确认。',
+      '同一助手可被多次点选，各成为独立成员。'],
+    flow:['点「＋ 新建团队」打开弹窗','左侧点选若干助手 → 右侧出现成员，首个自动 Leader','按需切换 Leader','填团队名 → 确认 → 进入群聊'],
+    exc:['未选成员 / 未填团队名：确认不可用','只选一人：允许（等于只有 Leader 的团队）'],
+    ac:['左侧可搜索、可多次点选加入右侧',
+      '右侧成员可移除、可单选 Leader',
+      '首个成员默认 Leader、可切换',
+      '同一助手可多次加入为独立成员',
+      '团队名必填；确认后按所选成员创建并进入群聊']}},
+
+  {id:'f02',code:'F-TEAM-02',name:'按所选成员建队',
+   render:()=>sTeam({}),
+   req:{title:'创建时按所选成员组建团队',
+    story:'作为用户，我在弹窗里选的几个人，确认后就该全都在群里，而不是只进来一个。',
+    now:'',
+    need:['确认时把右侧全部成员（含 Leader 标记）整体提交，一次组建含多成员的团队。',
+      '每个成员带：关联助手、角色（leader/teammate）、模型等。',
+      '创建后群聊出现全部成员窗口，Leader 居前。'],
+    flow:['弹窗选定 N 个成员并确认','系统按 N 个成员创建团队','进入群聊，N 个窗口并排，Leader 居前'],
+    exc:['某成员初始化失败：其余正常，失败者给出可感知状态（交由技术）'],
+    note:'技术确认：创建接口需一次接收并 spawn 多个成员（数据结构 assistants[] 已是数组）。',
+    ac:['确认后按全部成员创建，不再只建 Leader 一人',
+      '群聊出现全部成员窗口，Leader 居前',
+      '各成员助手/角色/模型配置正确带入']}},
+
+  {id:'f03',code:'F-TEAM-03',name:'群聊·加号补人',
+   render:()=>sTeam({dropdown:true}),
+   req:{title:'群聊中补人：Tab 栏加号 + 下拉选人',
+    story:'作为用户，群聊到一半想再拉个帮手，点个加号选一下人就该立刻进来，别再弹个大弹窗。',
+    now:'群聊界面没有加成员入口；底层有能力但没暴露。',
+    need:['群聊<b>成员 Tab 栏尾部</b>放一个加号。',
+      '点击后<b>直接下拉助手列表</b>（可搜索）——不复用创建弹窗、不问 Leader、不填别的。',
+      '点选一个助手 → <b>立刻</b>作为新队友加入，群聊出现其窗口。',
+      '下拉<b>显示所有助手</b>（含已在团队的），同一助手可反复添加为独立成员。',
+      '加进来的一律是队友，不改变已有 Leader。'],
+    flow:['Tab 栏尾部点加号','下拉出现助手列表（可搜索）','点选一个 → 立即加入为队友，出现其窗口'],
+    exc:['新成员初始化失败：给出可感知状态，不影响其他成员'],
+    ac:['Tab 栏尾部有加号入口',
+      '点击直接下拉助手列表，不复用创建弹窗',
+      '点选即刻加入为队友并出现窗口',
+      '下拉显示所有助手，同一助手可反复添加',
+      '新成员为队友，不改变 Leader']}},
+];
+
+function renderReq(r){
+  if(!r) return '';
+  let h=`<div class="req"><h2>${r.title}</h2><div class="flags"><span class="badge mod">改造</span></div>`;
+  if(r.story) h+=`<div class="story">${r.story}</div>`;
+  if(r.now) h+=`<h3>现状</h3><p>${r.now}</p>`;
+  h+=`<h3>需求</h3><ul>`+r.need.map(n=>`<li>${n}</li>`).join('')+`</ul>`;
+  if(r.flow){h+=`<h3>正常流程</h3><ul>`+r.flow.map((f,i)=>`<li>${i+1}. ${f}</li>`).join('')+`</ul>`;}
+  if(r.exc){h+=`<h3>异常情况</h3><ul>`+r.exc.map(e=>`<li>${e}</li>`).join('')+`</ul>`;}
+  if(r.note){h+=`<div class="story" style="background:var(--bg-1);color:var(--t3);">⚙ ${r.note}</div>`;}
+  h+=`<h3>验收标准</h3><div class="ac">`+r.ac.map(a=>`<div>${a}</div>`).join('')+`</div></div>`;
+  return h;
+}
+
+const tabsEl=document.getElementById('featTabs');
+const splitEl=document.getElementById('split');
+const leftEl=document.getElementById('left');
+const rightEl=document.getElementById('right');
+let cur='ov';
+function build(){
+  tabsEl.innerHTML=FEATS.map(f=>`<button class="feat-btn ${f.id===cur?'on':''}" data-id="${f.id}">
+    ${f.code?`<span class="fc">${f.code}</span>`:''}${f.name}</button>`).join('');
+  tabsEl.querySelectorAll('.feat-btn').forEach(b=>b.onclick=()=>{cur=b.dataset.id;build();});
+  const f=FEATS.find(x=>x.id===cur);
+  leftEl.innerHTML=f.render();
+  if(f.full){splitEl.classList.add('full');rightEl.innerHTML='';}
+  else{splitEl.classList.remove('full');rightEl.innerHTML=renderReq(f.req);}
+}
+build();
+</script>
+</body>
+</html>

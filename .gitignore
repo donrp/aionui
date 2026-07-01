@@ -173,6 +173,8 @@ desdoc/
 
 # Local kanban (协作工作簿，不入库)
 kanban/
+# 例外：Kanban 功能 PRD 文档需入库
+!docs/prds/workspaces/kanban/
 
 # E2E test artifacts (Playwright)
 tests/e2e/screenshots/
