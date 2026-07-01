@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>助手与 Agent 统一 · 线框图</title>
+<style>
+  :root{
+    /* 背景色阶 */
+    --bg-base:#ffffff; --bg-1:#f9fafb; --bg-2:#f2f3f5; --bg-3:#e5e6eb;
+    /* 文字 */
+    --t1:#1d2129; --t2:#454d5f; --t3:#86909c; --t4:#c9cdd4;
+    /* 边框 */
+    --border:#e5e6eb; --border-light:#f2f3f5;
+    /* 品牌 aou */
+    --aou-1:#eff0f6; --aou-2:#e5e7f0; --aou-6:#7583b2; --aou-7:#596590;
+    --agent-bar:#eaecf7;
+    /* 语义 */
+    --primary:#165dff; --success:#00b42a; --warning:#ff7d00; --danger:#f53f3f;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg-2); color:var(--t1); font-size:13px; line-height:1.5;
+    display:flex;flex-direction:column;height:100vh;overflow:hidden;
+  }
+
+  /* ===== 顶部导航：期 + 功能点 ===== */
+  .topbar{flex:0 0 auto;background:var(--bg-base);border-bottom:1px solid var(--border);}
+  .topbar-row{display:flex;align-items:center;gap:8px;padding:8px 14px;}
+  .topbar-row.phases{border-bottom:1px solid var(--border-light);}
+  .doc-title{font-weight:600;font-size:13px;color:var(--aou-7);margin-right:8px;white-space:nowrap;}
+  .phase-btn{flex:0 0 auto;border:1px solid var(--border);background:var(--bg-base);cursor:pointer;
+    padding:6px 14px;border-radius:8px;font-size:12.5px;color:var(--t2);white-space:nowrap;font-weight:500;}
+  .phase-btn:hover{background:var(--bg-2);}
+  .phase-btn.on{background:var(--aou-6);border-color:var(--aou-6);color:#fff;}
+  .feat-tabs{display:flex;align-items:center;gap:2px;padding:7px 14px;overflow-x:auto;}
+  .feat-btn{flex:0 0 auto;border:none;background:transparent;cursor:pointer;padding:5px 10px;border-radius:7px;
+    font-size:12px;color:var(--t3);white-space:nowrap;}
+  .feat-btn:hover{background:var(--bg-2);}
+  .feat-btn.on{background:var(--aou-1);color:var(--aou-7);font-weight:600;}
+  .feat-btn .fc{font-family:ui-monospace,monospace;font-size:10.5px;opacity:.65;margin-right:4px;}
+
+  /* ===== 左右分栏：左 wireframe / 右 需求 ===== */
+  .split{flex:1 1 auto;display:flex;min-height:0;}
+  .left{flex:1 1 58%;min-width:0;overflow:auto;padding:24px;background:var(--bg-2);}
+  .right{flex:0 0 42%;max-width:560px;min-width:0;overflow:auto;background:var(--bg-base);border-left:1px solid var(--border);padding:24px 26px;}
+  /* 总览：左侧占满、右侧隐藏 */
+  .split.full .left{flex:1 1 100%;}
+  .split.full .right{display:none;}
+  .req-head{margin-bottom:14px;}
+  .req-cols{display:flex;flex-direction:column;gap:0;}
+  .req-cols h3{margin-top:18px;}
+  .req-cols>div:first-child h3{margin-top:0;}
+  @media(max-width:920px){.split{flex-direction:column;}.right{flex:none;max-width:none;border-left:none;border-top:1px solid var(--border);}}
+
+  /* ===== 右侧需求文字 ===== */
+  .req .fcode{font-family:ui-monospace,monospace;font-size:12px;color:var(--aou-6);font-weight:600;}
+  .req h2{font-size:17px;margin:3px 0 0;}
+  .req .flags{margin:9px 0 16px;display:flex;gap:6px;}
+  .badge{display:inline-block;font-size:11px;padding:2px 9px;border-radius:20px;font-weight:500;}
+  .badge.new{background:#e8f9ee;color:#0a8a2c;}
+  .badge.mod{background:#fff3e0;color:#cc7000;}
+  .badge.keep{background:var(--bg-2);color:var(--t3);}
+  .badge.phase{background:var(--aou-1);color:var(--aou-7);}
+  .req h3{font-size:12px;margin:20px 0 7px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+  .req p,.req li{font-size:13px;color:var(--t2);}
+  .req ul{margin:6px 0;padding-left:18px;}
+  .req li{margin-bottom:5px;}
+  .story{background:var(--aou-1);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--t2);margin:2px 0 4px;}
+  .story b{color:var(--aou-7);}
+  .ac div{font-size:12.5px;color:var(--t2);padding:3px 0 3px 22px;position:relative;}
+  .ac div:before{content:"";position:absolute;left:4px;top:8px;width:11px;height:11px;border:1.5px solid var(--t4);border-radius:3px;}
+  .note{font-size:12px;color:var(--t3);background:var(--bg-1);border-radius:8px;padding:10px 12px;margin-top:12px;}
+  .req table{width:100%;border-collapse:collapse;margin:8px 0;font-size:12px;}
+  .req th,.req td{border:1px solid var(--border);padding:6px 9px;text-align:left;vertical-align:top;}
+  .req th{background:var(--bg-2);font-weight:600;}
+
+  /* ===== App 外壳 ===== */
+  .app{background:var(--bg-base);border:1px solid var(--border);border-radius:14px;overflow:hidden;
+    box-shadow:0 4px 20px rgba(29,33,41,.06);max-width:900px;margin:0 auto;}
+  .titlebar{height:36px;background:var(--bg-2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:12px;}
+  .tb-dots{display:flex;gap:7px;}
+  .tb-dots i{width:11px;height:11px;border-radius:50%;display:block;}
+  .tb-dots .r{background:#ff5f57;}.tb-dots .y{background:#febc2e;}.tb-dots .g{background:#28c840;}
+  .tb-ico{color:var(--t3);font-size:14px;}
+  .tb-brand{flex:1;text-align:center;font-weight:600;font-size:12.5px;color:var(--t2);}
+  .body{display:flex;height:540px;}
+  .sider{flex:0 0 210px;background:var(--bg-2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:10px 8px;}
+  .logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:14px;color:var(--aou-7);padding:5px 8px 12px;}
+  .logo .sq{width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--aou-6),var(--aou-7));}
+  .si{height:34px;display:flex;align-items:center;gap:9px;padding:0 10px;border-radius:8px;font-size:14px;color:var(--t2);cursor:pointer;font-weight:500;}
+  .si:hover{background:var(--bg-3);}
+  .si.on{background:var(--bg-3);font-weight:600;color:var(--t1);}
+  .si .di{width:20px;text-align:center;font-size:15px;color:var(--t3);}
+  .si.on .di{color:var(--aou-6);}
+  .si-div{height:1px;background:var(--border);margin:8px 6px;}
+  .si-grp{font-size:11px;color:var(--t3);padding:10px 10px 3px;font-weight:600;}
+  .si-sp{flex:1;}
+  .main{flex:1;min-width:0;background:var(--bg-base);overflow:auto;position:relative;}
+
+  /* 通用控件 */
+  .page{padding:22px 24px;max-width:660px;margin:0 auto;}
+  .ptitle{font-size:16px;font-weight:600;margin:0 0 3px;}
+  .pdesc{font-size:12.5px;color:var(--t3);margin:0 0 18px;}
+  .arco-tabs{display:flex;gap:20px;border-bottom:1px solid var(--border);margin-bottom:16px;}
+  .arco-tabs span{padding:7px 0;font-size:14px;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
+  .arco-tabs span.on{color:var(--primary);border-bottom-color:var(--primary);font-weight:500;}
+  .btn{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);background:var(--bg-base);
+    border-radius:8px;padding:6px 13px;font-size:13px;color:var(--t1);cursor:pointer;white-space:nowrap;}
+  .btn:hover{background:var(--bg-1);}
+  .btn.pri{background:var(--aou-6);border-color:var(--aou-6);color:#fff;}
+  .btn.pri:hover{background:var(--aou-7);}
+  .btn.sm{padding:4px 10px;font-size:12px;border-radius:6px;}
+  .btn.txt{border-color:transparent;background:transparent;color:var(--aou-7);padding:4px 6px;}
+  .link{color:var(--aou-7);cursor:pointer;font-size:12px;}
+  .link:hover{text-decoration:underline;}
+  .sect-h{font-size:12px;color:var(--t3);margin:16px 0 10px;font-weight:600;}
+
+  /* spotlight 高亮 */
+  .spot{position:relative;outline:2px solid var(--aou-6);outline-offset:3px;border-radius:10px;}
+  .spot-tag{position:absolute;top:-11px;left:10px;background:var(--aou-6);color:#fff;font-size:10px;
+    padding:2px 8px;border-radius:8px;z-index:3;font-weight:500;letter-spacing:.02em;}
+
+  /* Agent 卡片网格 */
+  .agrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .acard{min-height:150px;border:1px solid var(--border);border-radius:12px;padding:14px 12px;background:var(--bg-2);
+    display:flex;flex-direction:column;align-items:center;text-align:center;gap:9px;}
+  .acard:hover{border-color:var(--t4);}
+  .acard .av{width:40px;height:40px;border-radius:9px;background:var(--bg-base);display:flex;align-items:center;justify-content:center;font-size:21px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+  .acard .nm{font-size:13px;font-weight:600;}
+  .acard .st{font-size:11px;display:flex;align-items:center;gap:5px;justify-content:center;}
+  .dot{width:7px;height:7px;border-radius:50%;display:inline-block;}
+  .dot.ok{background:var(--success);}.dot.bad{background:var(--danger);}.dot.idle{background:var(--t4);}
+  .st.ok{color:var(--success);}.st.bad{color:var(--danger);}.st.idle{color:var(--t3);}
+  .info-i{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;
+    background:var(--danger);color:#fff;font-size:9px;cursor:help;margin-left:3px;font-style:normal;}
+  .acard .ft{margin-top:auto;}
+
+  /* 助手列表行 */
+  .arow{display:flex;align-items:center;gap:12px;border:1px solid var(--border);border-radius:8px;
+    padding:9px 14px;margin-bottom:8px;background:var(--bg-base);}
+  .arow:hover{background:var(--bg-1);}
+  .arow .grip{color:var(--t4);cursor:grab;font-size:15px;}
+  .arow .av{width:32px;height:32px;border-radius:8px;background:var(--aou-1);display:flex;align-items:center;justify-content:center;font-size:16px;}
+  .arow .info{flex:1;min-width:0;}
+  .arow .nm{font-size:14px;font-weight:500;display:flex;align-items:center;gap:6px;}
+  .arow .ds{font-size:12px;color:var(--t3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .arow .ops{display:flex;align-items:center;gap:10px;}
+  .tag{font-size:10px;padding:1px 7px;border-radius:10px;font-weight:500;}
+  .tag.official{background:var(--aou-1);color:var(--aou-7);}
+  .warn-i{color:var(--danger);font-size:13px;cursor:help;}
+  /* Switch */
+  .sw{width:36px;height:20px;border-radius:12px;background:var(--aou-6);position:relative;cursor:pointer;flex:0 0 auto;transition:.2s;}
+  .sw:after{content:"";position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:2px;right:2px;box-shadow:0 1px 2px rgba(0,0,0,.2);}
+  .sw.off{background:var(--t4);}.sw.off:after{right:auto;left:2px;}
+
+  /* 编辑页（全屏分区） */
+  .ep{display:flex;flex-direction:column;height:100%;}
+  .ep-bar{flex:0 0 auto;height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;padding:0 18px;}
+  .ep-back{color:var(--aou-7);cursor:pointer;font-size:13px;display:flex;align-items:center;gap:5px;}
+  .ep-title{font-weight:600;font-size:14px;}
+  .ep-body{flex:1;overflow:auto;padding:18px;max-width:620px;margin:0 auto;width:100%;}
+  .card{position:relative;border:1px solid var(--border);border-radius:12px;background:var(--bg-base);padding:15px 16px;margin-bottom:13px;}
+  .card-h{font-size:12px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.03em;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .legend{font-size:10px;border-radius:5px;padding:1px 7px;font-weight:500;text-transform:none;letter-spacing:0;}
+  .legend.now{background:#e8f9ee;color:#0a8a2c;}
+  .legend.next{background:#fff3e0;color:#cc7000;}
+  .ro-flag{font-size:10px;color:var(--t3);background:var(--bg-2);border-radius:5px;padding:1px 7px;margin-left:auto;font-weight:500;text-transform:none;letter-spacing:0;}
+  .row{display:flex;align-items:center;gap:12px;margin-bottom:11px;}
+  .row:last-child{margin-bottom:0;}
+  .lab{font-size:13px;color:var(--t2);width:78px;flex:0 0 auto;}
+  .field{flex:1;border:1px solid var(--border);border-radius:8px;padding:7px 11px;font-size:13px;background:var(--bg-base);color:var(--t1);}
+  .field.sel{display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
+  .field.sel .ar{color:var(--t3);}
+  .field.ro{background:var(--bg-2);color:var(--t3);}
+  .av-lg{width:42px;height:42px;border-radius:10px;background:var(--aou-1);display:flex;align-items:center;justify-content:center;font-size:20px;flex:0 0 auto;}
+  .hint{font-size:11.5px;color:var(--t4);margin:-4px 0 11px 90px;}
+  .txt-area{border:1px solid var(--border);border-radius:8px;padding:11px;font-size:13px;color:var(--t2);min-height:54px;background:var(--bg-base);}
+  .banner{background:var(--aou-1);border:1px solid var(--aou-2);border-radius:10px;padding:11px 13px;font-size:12.5px;color:var(--aou-7);margin-bottom:14px;line-height:1.6;}
+  .prompt-item{display:flex;align-items:center;gap:8px;font-size:13px;padding:6px 0;color:var(--t2);}
+  .prompt-item .num{color:var(--t4);}
+  .prompt-item .t{flex:1;}
+  /* 下拉多选 */
+  .dd{border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--bg-base);box-shadow:0 4px 16px rgba(0,0,0,.08);}
+  .dd-s{padding:8px 12px;border-bottom:1px solid var(--border-light);font-size:12.5px;color:var(--t4);}
+  .dd-i{display:flex;align-items:center;gap:10px;padding:8px 12px;font-size:13px;cursor:pointer;color:var(--t1);}
+  .dd-i:hover{background:var(--bg-2);}
+  .cb{width:16px;height:16px;border:1.5px solid var(--t4);border-radius:4px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;}
+  .cb.on{background:var(--aou-6);border-color:var(--aou-6);}
+  .dd-i .src{margin-left:auto;font-size:10px;color:var(--t4);}
+
+  /* 首页 */
+  .guid{padding:30px 24px;max-width:580px;margin:0 auto;text-align:center;}
+  .guid-h{font-size:17px;font-weight:600;margin-bottom:18px;}
+  .pillbar{display:flex;align-items:center;gap:4px;background:var(--agent-bar);border-radius:30px;padding:6px;position:relative;}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:20px;font-size:13px;color:var(--t2);cursor:pointer;white-space:nowrap;opacity:.62;}
+  .pill:hover{opacity:1;}
+  .pill .pi{font-size:17px;}
+  .pill.on{opacity:1;background:var(--bg-base);font-weight:600;color:var(--t1);box-shadow:0 1px 4px rgba(0,0,0,.1);}
+  .pill-more{margin-left:auto;color:var(--t2);cursor:pointer;padding:7px 11px;border-radius:18px;flex:0 0 auto;font-size:14px;}
+  .pill-more:hover{background:var(--bg-base);}
+  .inputcard{border:1px solid var(--border);border-radius:16px;padding:15px;margin-top:16px;text-align:left;background:var(--bg-base);box-shadow:0 1px 4px rgba(0,0,0,.04);}
+  .input-ph{color:var(--t4);font-size:13.5px;min-height:38px;}
+  .input-row{display:flex;align-items:center;gap:8px;margin-top:10px;}
+  .chip{border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-size:12px;color:var(--t2);background:var(--bg-base);cursor:pointer;}
+  .send{margin-left:auto;width:30px;height:30px;border-radius:50%;background:var(--aou-6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;}
+  .ws{font-size:11.5px;color:var(--t4);margin-top:8px;}
+  .prompts-lab{font-size:12px;color:var(--t3);margin:18px 0 9px;text-align:left;}
+  .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;}
+  .pchip{border:1px solid var(--border);border-radius:10px;padding:10px;font-size:12.5px;color:var(--t2);cursor:pointer;text-align:left;background:var(--bg-base);}
+  .pchip:hover{border-color:var(--aou-6);color:var(--t1);}
+
+  /* Modal（独立呈现，不套 app 外壳） */
+  .modal-stage{min-height:100%;display:flex;align-items:flex-start;justify-content:center;
+    background:repeating-linear-gradient(45deg,var(--bg-2),var(--bg-2) 12px,#eef0f3 12px,#eef0f3 24px);
+    padding:44px 24px;}
+  .modal{width:100%;max-width:480px;background:var(--bg-base);border-radius:16px;border:1px solid var(--border);overflow:hidden;box-shadow:0 16px 48px rgba(29,33,41,.22);}
+  .modal-h{padding:20px 24px 16px;font-weight:500;font-size:18px;display:flex;justify-content:space-between;align-items:center;}
+  .modal-x{color:var(--t3);cursor:pointer;font-size:16px;}
+  .modal-b{padding:4px 24px 20px;}
+  .modal-f{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;}
+  .flabel{font-size:12px;font-weight:600;color:var(--t2);margin:14px 0 6px;}
+  .flabel:first-child{margin-top:0;}
+  .fsub{font-size:11.5px;color:var(--t3);font-weight:400;margin-bottom:7px;}
+  .finput{border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:13px;color:var(--t4);}
+  .radio-list{border:1px solid var(--border);border-radius:10px;background:var(--bg-1);padding:6px;display:flex;flex-direction:column;gap:2px;}
+  .rrow{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:8px;cursor:pointer;font-size:13px;}
+  .rrow:hover{background:var(--bg-2);}
+  .rrow.on{background:var(--aou-1);}
+  .rrow.dis{opacity:.5;cursor:not-allowed;}
+  .rdot{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--t4);flex:0 0 auto;}
+  .rrow.on .rdot{border:5px solid var(--aou-6);}
+  .rrow .ic{width:22px;height:22px;border-radius:6px;background:var(--bg-2);display:flex;align-items:center;justify-content:center;font-size:13px;}
+  .rrow .gt{margin-left:auto;font-size:10.5px;color:var(--t4);}
+
+  /* overview */
+  .ov{max-width:880px;margin:0 auto;}
+  .ov h2{font-size:19px;margin:0 0 4px;}
+  .ov .lead{color:var(--t3);font-size:13px;margin-bottom:20px;}
+  .ov h3{font-size:14px;margin:22px 0 9px;color:var(--t1);border-left:3px solid var(--aou-6);padding-left:9px;}
+  .ov table{width:100%;border-collapse:collapse;margin:8px 0;font-size:12.5px;}
+  .ov th,.ov td{border:1px solid var(--border);padding:7px 10px;text-align:left;vertical-align:top;}
+  .ov th{background:var(--bg-2);font-weight:600;}
+  .ov code{font-family:ui-monospace,monospace;background:var(--bg-2);padding:1px 5px;border-radius:4px;font-size:11.5px;color:var(--aou-7);}
+  .ph-pill{display:inline-block;font-size:11px;padding:1px 8px;border-radius:10px;background:var(--aou-1);color:var(--aou-7);font-weight:500;}
+  .erd{background:var(--bg-1);border:1px solid var(--border);border-radius:10px;padding:16px;font-family:ui-monospace,monospace;font-size:11.5px;line-height:2;color:var(--t2);overflow:auto;}
+  .erd b{color:var(--aou-7);}
+</style>
+</head>
+<body>
+<div id="gate" style="position:fixed;inset:0;background:linear-gradient(135deg,#5b6597,#7583b2);display:flex;align-items:center;justify-content:center;z-index:9999;">
+  <div style="background:#fff;border-radius:16px;padding:36px 40px;width:340px;box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center;font-family:-apple-system,sans-serif;">
+    <div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#7583b2,#596590);margin:0 auto 16px;"></div>
+    <h1 style="font-size:17px;margin:0 0 6px;">助手与 Agent 统一</h1>
+    <p style="font-size:12.5px;color:#86909c;margin:0 0 20px;">线框图 · 请输入访问口令</p>
+    <input id="gpw" type="password" placeholder="口令" autocomplete="off" style="width:100%;border:1px solid #e5e6eb;border-radius:9px;padding:11px 13px;font-size:14px;outline:none;text-align:center;letter-spacing:2px;" />
+    <button id="genter" style="width:100%;margin-top:12px;border:none;background:#7583b2;color:#fff;border-radius:9px;padding:11px;font-size:14px;cursor:pointer;">进入</button>
+    <div id="gerr" style="color:#f53f3f;font-size:12px;margin-top:10px;min-height:16px;"></div>
+    <a href="./index.html" style="display:inline-block;margin-top:8px;font-size:12px;color:#86909c;">← 返回文档首页</a>
+  </div>
+</div>
+<script>
+(function(){var PW='aionui',g=document.getElementById('gate');
+  function ok(){try{sessionStorage.setItem('aionui_doc_ok','1');}catch(e){}g.style.display='none';}
+  if(sessionStorage.getItem('aionui_doc_ok')==='1'){ok();return;}
+  var p=document.getElementById('gpw'),e=document.getElementById('gerr');
+  function t(){if(p.value===PW)ok();else{e.textContent='口令不正确';p.value='';p.focus();}}
+  document.getElementById('genter').onclick=t;
+  p.addEventListener('keydown',function(ev){if(ev.key==='Enter')t();});p.focus();
+})();
+</script>
+<div class="topbar">
+  <div class="topbar-row phases">
+    <a href="./index.html" style="font-size:13px;color:var(--aou-7);text-decoration:none;margin-right:6px;white-space:nowrap;">← 文档首页</a>
+    <span style="color:var(--border);">|</span>
+    <span class="doc-title">助手与 Agent 统一 · 线框图</span>
+    <button class="phase-btn" data-ph="overview">总览</button>
+    <button class="phase-btn" data-ph="p1">一期 · 助手治理</button>
+    <button class="phase-btn" data-ph="p2">二期 · Agent 统一</button>
+    <button class="phase-btn" data-ph="p3">三期 · 官方热更</button>
+  </div>
+  <div class="feat-tabs" id="featTabs"></div>
+</div>
+<div class="split">
+  <div class="left" id="left"></div>
+  <div class="right" id="right"></div>
+</div>
+
+<script>
+/* ============ 外壳 ============ */
+function shell(inner, o){
+  o=o||{};
+  const items = o.settings ? `
+    <div class="si-grp">AI 核心</div>
+    <div class="si ${o.nav==='agent'?'on':''}"><span class="di">🧩</span>Agents</div>
+    <div class="si ${o.nav==='model'?'on':''}"><span class="di">🧠</span>Model</div>
+    <div class="si ${o.nav==='assistants'?'on':''}"><span class="di">💬</span>Assistants</div>
+    <div class="si ${o.nav==='cap'?'on':''}"><span class="di">⚡</span>Capabilities</div>
+    <div class="si-grp">应用</div>
+    <div class="si"><span class="di">🎨</span>Display</div>
+    <div class="si"><span class="di">ℹ️</span>About</div>
+    <div class="si-sp"></div>
+    <div class="si"><span class="di">←</span>返回</div>` : `
+    <div class="si"><span class="di">＋</span>新建会话</div>
+    <div class="si"><span class="di">🔍</span>搜索会话</div>
+    <div class="si-div"></div>
+    <div class="si-grp">最近</div>
+    <div class="si">客户调研整理</div>
+    <div class="si">周报草稿</div>
+    <div class="si">重构方案讨论</div>
+    <div class="si-sp"></div>
+    <div class="si"><span class="di">⚙️</span>设置</div>`;
+  return `<div class="app">
+    <div class="titlebar"><span class="tb-dots"><i class="r"></i><i class="y"></i><i class="g"></i></span>
+      <span class="tb-ico">☰</span><span class="tb-brand">${o.title||'AionUi'}</span><span class="tb-ico">⤢</span></div>
+    <div class="body"><div class="sider"><div class="logo"><span class="sq"></span>AionUi</div>${items}</div>
+      <div class="main">${inner}</div></div></div>`;
+}
+function tag(k,want){return k===want?'<span class="spot-tag">本特性</span>':'';}
+
+/* ============ 场景：Agent 管理页 ============ */
+function sAgent(spot){
+  const test=`<span class="btn sm">测试连接</span>`;
+  const cards=`<div class="agrid">
+    <div class="acard"><div class="av">🟦</div><div class="nm">AionCLI</div>
+      <div class="st ok"><span class="dot ok"></span>可用</div><div class="ft">${test}</div></div>
+    <div class="acard"><div class="av">🟧</div><div class="nm">Claude</div>
+      <div class="st ok"><span class="dot ok"></span>可用</div><div class="ft">${test}</div></div>
+    <div class="acard"><div class="av">🟩</div><div class="nm">Gemini</div>
+      <div class="st bad"><span class="dot bad"></span>不可用<i class="info-i" title="无法与 Gemini 建立连接。请检查是否已登录 / 版本是否兼容。">i</i></div>
+      <div class="ft">${test}</div></div>
+    <div class="acard"><div class="av">⬜</div><div class="nm">Codex</div>
+      <div class="st idle"><span class="dot idle"></span>未找到</div><div class="ft">${test}</div></div>
+  </div>`;
+  const wrapped = (spot==='avail'||spot==='test')
+    ? `<div class="spot"><span class="spot-tag">本特性</span>${cards}</div>` : cards;
+  return shell(`<div class="page">
+    <div class="ptitle">Agents</div>
+    <div class="arco-tabs"><span class="on">本地</span><span>远程</span></div>
+    <div class="pdesc">检测你电脑上安装的命令行 AI 工具，并查看它们是否可用。
+      ${spot==='custom'?'<span class="spot" style="display:inline-block;padding:2px 4px"><span class="spot-tag">本特性</span><span class="link">＋ 添加自定义 Agent</span></span>':'<span class="link">＋ 添加自定义 Agent</span>'}</div>
+    <div class="sect-h">已检测 Agent</div>${wrapped}
+  </div>`,{settings:true,nav:'agent',title:'设置'});
+}
+
+/* ============ 场景：自定义 Agent Modal（独立呈现） ============ */
+function sCustomAgent(){
+  return `<div class="modal-stage">
+    <div class="spot" style="width:100%;max-width:480px"><span class="spot-tag">本特性</span>
+      <div class="modal" style="max-width:none">
+        <div class="modal-h">添加自定义 Agent<span class="modal-x">✕</span></div>
+        <div class="modal-b">
+          <div class="banner">💡 不确定怎么填？直接问 AionCLI——把要接入的工具名告诉它，让它帮你查清启动命令、参数怎么配。<div style="margin-top:6px"><span class="link">去问 AionCLI →</span></div></div>
+          <div class="row"><div class="av-lg">🤖</div><div class="field" style="flex:1">Agent 名称</div></div>
+          <div class="flabel">启动命令</div><div class="finput">例如：my-cli</div>
+          <div class="flabel">参数</div><div class="finput">--acp</div>
+          <div class="flabel">环境变量</div>
+          <div class="row" style="margin-bottom:0"><div class="finput" style="flex:1">KEY</div><div class="finput" style="flex:1.3">VALUE</div><span class="btn sm">✕</span></div>
+        </div>
+        <div class="modal-f"><span class="btn">取消</span><span class="btn pri">保存</span></div>
+      </div></div></div>`;
+}
+
+/* ============ 场景：助手列表 ============ */
+function sList(spot){
+  function R(av,nm,ds,off,o){o=o||{};
+    const grip=`<span class="grip" style="${spot==='sort'?'':'opacity:.3'}">⠿</span>`;
+    const official=o.official?`<span class="tag official">官方</span>`:'';
+    const warn=o.warn?`<span class="warn-i" title="Agent 不可用，请检查">⚠</span>`:'';
+    const del=o.nodelete?'':`<span class="btn sm" style="color:var(--danger)">删除</span>`;
+    return `<div class="arow">${grip}<span class="av">${av}</span>
+      <span class="info"><span class="nm">${nm}${official?' '+official:''}${warn?' '+warn:''}</span><span class="ds">${ds}</span></span>
+      <span class="ops"><span class="sw ${off?'off':''}"></span><span class="btn sm">编辑</span>${del}</span></div>`;
+  }
+  let rows;
+  if(spot==='unavail'){
+    rows = R('🟩','Gemini 助手','所依赖的 Agent 当前不可用',false,{warn:true,nodelete:true})
+      + R('🟦','AionCLI','基于 AionCLI 的开箱即用助手',false,{nodelete:true})
+      + R('🤝','Cowork','多智能体协作助手',false,{official:true,nodelete:true})
+      + R('✍️','写作助手','帮你润色与改写文案',false,{});
+  } else {
+    rows = R('🟦','AionCLI','基于 AionCLI 的开箱即用助手',false,{nodelete:true})
+      + R('🤝','Cowork','多智能体协作助手',false,{official:true,nodelete:true})
+      + R('✍️','写作助手','帮你润色与改写文案',false,{})
+      + R('🔍','代码审查','审查代码、找出潜在问题',true,{});
+  }
+  const spotList=['list','switch','sort','unavail'].includes(spot);
+  const wrapped=spotList?`<div class="spot"><span class="spot-tag">本特性</span>${rows}</div>`:rows;
+  return shell(`<div class="page">
+    <div class="ptitle">Assistants</div>
+    <div class="pdesc" style="display:flex;justify-content:space-between;align-items:center">
+      <span>管理你的助手——拖拽排序、开关显隐、编辑或新建。</span><span class="btn pri sm">＋ 创建助手</span></div>
+    ${wrapped}
+    ${spot==='switch'?'<div class="note">开关控制助手是否出现在发起对话的候选里；关闭不影响它已服务的历史对话。裸助手、内置助手不可删除，只能用开关隐藏。</div>':''}
+    ${spot==='sort'?'<div class="note">拖拽行首的手柄调整顺序，即时影响首页助手列表的排列。</div>':''}
+  </div>`,{settings:true,nav:'assistants',title:'设置'});
+}
+
+/* ============ 场景：助手编辑页（全屏分区） ============ */
+function sEditor(spot){
+  const builtin = spot==='builtin';
+  const sc = k => spot===k?' spot':'';
+  const ro = t => `<div class="field ro">${t}</div>`;
+
+  const cardIdentity = `<div class="card${sc('identity')}">${tag(spot,'identity')}
+    <div class="card-h">身份 <span class="legend now">改动立即生效</span>${builtin?'<span class="ro-flag">🔒 只读</span>':''}</div>
+    <div class="row"><div class="av-lg">${builtin?'🤝':'✍️'}</div><div style="flex:1">
+      <div class="row"><div class="lab">名称</div>${builtin?ro('Cowork'):'<div class="field">写作助手</div>'}</div>
+      <div class="row"><div class="lab">描述</div>${builtin?ro('多智能体协作助手'):'<div class="field">帮你润色与改写文案</div>'}</div>
+    </div></div></div>`;
+
+  const cardPrompts = builtin?'':`<div class="card${sc('prompts')}">${tag(spot,'prompts')}
+    <div class="card-h">推荐提示词 <span class="legend now">改动立即生效</span><span class="btn sm" style="margin-left:auto">＋ 添加</span></div>
+    <div class="prompt-item"><span class="num">1.</span><span class="t">帮我把这段话改得更正式</span><span class="btn sm">编辑</span><span class="btn sm">删</span></div>
+    <div class="prompt-item"><span class="num">2.</span><span class="t">给这篇文章起 5 个标题</span><span class="btn sm">编辑</span><span class="btn sm">删</span></div>
+    <div class="prompt-item"><span class="num">3.</span><span class="t">检查这段文字的语法</span><span class="btn sm">编辑</span><span class="btn sm">删</span></div></div>`;
+
+  const cardEngine = `<div class="card">
+    <div class="card-h">引擎</div>
+    <div class="row"><div class="lab">主 Agent</div><div class="field sel">Claude <span class="ar">▾</span></div></div>
+    <div class="hint">决定下方默认模型 / 权限能选哪些值</div></div>`;
+
+  let cardDefault;
+  if(spot==='skills'||spot==='mcp'){
+    const isSkill=spot==='skills';
+    cardDefault=`<div class="card spot"><span class="spot-tag">本特性</span>
+      <div class="card-h">${isSkill?'默认技能':'默认 MCP'} <span class="legend next">仅对新会话生效</span>
+        <span class="link" style="margin-left:auto">${isSkill?'去技能中心 →':'去 MCP 设置 →'}</span></div>
+      <div class="row"><div class="lab">${isSkill?'默认技能':'默认 MCP'}</div><div class="field sel">已选 ${isSkill?'3':'1'} 项 <span class="ar">▾</span></div></div>
+      <div class="dd" style="margin-top:7px">
+        <div class="dd-s">🔍 搜索${isSkill?'技能':' MCP 服务'}…</div>
+        ${isSkill?`
+        <div class="dd-i"><span class="cb on">✓</span>文件操作</div>
+        <div class="dd-i"><span class="cb on">✓</span>网页浏览</div>
+        <div class="dd-i"><span class="cb on">✓</span>财报解析</div>
+        <div class="dd-i"><span class="cb"></span>代码解释器</div>
+        <div class="dd-i"><span class="cb"></span>翻译记忆库</div>`:`
+        <div class="dd-i"><span class="cb on">✓</span>Filesystem</div>
+        <div class="dd-i"><span class="cb"></span>GitHub</div>
+        <div class="dd-i"><span class="cb"></span>Postgres</div>`}
+      </div></div>`;
+  } else {
+    const on=(spot==='defaults'||spot==='pref');
+    cardDefault=`<div class="card${on?' spot':''}">${on?'<span class="spot-tag">本特性</span>':''}
+      <div class="card-h">默认配置 <span class="legend next">仅对新会话生效</span></div>
+      <div class="row"><div class="lab">默认模型</div><div class="field sel">暂不设置（自动记住上次）<span class="ar">▾</span></div></div>
+      <div class="hint">未设置时，以你最近一次用这个助手时选择的值作为下次默认。</div>
+      <div class="row"><div class="lab">默认权限</div><div class="field sel">暂不设置（自动记住上次）<span class="ar">▾</span></div></div>
+      <div class="row"><div class="lab">默认技能</div><div class="field sel">已选 3 项 <span class="ar">▾</span></div></div>
+      <div class="row"><div class="lab">默认 MCP</div><div class="field sel">已选 1 项 <span class="ar">▾</span></div></div></div>`;
+  }
+
+  const cardRules = `<div class="card">
+    <div class="card-h">规则 <span class="legend next">仅对新会话生效</span>${builtin?'<span class="ro-flag">🔒 只读</span>':'<span class="arco-tabs" style="margin-left:auto;margin-bottom:0;border:none"><span class="on" style="padding:0">编辑</span><span style="padding:0">预览</span></span>'}</div>
+    <div class="txt-area"${builtin?' style="color:var(--t3)"':''}>你是一个专业的中文写作助手，擅长…（Markdown）</div></div>`;
+
+  const builtinExtra = builtin?`<div class="card spot"><span class="spot-tag">本特性</span>
+    <div class="card-h">官方维护内容 <span class="ro-flag">🔒 只读</span></div>
+    <div class="row"><div class="lab">技能</div>${ro('网页浏览、代码解释器…')}</div>
+    <div class="row"><div class="lab">推荐提示词</div>${ro('共 3 条')}</div>
+    <div class="hint" style="margin-left:0">以上内容由官方维护、随版本更新，照常展示当前值但不可编辑。</div></div>`:'';
+
+  const banner = builtin?`<div class="banner${sc('builtin')}">${tag(spot,'builtin')}
+    ℹ️ 这是官方助手，会随版本更新持续优化。你可以更换它的引擎与默认模型 / 权限；若要自定义名称、规则、技能等内容，请点右上角「创建副本」。</div>`:'';
+
+  const blocks = builtin
+    ? `${banner}${cardIdentity}${cardEngine}${cardDefault}${cardRules}${builtinExtra}`
+    : `${cardIdentity}${cardPrompts}${cardEngine}${cardDefault}${cardRules}`;
+
+  const right = builtin
+    ? `<span class="btn pri sm">基于此助手创建副本</span>`
+    : `<span class="btn sm">取消</span><span class="btn pri sm">保存</span>`;
+
+  return shell(`<div class="ep">
+    <div class="ep-bar"><span class="ep-back">← 返回</span>
+      <span class="ep-title">${builtin?'Cowork':'写作助手'}</span>
+      <span style="margin-left:auto;display:flex;gap:8px">${right}</span></div>
+    <div class="ep-body">${blocks}</div></div>`,{settings:true,nav:'assistants',title:'设置'});
+}
+
+/* ============ 场景：首页 ============ */
+function sHome(spot){
+  const dropdown = spot==='more';
+  const pills = `<div class="pillbar${spot==='pillbar'?' spot':''}">${tag(spot,'pillbar')}
+    <span class="pill on"><span class="pi">🟦</span>AionCLI</span>
+    <span class="pill"><span class="pi">🤝</span>Cowork</span>
+    <span class="pill"><span class="pi">✍️</span>写作助手</span>
+    <span class="pill"><span class="pi">🔍</span>代码审查</span>
+    <span class="pill-more${dropdown?' spot':''}" style="${dropdown?'background:var(--bg-base)':''}">${dropdown?'<span class="spot-tag">本特性</span>':''}⌄</span>
+    ${dropdown?`<div class="dd" style="position:absolute;right:0;top:46px;width:230px;z-index:5;text-align:left">
+      <div class="dd-s">🔍 搜索助手…</div>
+      <div class="dd-i">🟦 AionCLI<span class="src" style="color:var(--aou-6)">✓</span></div>
+      <div class="dd-i">🤝 Cowork</div>
+      <div class="dd-i">✍️ 写作助手</div>
+      <div class="dd-i">🔍 代码审查</div>
+      <div class="dd-i">🌐 翻译助手</div>
+      <div class="dd-i">📊 财报分析师</div></div>`:''}</div>`;
+  const promptArea = `<div class="${spot==='prompts'?'spot':''}" style="position:relative">${spot==='prompts'?'<span class="spot-tag">本特性</span>':''}
+    <div class="prompts-lab">推荐提示词</div>
+    <div class="pgrid"><div class="pchip">帮我写一个…</div><div class="pchip">解释这段代码…</div><div class="pchip">总结这个文件…</div></div></div>`;
+  return shell(`<div class="guid">
+    <div class="guid-h">开始对话</div>
+    ${pills}
+    <div class="inputcard">
+      <div class="input-ph">${spot==='persist'?'@AionCLI，输入你的问题…':'输入你的问题…'}</div>
+      <div class="input-row"><span class="chip">＋</span><span class="chip">模型 ▾</span><span class="chip">权限 ▾</span><span class="send">↑</span></div></div>
+    <div class="ws">📁 工作目录: /path/to/project</div>
+    ${dropdown?'':promptArea}
+  </div>`,{settings:false,title:'AionUi'});
+}
+
+/* ============ 场景：团队 Modal（独立呈现） ============ */
+function sTeam(){
+  return `<div class="modal-stage">
+    <div class="modal"><div class="modal-h">创建团队<span class="modal-x">✕</span></div>
+      <div class="modal-b">
+        <div class="flabel">团队名称 *</div><div class="finput">输入团队名称</div>
+        <div class="flabel">Team Leader（队长）*</div>
+        <div class="fsub">接收你的指令，拆解任务并分派给团队成员</div>
+        <div class="spot"><span class="spot-tag">本特性</span>
+          <div class="radio-list">
+            <div class="rrow on"><span class="rdot"></span><span class="ic">🟦</span>AionCLI</div>
+            <div class="rrow"><span class="rdot"></span><span class="ic">🤝</span>Cowork</div>
+            <div class="rrow"><span class="rdot"></span><span class="ic">✍️</span>写作助手</div>
+            <div class="rrow dis"><span class="rdot"></span><span class="ic">🟩</span>Gemini 助手 <span class="gt">暂不支持团队协作</span></div>
+          </div></div>
+        <div class="flabel">Project <span style="font-weight:400;color:var(--t3)">(可选)</span></div>
+        <div class="finput">选择工作目录…</div>
+      </div>
+      <div class="modal-f"><span class="btn">取消</span><span class="btn pri">创建团队</span></div></div>
+  </div>`;
+}
+
+/* ============ 总览 ============ */
+function sOverview(){
+  return `<div class="ov">
+    <h2>助手与 Agent 统一</h2>
+    <div class="lead">把"能发起对话的东西"统一为一个概念——助手。Agent 退居底层，作为助手引用的引擎。共分三期推进，每期独立交付。</div>
+
+    <h3>两个核心概念</h3>
+    <table>
+      <tr><th>概念</th><th>是什么</th><th>类比</th></tr>
+      <tr><td><b>Agent</b></td><td>电脑上的命令行 AI 工具（Claude / Gemini / AionCLI…），真正干活的引擎。本身不是助手，是被助手引用的引擎。</td><td>原材料</td></tr>
+      <tr><td><b>助手</b></td><td>引用一个 Agent，再叠加名称、头像、规则、默认配置等，组成可直接对话的对象。</td><td>成品</td></tr>
+    </table>
+    <p><b>Agent 是原材料，助手是成品，用户面对的永远是成品。</b></p>
+
+    <h3>助手的三种来源（都是助手，平级）</h3>
+    <table>
+      <tr><th>来源</th><th>怎么来的</th><th>能改什么</th><th>能删吗</th></tr>
+      <tr><td>裸助手</td><td>系统为每个可用 Agent 自动生成</td><td>全部字段</td><td>否（用开关隐藏）</td></tr>
+      <tr><td>内置助手</td><td>官方预置、随版本维护的模板</td><td>仅引擎与默认模型/权限</td><td>否</td></tr>
+      <tr><td>自定义助手</td><td>用户新建或复制派生</td><td>全部字段</td><td>是</td></tr>
+    </table>
+
+    <h3>实体关系</h3>
+    <div class="erd">
+<b>AGENT</b>（引擎，非助手）──被多个助手引用──▶ <b>助手 ASSISTANT</b>
+        └ 裸 / 内置 / 自定义助手都是 ASSISTANT，平级，靠来源区分
+          系统为每个可用 AGENT 自动生成一个"裸"助手
+<b>助手</b> ──发起多个──▶ <b>会话 CONVERSATION</b>（创建时存配置快照）
+<b>助手</b> ──各一份──▶ <b>上次选择记录</b>（"自动记住上次"用）
+<b>助手</b> ──默认技能/MCP──▶ <b>SKILL / MCP</b>
+<b>团队 TEAM</b> ──含多个──▶ <b>成员</b> ──选自──▶ <b>助手</b>（继承其配置）
+    </div>
+
+    <h3>三期路线</h3>
+    <table>
+      <tr><th>期</th><th>解决什么</th><th>用户能感知的变化</th></tr>
+      <tr><td><span class="ph-pill">一期</span> 助手治理</td><td>让助手能预设默认模型/权限/技能/MCP/推荐提示词</td><td>编辑页能配更多东西；新建对话自动带上；助手能"记住你上次的选择"</td></tr>
+      <tr><td><span class="ph-pill">二期</span> Agent 统一</td><td>Agent 体检 + 自动生成裸助手 + 首页只摆助手</td><td>装好 CLI 即有开箱助手；首页变单一助手选择</td></tr>
+      <tr><td><span class="ph-pill">三期</span> 官方热更</td><td>官方助手与技能不发版即可更新</td><td>官方优化随时收到，不必等应用升级</td></tr>
+    </table>
+
+    <h3>字段两种生效方式</h3>
+    <table>
+      <tr><th>类别</th><th>字段</th><th>行为</th></tr>
+      <tr><td>立即生效</td><td>名称、头像、描述、推荐提示词</td><td>一改即刷新所有引用处，含历史对话显示</td></tr>
+      <tr><td>仅对新会话生效</td><td>规则、默认模型/权限/技能/MCP</td><td>只影响之后新建的对话，已有对话不变</td></tr>
+    </table>
+    <div class="note">点击顶部的「期」切换到该期，会列出该期的功能点。每个功能点：左侧是贴合 AionUi 现有设计的界面线框图（蓝框标出本特性聚焦区域），右侧是需求与验收。完整文字见各期 PRD（README.md / phase-1~3）。</div>
+  </div>`;
+}
+
+/* ============ 数据：每期的功能点 ============ */
+const PHASES = {
+  overview:{ label:'总览', feats:[ {id:'ov', code:'', title:'总览', scene:sOverview, right:null} ] },
+  p1:{ label:'一期 · 助手治理', feats:[
+    {id:'p1-01',code:'F1-01',title:'助手编辑页改为全屏分区',flag:'mod',scene:()=>sEditor('frame'),
+      story:'我希望在一个清晰、不拥挤的界面里完成助手的全部配置——身份、引擎、默认行为、规则、推荐提示词。',
+      bg:'助手配置项较多，原本的右侧抽屉显局促、不便分区。改为可返回的全屏页面，按卡片分区组织。',
+      points:['顶部「← 返回」+ 保存/取消；内容按卡片分区。','分区顺序：身份 → 推荐提示词 → 引擎 → 默认配置 → 规则。立即生效的身份、推荐提示词靠上。','入口：「设置 → 助手」列表点击助手 / 创建助手进入。'],
+      ac:['编辑为可返回的全屏页面，按卡片分区','立即生效字段（身份、推荐提示词）靠上','主 Agent 变化时默认模型/权限可选范围相应更新'] },
+    {id:'p1-02',code:'F1-02',title:'配置 schema 扩充',flag:'new',scene:()=>sEditor('defaults'),
+      story:'无论开箱助手还是我自己建的，配置项和用法都应一致，不用理解两套东西。',
+      points:['助手新增：默认模型、默认权限、默认技能、默认 MCP、推荐提示词。','三种来源（裸/内置/自定义）共用同一套配置结构。'],
+      ac:['助手数据结构包含上述全部配置项','自定义助手在编辑页可设置全部项'] },
+    {id:'p1-03',code:'F1-03',title:'默认模型 / 权限',flag:'new',scene:()=>sEditor('defaults'),
+      story:'我希望为助手固定默认模型和权限；不想费心就让它记住我上次的选择。',
+      points:['两个下拉，首项「暂不设置（自动记住上次）」，新建助手默认选中。','「已设定固定值」：选定后该助手新建对话即用它，对话中临时改动不影响下次。','「暂不设置」：对话中切换的值记为该助手自己的偏好，下次沿用。','"记住上次"按助手隔离——两个助手用同一 Agent 也互不影响。','可选项由当前主 Agent 决定。'],
+      ac:['首项为「暂不设置（自动记住上次）」并附说明','固定值时新建对话用该值，临时改动不回写','暂不设置时对话改动记为该助手偏好，下次沿用','不同助手互相独立，同 Agent 也不串'] },
+    {id:'p1-04',code:'F1-04',title:'默认技能 / MCP',flag:'mod',scene:()=>sEditor('skills'),
+      story:'我希望从一个简单的列表里勾选要启用的技能/MCP，不用搞懂背后的分类细节。',
+      points:['默认技能、默认 MCP 各为一个单一下拉（带搜索、可多选），不向用户分类或解释来源。','标题右侧分别放「去技能中心」「去 MCP 设置」入口。','核心能力（如文件操作）默认勾选、可取消；其余默认不勾选。','同样有「暂不设置（记住上次）」与「已设定固定列表」两种状态，按助手分别记。','技能/MCP 在对话创建时固化，对话开始后不能再增减。'],
+      ac:['各为单一下拉多选，不分类不解释来源','标题右侧有「去技能中心 / 去 MCP 设置」入口','核心能力默认勾选、可取消','支持两种状态，按助手分别记'] },
+    {id:'p1-05',code:'F1-05',title:'推荐提示词',flag:'new',scene:()=>sEditor('prompts'),
+      story:'我希望为助手配几条推荐提示词，选中助手后能一键填充、快速起手。',
+      points:['编辑页提供推荐提示词列表，可增、删、改（建议 3 条）。','属于立即生效内容，保存即更新。','选中该助手时，首页输入框下方展示这些提示词，点击填充。'],
+      ac:['编辑页可增删改推荐提示词','保存后首页选中该助手展示的即为最新内容'] },
+    {id:'p1-06',code:'F1-06',title:'就地编辑与生效规则',flag:'new',scene:()=>sEditor('identity'),
+      story:'我希望直接修改我的助手，改完就生效，且不会搞乱正在进行的对话。',
+      points:['编辑后助手内部 ID 不变。','立即生效类（名称/头像/描述/推荐提示词）马上在所有引用处刷新，含历史对话显示。','仅新会话生效类（规则/默认值）只影响之后新建的对话。'],
+      ac:['编辑后 ID 不变','名称/头像/描述/提示词改动同步刷新历史对话显示','规则/默认值改动仅新会话生效'] },
+    {id:'p1-07',code:'F1-07',title:'内置助手：模板 + 派生',flag:'mod',scene:()=>sEditor('builtin'),
+      story:'我希望用官方助手开箱即用、随版本拿到官方优化；想个性化就复制一份成我自己的再改。',
+      points:['编辑页顶部固定说明：官方助手、随版本更新、除引擎与默认模型/权限外只读。','只读不等于隐藏——名称、规则、技能等照常展示当前值，只是不可编辑。','「基于此助手创建副本」→ 生成可全字段编辑的自定义助手。','内置助手不可删除。'],
+      ac:['顶部固定官方助手说明','仅引擎及默认模型/权限可改，其余只读且照常显示值','提供「创建副本」入口','内置助手不可删除'] },
+    {id:'p1-08',code:'F1-08',title:'助手开关',flag:'keep',scene:()=>sList('switch'),
+      story:'暂时不想用的助手，我希望从发起对话的候选里隐藏，但不影响它已服务的历史对话。',
+      points:['每个助手有开关，默认开启。','关闭后不出现在首页助手列表，但已有对话继续正常工作。','裸助手、内置助手不可删除，隐藏只能用开关。'],
+      ac:['开关默认开启、可切换、可持久化','关闭后从首页助手列表移除','关闭不影响已有对话'] },
+    {id:'p1-09',code:'F1-09',title:'助手排序',flag:'new',scene:()=>sList('sort'),
+      story:'我希望自己调整助手顺序，把常用的排前面，更快找到、点到。',
+      points:['在「设置 → 助手」列表拖拽调整顺序。','顺序即时影响首页助手列表的排列。'],
+      ac:['可拖拽排序','排序即时反映到首页助手列表'] },
+    {id:'p1-10',code:'F1-10',title:'数据迁移',flag:'new',scene:()=>sList('list'),
+      story:'升级后我已有的助手配置不能丢、不用我手动修。',
+      points:['现有助手平滑迁移到扩充后的配置结构。','原有名称、规则、技能保持不变；新增字段取合理初始值（默认模型/权限为「暂不设置」，默认技能保留现有启用集合，默认 MCP 为空，推荐提示词沿用既有数据）。'],
+      ac:['升级后原有配置完整保留','新增字段取合理初始值，无需手动修复'] },
+  ]},
+  p2:{ label:'二期 · Agent 统一', feats:[
+    {id:'p2-01',code:'F2-01',title:'Agent 检测与可用性',flag:'mod',scene:()=>sAgent('avail'),
+      story:'我希望一眼看到系统找到了哪些 Agent、每个能不能用，发起对话前心里有数。',
+      bg:'「找到了」不等于「能用」。本页把"找到没有"和"能不能连上"分开告诉用户。',
+      points:['每个 Agent 三态：可用 / 不可用 / 未找到。','「不可用」的原因与指引收在状态旁 ⓘ 标记里，hover 展开。','纯运维体检台，不发起对话、不配规则技能。'],
+      ac:['区分三态','状态反映"能否连接"而非仅"是否装好"','不可用原因收在 ⓘ hover','本页无发起对话/配置入口'] },
+    {id:'p2-02',code:'F2-02',title:'测试连接',flag:'new',scene:()=>sAgent('test'),
+      story:'刚修好某个 Agent（登录完、改对路径），我希望手动测一下，立即看到它是否恢复。',
+      points:['每个 Agent 都有「测试连接」按钮——三态一律可点。','测试中有进行中反馈；测试完即时刷新状态。','恢复可用后，对应裸助手随之恢复可用。'],
+      ac:['每个 Agent 都有测试连接按钮','测试中有进行中反馈','结果实时刷新状态'] },
+    {id:'p2-03',code:'F2-03',title:'自定义 Agent 识别',flag:'keep',scene:sCustomAgent,
+      story:'我用的工具不在自动检测列表里，我希望自己填配置接进来；但我不懂怎么填。',
+      bg:'识别配置较专业。表单顶部引导用户「去问 AionCLI」帮忙查清怎么配。',
+      points:['表单顶部固定引导：去问 AionCLI 帮忙查配置，并带快捷入口。','保存后进入与内置 Agent 一致的检测流程，可用后自动生成裸助手。'],
+      ac:['表单顶部有「去问 AionCLI」引导与入口','与内置 Agent 在检测、裸助手生成上行为一致'] },
+    {id:'p2-04',code:'F2-04',title:'裸助手生成与生命周期',flag:'new',scene:()=>sList('list'),
+      story:'我装好一个 CLI 后，希望不做任何配置就能直接和它对话。',
+      points:['Agent 检测可用 → 自动生成一个裸助手，出现在首页可直接对话。','一个 Agent 仅生成一个裸助手；想要更多由用户复制/新建。','裸助手可编辑，但不可删除——想隐藏用开关。','Agent 不可用：裸助手保留不删、仅提示；恢复后自动恢复可用。'],
+      ac:['每个可用 Agent 生成且仅生成一个裸助手','裸助手可对话、可编辑，但不可删除','想隐藏只能用开关','Agent 不可用时保留并提示，恢复后自动恢复'] },
+    {id:'p2-05',code:'F2-05',title:'Agent 不可用提示',flag:'new',scene:()=>sList('unavail'),
+      story:'我想用的助手所依赖的 Agent 不可用时，我希望界面提示我，知道问题在哪。',
+      points:['助手名称旁显示感叹号标记，hover 弹出"Agent 不可用，请检查"。','不长期占位，也不自动禁用或删除助手。'],
+      ac:['Agent 不可用时助手名旁出现感叹号','hover 弹出原因提示','提示不影响助手存在与历史对话'] },
+    {id:'p2-06',code:'F2-06',title:'首页统一为助手 pill 栏',flag:'mod',scene:()=>sHome('pillbar'),
+      story:'我希望打开首页一眼看到所有可用助手，点一下选中、直接输入就能发起对话，不进二级页。',
+      bg:'原本首页有"直接选 Agent"和"选助手"两套并存入口，令人困惑。统一后只摆助手。',
+      points:['顶部一排横向助手 pill（裸/内置/自定义混排、不分组、不标来源），顺序沿用助手排序。','点 pill 即选中，下方展示推荐提示词，可直接输入发送。','取消"直接选 Agent"入口；取消选中后的二级页与"切换 Agent"下拉。'],
+      ac:['首页只剩助手一种可选对象，合并为单一 pill 栏','点 pill 即选中、不进二级页','顺序遵循助手排序','无"直接选 Agent"入口与"切换 Agent"下拉'] },
+    {id:'p2-07',code:'F2-07',title:'助手过多收纳',flag:'new',scene:()=>sHome('more'),
+      story:'助手很多、一排放不下时，我希望仍能方便找到并选中目标。',
+      points:['pill 栏横向展示前 N 个。','最右侧下拉按钮（⌄）弹出完整列表（带搜索）。','桌面端与移动端形态一致。'],
+      ac:['pill 栏展示前 N 个','最右侧下拉展开完整列表并选中','桌面与移动端形态一致'] },
+    {id:'p2-08',code:'F2-08',title:'选中持久化与默认选中',flag:'new',scene:()=>sHome('persist'),
+      story:'我希望应用记住我上次用的助手；作为新用户，首次打开就有一个开箱助手已选好。',
+      points:['上次选中的助手下次进首页保持选中。','全新用户默认选中 AionCLI 对应的裸助手（内置、始终可用）。','选中助手后输入框下方展示其推荐提示词，点击填充。'],
+      ac:['上次选中的助手下次保持选中','全新用户默认选中 AionCLI 裸助手','选中后展示推荐提示词并可填充'] },
+    {id:'p2-09',code:'F2-09',title:'团队选队友 = 选助手',flag:'mod',scene:sTeam,
+      story:'组队挑 Leader 与成员时，我希望直接从我所有助手里挑，而不是面对"光秃秃的引擎"列表。',
+      bg:'统一后团队与首页同源——挑成员本质上就是挑一个助手。',
+      points:['候选列表与首页同一批助手，长相一致，不标注类型。','受助手开关（关闭则不出现）与排序影响。','选中助手作为成员后继承其配置。','Agent 不支持团队协作的助手：灰显不可选 + 说明，而非隐藏。'],
+      ac:['候选列表与首页助手同源、不标类型','裸/内置/自定义都可作为成员','受开关与排序影响','选中后继承配置','不支持团队的助手灰显并说明'] },
+  ]},
+  p3:{ label:'三期 · 官方热更', feats:[
+    {id:'p3-01',code:'F3-01',title:'内置助手热更',flag:'new',scene:()=>sEditor('builtin'),
+      story:'官方优化了内置助手的规则/技能，我希望不必等应用升级就能用上。',
+      bg:'内置助手当前随应用版本更新。本期改为不发版即可下发更新。',
+      points:['内置助手的官方只读内容支持不发版更新，用户无需手动操作即可用上。','用户派生的副本不被热更覆盖，保留用户自己的修改。','进行中的对话不受影响，更新对新对话生效。'],
+      ac:['官方内容可不发版更新','派生副本不被覆盖','进行中对话不受影响，更新对新对话生效'] },
+    {id:'p3-02',code:'F3-02',title:'官方技能热更',flag:'new',scene:()=>sEditor('skills'),
+      story:'官方优化了官方技能的效果，我希望不必等应用升级就能用上。',
+      points:['官方技能支持不发版更新。','用户自定义技能、扩展技能不被覆盖。','已启用某官方技能的助手，新对话使用更新后的版本。'],
+      ac:['官方技能可不发版更新','用户/扩展技能不被覆盖','更新对新对话生效'] },
+  ]},
+};
+
+/* ============ 渲染 ============ */
+function renderRight(f){
+  if(!f.code){
+    return `<div class="req"><h2>使用说明</h2>
+      <div class="story">这是一份分三期的产品线框图。顶部先选「期」，再选该期下的功能点。左侧是贴合 AionUi 现有设计的界面线框图，<b>蓝框「本特性」</b>标出该功能点聚焦的区域；右侧是用户故事、需求要点与验收标准。</div>
+      <h3>三期概览</h3>
+      <ul><li><b>一期 · 助手治理</b>：把助手做厚——默认模型/权限/技能/MCP/推荐提示词。</li>
+      <li><b>二期 · Agent 统一</b>：Agent 体检 + 裸助手 + 首页/团队统一为助手。</li>
+      <li><b>三期 · 官方热更</b>：官方助手与技能不发版即可更新。</li></ul>
+      <div class="note">完整文字 PRD 见同目录 README.md（总纲）与 phase-1 / phase-2 / phase-3。</div></div>`;
+  }
+  const fl = f.flag==='new'?'<span class="badge new">新增</span>':f.flag==='mod'?'<span class="badge mod">改造</span>':'<span class="badge keep">沿用</span>';
+  let head=`<div class="req-head"><div class="fcode">${f.code}</div><h2>${f.title}</h2><div class="flags">${fl}</div>`;
+  if(f.story) head+=`<div class="story">${f.story}</div>`;
+  head+=`</div>`;
+  const cols=[];
+  if(f.bg) cols.push(`<div><h3>背景</h3><p>${f.bg}</p></div>`);
+  if(f.points) cols.push(`<div><h3>需求要点</h3><ul>${f.points.map(p=>`<li>${p}</li>`).join('')}</ul></div>`);
+  if(f.ac) cols.push(`<div><h3>验收标准</h3><div class="ac">${f.ac.map(a=>`<div>${a}</div>`).join('')}</div></div>`);
+  return `<div class="req">${head}<div class="req-cols">${cols.join('')}</div></div>`;
+}
+
+let curPhase='overview', curFeat='ov';
+function renderFeatTabs(){
+  const feats=PHASES[curPhase].feats;
+  const tabs=document.getElementById('featTabs');
+  if(curPhase==='overview'){ tabs.innerHTML=''; tabs.style.display='none'; return; }
+  tabs.style.display='flex';
+  tabs.innerHTML=feats.map(f=>`<button class="feat-btn ${f.id===curFeat?'on':''}" data-fid="${f.id}">
+    <span class="fc">${f.code.replace('F','').replace('-','·')}</span>${f.title}</button>`).join('');
+  tabs.querySelectorAll('.feat-btn').forEach(b=>b.onclick=()=>{curFeat=b.dataset.fid;draw();});
+}
+function draw(){
+  document.querySelectorAll('.phase-btn').forEach(b=>b.classList.toggle('on',b.dataset.ph===curPhase));
+  const feats=PHASES[curPhase].feats;
+  if(!feats.find(f=>f.id===curFeat)) curFeat=feats[0].id;
+  renderFeatTabs();
+  const f=feats.find(x=>x.id===curFeat);
+  document.getElementById('left').innerHTML=f.scene();
+  document.getElementById('right').innerHTML=renderRight(f);
+  // 总览整页（右侧隐藏）；功能点左右布局
+  document.querySelector('.split').classList.toggle('full', curPhase==='overview');
+  document.querySelector('.left').scrollTop=0;
+  document.querySelector('.right').scrollTop=0;
+}
+document.querySelectorAll('.phase-btn').forEach(b=>b.onclick=()=>{
+  curPhase=b.dataset.ph; curFeat=PHASES[curPhase].feats[0].id; draw();
+});
+draw();
+</script>
+</body>
+</html>

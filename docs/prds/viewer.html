@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文档 · AionUi 产品文档</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root{
+    --bg:#f2f3f5;--card:#fff;--ink:#1d2129;--t2:#3a4252;--t3:#86909c;
+    --border:#e5e6eb;--aou-1:#eff0f6;--aou-6:#7583b2;--aou-7:#596590;--code-bg:#f2f3f5;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);}
+  #gate{position:fixed;inset:0;background:linear-gradient(135deg,#5b6597,#7583b2);display:flex;align-items:center;justify-content:center;z-index:999;}
+  .gate-box{background:#fff;border-radius:16px;padding:36px 40px;width:340px;box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center;}
+  .gate-box .logo{width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,var(--aou-6),var(--aou-7));margin:0 auto 16px;}
+  .gate-box h1{font-size:17px;margin:0 0 6px;}
+  .gate-box p{font-size:12.5px;color:var(--t3);margin:0 0 20px;}
+  .gate-box input{width:100%;border:1px solid var(--border);border-radius:9px;padding:11px 13px;font-size:14px;outline:none;text-align:center;letter-spacing:2px;}
+  .gate-box input:focus{border-color:var(--aou-6);}
+  .gate-box button{width:100%;margin-top:12px;border:none;background:var(--aou-6);color:#fff;border-radius:9px;padding:11px;font-size:14px;cursor:pointer;}
+  .gate-box .err{color:#f53f3f;font-size:12px;margin-top:10px;min-height:16px;}
+  .topbar{position:sticky;top:0;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);
+    display:flex;align-items:center;gap:14px;padding:12px 22px;z-index:10;flex-wrap:wrap;}
+  .topbar a{font-size:13px;color:var(--aou-7);text-decoration:none;}
+  .topbar a:hover{text-decoration:underline;}
+  .topbar .sep{color:var(--border);}
+  .topbar .nav{margin-left:auto;display:flex;gap:14px;flex-wrap:wrap;}
+  .doc{max-width:860px;margin:0 auto;padding:40px 28px 90px;background:var(--card);min-height:80vh;}
+  .doc h1{font-size:28px;margin:.2em 0 .6em;padding-bottom:.3em;border-bottom:2px solid var(--aou-1);}
+  .doc h2{font-size:21px;margin:1.6em 0 .6em;padding-top:.4em;}
+  .doc h3{font-size:16px;margin:1.4em 0 .5em;color:var(--aou-7);}
+  .doc h4{font-size:14px;margin:1.2em 0 .4em;}
+  .doc p,.doc li{font-size:14.5px;line-height:1.8;color:var(--t2);}
+  .doc ul,.doc ol{padding-left:24px;}
+  .doc li{margin-bottom:5px;}
+  .doc a{color:var(--aou-7);}
+  .doc strong{color:var(--ink);}
+  .doc code{background:var(--code-bg);padding:2px 6px;border-radius:5px;font-size:13px;font-family:ui-monospace,monospace;color:var(--aou-7);}
+  .doc pre{background:var(--code-bg);border-radius:10px;padding:14px 16px;overflow:auto;}
+  .doc pre code{background:none;padding:0;color:var(--t2);}
+  .doc blockquote{border-left:3px solid var(--aou-6);background:var(--aou-1);margin:1em 0;padding:10px 16px;border-radius:0 8px 8px 0;color:var(--t2);font-size:13.5px;}
+  .doc blockquote p{margin:.3em 0;font-size:13.5px;}
+  .doc table{border-collapse:collapse;width:100%;margin:1em 0;font-size:13.5px;}
+  .doc th,.doc td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top;}
+  .doc th{background:var(--bg);font-weight:600;}
+  .doc tr:nth-child(even) td{background:#fafbfc;}
+  .doc hr{border:none;border-top:1px solid var(--border);margin:2em 0;}
+  .doc input[type=checkbox]{margin-right:7px;}
+  .doc .mermaid{background:var(--bg);border-radius:10px;padding:18px;margin:1em 0;text-align:center;}
+  .loading{text-align:center;color:var(--t3);padding:80px 0;}
+</style>
+</head>
+<body>
+<div id="gate">
+  <div class="gate-box">
+    <div class="logo"></div>
+    <h1>AionUi 产品文档</h1>
+    <p>请输入访问口令</p>
+    <input id="pw" type="password" placeholder="口令" autocomplete="off" />
+    <button id="enter">进入</button>
+    <div class="err" id="err"></div>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <div class="topbar">
+    <a href="./index.html">← 文档首页</a>
+    <span class="sep">|</span>
+    <span id="crumb" style="font-size:13px;color:var(--t3)"></span>
+    <span class="nav" id="nav"></span>
+  </div>
+  <div class="doc" id="doc"><div class="loading">加载中…</div></div>
+</div>
+
+<script>
+/* ============================================================
+   文档白名单 —— 新增 PRD 时在此加一条：'相对路径.md': {title, wf}
+   路径 = docs/prds/ 下的真实路径（与仓库目录一致）
+   ============================================================ */
+const DOCS = {
+  'assistants/overview.md':                    {title:'助手与 Agent 统一 · 总纲', wf:'assistants/wireframe.html'},
+  'assistants/phase-1-assistant-governance.md':{title:'一期 · 助手治理',          wf:'assistants/wireframe.html'},
+  'assistants/phase-2-agent-unification.md':   {title:'二期 · Agent 统一',        wf:'assistants/wireframe.html'},
+  'assistants/phase-3-official-hot-update.md': {title:'三期 · 官方热更',          wf:'assistants/wireframe.html'},
+  'assistants/memory/notebook.md':             {title:'笔记本 · 助手记忆',        wf:'assistants/memory/wireframe.html'},
+  'workspaces/kanban/kanban.md':               {title:'任务看板 · Kanban',        wf:'workspaces/kanban/wireframe.html'},
+  'workspaces/project/project.md':             {title:'Project · 多文件夹文件浏览器', wf:'workspaces/project/wireframe.html'},
+  'teams/team-composition/team-composition.md':{title:'团队组建 · 多助手成员',     wf:'teams/team-composition/wireframe.html'},
+};
+const DEFAULT_DOC = 'assistants/overview.md';
+
+(function(){
+  var PW='aionui';
+  var gate=document.getElementById('gate'), app=document.getElementById('app');
+  function unlock(){ try{sessionStorage.setItem('aionui_doc_ok','1');}catch(e){} gate.style.display='none'; app.style.display='block'; load(); }
+
+  function getDoc(){
+    var m=location.search.match(/[?&]doc=([^&]+)/);
+    var d=m?decodeURIComponent(m[1]):DEFAULT_DOC;
+    return DOCS[d]?d:DEFAULT_DOC;
+  }
+  // 相对于站点根解析：doc 与 wf 都是 docs/prds/ 下的相对路径
+  function load(){
+    var doc=getDoc();
+    var meta=DOCS[doc];
+    var dir=doc.indexOf('/')>=0?doc.slice(0,doc.lastIndexOf('/')+1):'';
+    document.getElementById('crumb').textContent=meta.title;
+    document.title=meta.title+' · AionUi 产品文档';
+    document.getElementById('nav').innerHTML='<a href="./'+meta.wf+'">🎨 线框图</a>';
+    fetch('./'+doc).then(function(r){return r.text();}).then(function(md){
+      marked.setOptions({breaks:false,gfm:true});
+      var html=marked.parse(md);
+      // 文档内 ./wireframe.html 相对链接 → 该篇 wf 的站内路径
+      html=html.replace(/href="\.\/wireframe\.html"/g,'href="./'+meta.wf+'"');
+      // 文档内其它 ./xxx.md 链接 → viewer，路径拼上当前文档所在目录
+      html=html.replace(/href="\.\/([\w-]+\.md)"/g,function(_,f){return 'href="./viewer.html?doc='+dir+f+'"';});
+      var docEl=document.getElementById('doc');
+      docEl.innerHTML=html;
+      docEl.querySelectorAll('code.language-mermaid').forEach(function(c){
+        var div=document.createElement('div'); div.className='mermaid'; div.textContent=c.textContent;
+        var pre=c.closest('pre')||c; pre.parentNode.replaceChild(div,pre);
+      });
+      if(window.mermaid){ try{ mermaid.initialize({startOnLoad:false,theme:'neutral'}); mermaid.run({querySelector:'.mermaid'}); }catch(e){} }
+      window.scrollTo(0,0);
+    }).catch(function(){
+      document.getElementById('doc').innerHTML='<div class="loading">加载失败，请确认文档存在。</div>';
+    });
+  }
+
+  if(sessionStorage.getItem('aionui_doc_ok')==='1'){ unlock(); }
+  else{
+    var pw=document.getElementById('pw'), err=document.getElementById('err');
+    function tryEnter(){ if(pw.value===PW){ unlock(); } else { err.textContent='口令不正确'; pw.value=''; pw.focus(); } }
+    document.getElementById('enter').onclick=tryEnter;
+    pw.addEventListener('keydown',function(e){ if(e.key==='Enter') tryEnter(); });
+    pw.focus();
+  }
+})();
+</script>
+</body>
+</html>

@@ -135,7 +135,7 @@
   .selrow .rmv{color:var(--t4);cursor:pointer;font-size:13px;}
   .selrow .rmv:hover{color:var(--danger);}
   .mcol-h .cnt{color:var(--t4);font-weight:500;text-transform:none;}
-  .mform{padding:12px 14px;display:flex;flex-direction:column;gap:9px;}
+  .mform{margin-top:12px;padding-top:12px;border-top:1px solid var(--border-light);display:flex;flex-direction:column;gap:9px;}
   .mfield{display:flex;align-items:center;gap:10px;}
   .mfield .lab{font-size:12px;color:var(--t2);width:64px;flex:0 0 auto;}
   .mfield .inp{flex:1;border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12.5px;color:var(--t3);}
@@ -258,11 +258,11 @@ function sCreate(){
         <div class="mcol-h">已选成员 <span class="cnt">3 · ⚑ = Leader</span></div>
         ${selHtml}
         <div class="sel-hint">没有合适的助手当队员？创建后可让 Leader 在对话中创建临时队员。</div>
+        <div class="mform">
+          <div class="mfield"><span class="lab">团队名 *</span><span class="inp">开发攻坚小队</span></div>
+          <div class="mfield"><span class="lab">工作空间</span><span class="inp ph">（可选）选择文件夹　📁</span></div>
+        </div>
       </div>
-    </div>
-    <div class="mform">
-      <div class="mfield"><span class="lab">团队名 *</span><span class="inp">开发攻坚小队</span></div>
-      <div class="mfield"><span class="lab">工作空间</span><span class="inp ph">（可选）选择文件夹　📁</span></div>
     </div>
     <div class="modal-f"><span class="btn">取消</span><span class="btn pri">确认创建</span></div>
   </div></div>`;

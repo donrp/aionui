@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AionUi · 产品文档</title>
+<style>
+  :root{
+    --bg:#f2f3f5;--card:#fff;--ink:#1d2129;--t2:#454d5f;--t3:#86909c;
+    --border:#e5e6eb;--aou-1:#eff0f6;--aou-6:#7583b2;--aou-7:#596590;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg);color:var(--ink);min-height:100vh;}
+  #gate{position:fixed;inset:0;background:linear-gradient(135deg,#5b6597,#7583b2);display:flex;align-items:center;justify-content:center;z-index:999;}
+  .gate-box{background:#fff;border-radius:16px;padding:36px 40px;width:340px;box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center;}
+  .gate-box .logo{width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,var(--aou-6),var(--aou-7));margin:0 auto 16px;}
+  .gate-box h1{font-size:17px;margin:0 0 6px;}
+  .gate-box p{font-size:12.5px;color:var(--t3);margin:0 0 20px;}
+  .gate-box input{width:100%;border:1px solid var(--border);border-radius:9px;padding:11px 13px;font-size:14px;outline:none;text-align:center;letter-spacing:2px;}
+  .gate-box input:focus{border-color:var(--aou-6);}
+  .gate-box button{width:100%;margin-top:12px;border:none;background:var(--aou-6);color:#fff;border-radius:9px;padding:11px;font-size:14px;cursor:pointer;}
+  .gate-box button:hover{background:var(--aou-7);}
+  .gate-box .err{color:#f53f3f;font-size:12px;margin-top:10px;min-height:16px;}
+  .wrap{max-width:920px;margin:0 auto;padding:56px 24px 80px;}
+  .hero{text-align:center;margin-bottom:48px;}
+  .hero .badge{display:inline-block;font-size:12px;color:var(--aou-7);background:var(--aou-1);border-radius:20px;padding:4px 14px;margin-bottom:14px;}
+  .hero h1{font-size:28px;margin:0 0 10px;}
+  .hero p{font-size:14px;color:var(--t3);max-width:600px;margin:0 auto;line-height:1.7;}
+  .domain{margin-bottom:40px;}
+  .domain-h{display:flex;align-items:baseline;gap:10px;margin:0 0 16px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+  .domain-h .dn{font-size:16px;font-weight:600;}
+  .domain-h .dd{font-size:12.5px;color:var(--t3);}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:680px){.grid{grid-template-columns:1fr;}}
+  .card{display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 22px;transition:.15s;position:relative;}
+  .card:hover{border-color:var(--aou-6);box-shadow:0 6px 20px rgba(117,131,178,.12);transform:translateY(-2px);}
+  .card .k{font-size:11.5px;color:var(--aou-7);font-family:ui-monospace,monospace;margin-bottom:8px;letter-spacing:.02em;}
+  .card .t{font-size:16px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+  .card .d{font-size:13px;color:var(--t3);line-height:1.6;}
+  .card .links{margin-top:13px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .pill{font-size:11.5px;color:var(--aou-7);background:var(--aou-1);border-radius:7px;padding:3px 10px;text-decoration:none;cursor:pointer;}
+  .pill:hover{background:#e2e5f2;}
+  .pill.wf{background:#eaf6ee;color:#0a8a2c;}
+  .pill.wf:hover{background:#dcf0e2;}
+  .card.feature{background:linear-gradient(135deg,#f0f2fb,#e9ecf6);border-color:#d6dbf0;}
+  .card.feature .t{color:var(--aou-7);}
+  .meta{position:absolute;top:15px;right:16px;display:flex;align-items:center;gap:6px;}
+  .tag-status{font-size:10px;font-weight:600;padding:2px 8px;border-radius:9px;}
+  .tag-status.ready{background:#e8f9ee;color:#0a8a2c;}
+  .tag-status.doing{background:#fff3e0;color:#cc7000;}
+  .tag-status.hold{background:var(--bg);color:var(--t3);}
+  .owner{font-size:10px;font-weight:600;color:var(--aou-7);background:var(--aou-1);border-radius:9px;padding:2px 8px;}
+  .foot{text-align:center;font-size:12px;color:var(--t3);margin-top:44px;}
+</style>
+</head>
+<body>
+<div id="gate">
+  <div class="gate-box">
+    <div class="logo"></div>
+    <h1>AionUi 产品文档</h1>
+    <p>请输入访问口令</p>
+    <input id="pw" type="password" placeholder="口令" autocomplete="off" />
+    <button id="enter">进入</button>
+    <div class="err" id="err"></div>
+  </div>
+</div>
+
+<div class="wrap" id="content" style="display:none">
+  <div class="hero">
+    <span class="badge">Product Requirements</span>
+    <h1>AionUi 产品文档</h1>
+    <p>AionUi 的产品需求文档（PRD）集合。每篇 PRD 配有正文与可交互的界面线框图，按功能域组织。</p>
+  </div>
+  <div id="domains"></div>
+  <div class="foot">AionUi · 内部产品文档</div>
+</div>
+
+<script>
+/* ============================================================
+   PRD 清单 —— 更新站点：改这里即可（状态 status / 执行人 owner）
+   status: doing(进行中) | ready(可做) | hold(暂缓)
+   owner:  执行人，如 '@zhoukai'；留空则不显示
+   ============================================================ */
+const DOMAINS = [
+  {
+    name: '🤝 助手 Assistant', desc: '围绕「助手」这个核心概念的能力',
+    cards: [
+      { feature:true, status:'doing', owner:'@zhoukai',
+        code:'', title:'📘 助手与 Agent 统一 · 总纲',
+        desc:'把"能发起对话的东西"统一为助手，Agent 退居底层。含背景、核心概念、三期路线、实体关系。',
+        doc:'assistants/overview.md', wf:'assistants/wireframe.html',
+        extraLinks:[
+          {label:'一期 · 助手治理', doc:'assistants/phase-1-assistant-governance.md'},
+          {label:'二期 · Agent 统一', doc:'assistants/phase-2-agent-unification.md'},
+          {label:'三期 · 官方热更', doc:'assistants/phase-3-official-hot-update.md'},
+        ] },
+      { status:'ready', owner:'',
+        code:'F-NOTE', title:'📓 笔记本 · 助手记忆',
+        desc:'助手在对话中自动记录值得长期保留的事实，新对话自动读回，让用户"换 CLI 不失忆、换对话不失忆"。',
+        doc:'assistants/memory/notebook.md', wf:'assistants/memory/wireframe.html' },
+    ],
+  },
+  {
+    name: '📁 工作区 Workspace', desc: '围绕「Project / 工作区」组织对话与任务',
+    cards: [
+      { status:'ready', owner:'',
+        code:'F-KANBAN', title:'📋 任务看板 · Kanban',
+        desc:'工作区级的任务看板，人和 AI 助手共同维护，跟踪"在同一个工作台里处理的多种活"的整体进度。',
+        doc:'workspaces/kanban/kanban.md', wf:'workspaces/kanban/wireframe.html' },
+      { status:'ready', owner:'',
+        code:'F-PROJ', title:'🗂️ Project · 多文件夹文件浏览器',
+        desc:'把工作空间从单一目录升级成能容纳多个文件夹的 Project，像 IDE 一样并列查看，让一次对话跨多个文件夹工作。',
+        doc:'workspaces/project/project.md', wf:'workspaces/project/wireframe.html' },
+    ],
+  },
+  {
+    name: '👥 团队 Team', desc: '多助手协作的团队组建与管理',
+    cards: [
+      { status:'doing', owner:'@zyx',
+        code:'F-TEAM', title:'👥 团队组建 · 多助手成员',
+        desc:'创建团队时一次选多个助手并指定一个 Leader；群聊过程中用一个加号快速补充更多成员。群聊界面保持现状。',
+        doc:'teams/team-composition/team-composition.md', wf:'teams/team-composition/wireframe.html' },
+    ],
+  },
+];
+
+const STATUS_LABEL = { doing:'进行中', ready:'可做', hold:'暂缓' };
+
+function cardHtml(c){
+  const statusTag = c.status ? `<span class="tag-status ${c.status}">${STATUS_LABEL[c.status]||c.status}</span>` : '';
+  const ownerTag  = c.owner ? `<span class="owner">${c.owner}</span>` : '';
+  const meta = (statusTag||ownerTag) ? `<div class="meta">${ownerTag}${statusTag}</div>` : '';
+  const code = c.code ? `<div class="k">${c.code}</div>` : '';
+  const extras = (c.extraLinks||[]).map(l=>`<span class="pill" onclick="go(event,'./viewer.html?doc=${l.doc}')">${l.label}</span>`).join('');
+  return `<a class="card ${c.feature?'feature':''}" href="./viewer.html?doc=${c.doc}">
+    ${meta}${code}
+    <div class="t">${c.title}</div>
+    <div class="d">${c.desc}</div>
+    <div class="links">
+      <span class="pill" onclick="go(event,'./viewer.html?doc=${c.doc}')">PRD 正文</span>
+      ${extras}
+      <span class="pill wf" onclick="go(event,'./${c.wf}')">🎨 线框图</span>
+    </div>
+  </a>`;
+}
+function render(){
+  document.getElementById('domains').innerHTML = DOMAINS.map(d=>`
+    <div class="domain">
+      <div class="domain-h"><span class="dn">${d.name}</span><span class="dd">${d.desc}</span></div>
+      <div class="grid">${d.cards.map(cardHtml).join('')}</div>
+    </div>`).join('');
+}
+function go(e,href){ e.preventDefault(); e.stopPropagation(); location.href=href; }
+
+(function(){
+  var PW='aionui';
+  var gate=document.getElementById('gate'), content=document.getElementById('content');
+  function unlock(){ try{sessionStorage.setItem('aionui_doc_ok','1');}catch(e){} gate.style.display='none'; content.style.display='block'; render(); }
+  if(sessionStorage.getItem('aionui_doc_ok')==='1'){ unlock(); }
+  var pw=document.getElementById('pw'), err=document.getElementById('err');
+  function tryEnter(){ if(pw.value===PW){ unlock(); } else { err.textContent='口令不正确'; pw.value=''; pw.focus(); } }
+  document.getElementById('enter').onclick=tryEnter;
+  pw.addEventListener('keydown',function(e){ if(e.key==='Enter') tryEnter(); });
+  pw.focus();
+})();
+</script>
+</body>
+</html>
