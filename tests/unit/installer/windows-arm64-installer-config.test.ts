@@ -2,11 +2,12 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 const buildScript = readFileSync('scripts/build-with-builder.js', 'utf8');
+const x64NsisScript = readFileSync('resources/windows-installer-x64.nsh', 'utf8');
 const arm64NsisScript = readFileSync('resources/windows-installer-arm64.nsh', 'utf8');
 const prChecksWorkflow = readFileSync('.github/workflows/pr-checks.yml', 'utf8');
 const releaseWorkflow = readFileSync('.github/workflows/build-and-release.yml', 'utf8');
 
-describe('Windows ARM64 installer hardening', () => {
+describe('Windows installer hardening', () => {
   it('uses zip packaging for the ARM64 NSIS installer to avoid the Nsis7z extraction path', () => {
     const arm64Branch = buildScript.slice(
       buildScript.indexOf("if (targetArch === 'arm64')"),
@@ -32,6 +33,18 @@ describe('Windows ARM64 installer hardening', () => {
     expect(arm64NsisScript).toContain('Bundled AionCore resources are incomplete after installation.');
     expect(arm64NsisScript).toMatch(/SetErrorLevel\s+3/);
     expect(arm64NsisScript).toContain('Quit');
+  });
+
+  it.each([
+    ['x64', x64NsisScript],
+    ['arm64', arm64NsisScript],
+  ])('repairs existing Windows %s shortcuts after install', (_arch, script) => {
+    expect(script).toContain('!macro AIONUI_REPAIR_EXISTING_SHORTCUTS');
+    expect(script).toContain('${FileExists} "$newDesktopLink"');
+    expect(script).toContain('CreateShortCut "$newDesktopLink" "$appExe"');
+    expect(script).toContain('${FileExists} "$newStartMenuLink"');
+    expect(script).toContain('CreateShortCut "$newStartMenuLink" "$appExe"');
+    expect(script).toContain('!insertmacro AIONUI_REPAIR_EXISTING_SHORTCUTS');
   });
 
   it('keeps PR build tests focused on representative platforms', () => {

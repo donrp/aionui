@@ -249,9 +249,36 @@
   ${EndIf}
 !macroend
 
+!macro AIONUI_REPAIR_EXISTING_SHORTCUTS
+  ${IfNot} ${FileExists} "$appExe"
+    !insertmacro AIONUI_LOG_EVENT "shortcut-repair skipped missing-app appExe=$appExe"
+  ${Else}
+    !ifndef DO_NOT_CREATE_START_MENU_SHORTCUT
+      ${If} ${FileExists} "$newStartMenuLink"
+        CreateShortCut "$newStartMenuLink" "$appExe" "" "$appExe" 0 "" "" "${APP_DESCRIPTION}"
+        ClearErrors
+        WinShell::SetLnkAUMI "$newStartMenuLink" "${APP_ID}"
+        !insertmacro AIONUI_LOG_EVENT "shortcut-repair start-menu link=$newStartMenuLink appExe=$appExe"
+      ${EndIf}
+    !endif
+
+    !ifndef DO_NOT_CREATE_DESKTOP_SHORTCUT
+      ${IfNot} ${isNoDesktopShortcut}
+        ${If} ${FileExists} "$newDesktopLink"
+          CreateShortCut "$newDesktopLink" "$appExe" "" "$appExe" 0 "" "" "${APP_DESCRIPTION}"
+          ClearErrors
+          WinShell::SetLnkAUMI "$newDesktopLink" "${APP_ID}"
+          !insertmacro AIONUI_LOG_EVENT "shortcut-repair desktop link=$newDesktopLink appExe=$appExe"
+        ${EndIf}
+      ${EndIf}
+    !endif
+  ${EndIf}
+!macroend
+
 !macro customInstall
   !insertmacro AIONUI_VERIFY_ARM64_APP_FILES
   !insertmacro AIONUI_VERIFY_BUNDLED_AIONCORE_RESOURCES "win32-arm64"
+  !insertmacro AIONUI_REPAIR_EXISTING_SHORTCUTS
   !insertmacro AIONUI_LOG_EVENT "verify-install ok instDir=$INSTDIR"
 !macroend
 
