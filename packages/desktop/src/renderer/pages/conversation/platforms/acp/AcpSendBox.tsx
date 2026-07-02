@@ -4,7 +4,6 @@ import { isBackendHttpError } from '@/common/adapter/httpBridge';
 import { isSideQuestionSupported } from '@/common/chat/sideQuestion';
 import { parseError, uuid } from '@/common/utils';
 import AgentModeSelector from '@/renderer/components/agent/AgentModeSelector';
-import AcpThoughtLevelSelector from '@/renderer/components/agent/AcpThoughtLevelSelector';
 import CommandQueuePanel from '@/renderer/components/chat/CommandQueuePanel';
 import MobileActionSheet, {
   type MobileActionSheetEntry,
@@ -18,8 +17,6 @@ import FilePreview from '@/renderer/components/media/FilePreview';
 import HorizontalFileList from '@/renderer/components/media/HorizontalFileList';
 import { classifyConfigSetError, useAcpConfigOptions } from '@/renderer/hooks/agent/useAcpConfigOptions';
 import { useAcpModelInfo } from '@/renderer/hooks/agent/useAcpModelInfo';
-import { useAgentModesForBackend } from '@/renderer/hooks/agent/useAgentModesForBackend';
-import { savePreferredMode, savePreferredThoughtLevel } from '@/renderer/pages/guid/hooks/agentSelectionUtils';
 import { useAutoTitle } from '@/renderer/hooks/chat/useAutoTitle';
 import { getSendBoxDraftHook, type FileOrFolderItem } from '@/renderer/hooks/chat/useSendBoxDraft';
 import { createSetUploadFile, useSendBoxFiles } from '@/renderer/hooks/chat/useSendBoxFiles';
@@ -36,6 +33,7 @@ import {
 import { usePreviewContext } from '@/renderer/pages/conversation/Preview';
 import { useConversationRuntimeView } from '@/renderer/pages/conversation/runtime/useConversationRuntimeView';
 import { getConversationRuntimeWorkspaceErrorMessage } from '@/renderer/pages/conversation/utils/conversationCreateError';
+import { getChatSurfaceWidthClass } from '@/renderer/pages/conversation/utils/chatSurfaceWidth';
 import { warmupConversation } from '@/renderer/pages/conversation/utils/warmupConversation';
 import { useTeamPermission } from '@/renderer/pages/team/hooks/TeamPermissionContext';
 import type { TeamSendBoxRuntime } from '@/renderer/pages/team/components/teamSendRuntime';
@@ -134,7 +132,6 @@ const AcpSendBox: React.FC<{
   const isMobile = Boolean(layout?.isMobile);
   const conversationContext = useConversationContextSafe();
   const loadedSkills = conversationContext?.loadedSkills ?? [];
-  const assistantId = conversationContext?.assistantId;
   const loadedMcpStatuses =
     conversationContext?.loadedMcpStatuses ??
     (conversationContext?.loadedMcpServers ?? []).map<IConversationMcpStatus>((name) => ({
@@ -158,14 +155,8 @@ const AcpSendBox: React.FC<{
   const runtimeMode = runtimeConfig.mode;
   const runtimeThoughtLevel = runtimeConfig.thoughtLevel;
   const handleThoughtLevelSetOption = useCallback(
-    async (optionId: string, value: string) => {
-      const result = await runtimeConfig.setConfigOption(optionId, value);
-      if (backend && !assistantId) {
-        void savePreferredThoughtLevel(backend, value);
-      }
-      return result;
-    },
-    [assistantId, backend, runtimeConfig]
+    async (optionId: string, value: string) => runtimeConfig.setConfigOption(optionId, value),
+    [runtimeConfig]
   );
 
   // Drive the mobile sheet's model entry off the same source AcpModelSelector uses
@@ -178,12 +169,9 @@ const AcpSendBox: React.FC<{
     backend,
     prepareRuntime: prepareRuntimeSync,
     enabled: isMobile,
-    persistGlobalPreference: !assistantId,
     onSelectModelSuccess: () => Message.success(t('agent.model.switchSuccess')),
     onSelectModelFailed: (_modelId, error) => Message.error(t(configErrorMessageKey(error))),
   });
-  const availableAgentModes = useAgentModesForBackend(backend);
-
   useEffect(() => {
     if (!runtimeMode?.currentValue) return;
     setCurrentMode(runtimeMode.currentValue);
@@ -195,7 +183,6 @@ const AcpSendBox: React.FC<{
       try {
         await runtimeConfig.setConfigOption(runtimeMode.id, mode);
         setCurrentMode(mode);
-        if (backend && !assistantId) void savePreferredMode(backend, mode);
         if (isLeaderInTeam) teamPermission?.propagateMode?.(mode);
         Message.success(t('agentMode.switchSuccess'));
       } catch (error) {
@@ -203,7 +190,7 @@ const AcpSendBox: React.FC<{
         Message.error(t(configErrorMessageKey(error)));
       }
     },
-    [assistantId, backend, isLeaderInTeam, runtimeConfig, runtimeMode, t, teamPermission]
+    [isLeaderInTeam, runtimeConfig, runtimeMode, t, teamPermission]
   );
 
   // In team mode, warmup the agent then fetch slash commands
@@ -396,15 +383,12 @@ Please check your local CLI tool authentication status`,
 
   const {
     items: queuedCommands,
-    isPaused: isQueuePaused,
     isInteractionLocked: isQueueInteractionLocked,
     hasPendingCommands,
     enqueue,
     remove,
     clear,
     reorder,
-    pause,
-    resume,
     lockInteraction,
     unlockInteraction,
     resetActiveExecution,
@@ -471,7 +455,7 @@ Please check your local CLI tool authentication status`,
         value: item.value,
         label: item.label,
         description: item.description ?? undefined,
-      })) ?? availableAgentModes;
+      })) ?? [];
     const modeOptions: MobileActionSheetOption[] = availableModes.map((mode) => ({
       key: mode.value,
       label: t(`agentMode.${mode.value}`, { defaultValue: mode.label }),
@@ -483,6 +467,7 @@ Please check your local CLI tool authentication status`,
       ? (model_info?.available_models ?? []).map((model) => ({
           key: model.id,
           label: model.label || model.id,
+          description: model.description,
           active: model_info?.current_model_id === model.id,
         }))
       : [];
@@ -606,7 +591,6 @@ Please check your local CLI tool authentication status`,
     return entries;
   }, [
     attachEntries,
-    availableAgentModes,
     canSwitchModel,
     currentMode,
     handleSheetModeChange,
@@ -654,15 +638,13 @@ Please check your local CLI tool authentication status`,
     }
   };
   const effectiveHandleStop = teamRuntime?.onStop ?? handleStop;
+  const sendBoxWidthClass = getChatSurfaceWidthClass(Boolean(teamPermission));
 
   return (
-    <div className='max-w-800px w-full mx-auto flex flex-col mt-auto mb-16px'>
+    <div className={`${sendBoxWidthClass} flex flex-col mt-auto mb-16px`}>
       <CommandQueuePanel
         items={queuedCommands}
-        paused={isQueuePaused}
         interactionLocked={isQueueInteractionLocked}
-        onPause={pause}
-        onResume={resume}
         onInteractionLock={lockInteraction}
         onInteractionUnlock={unlockInteraction}
         onEdit={handleEditQueuedCommand}
@@ -707,14 +689,6 @@ Please check your local CLI tool authentication status`,
         }
         rightTools={
           <div className='flex items-center gap-8px min-w-0'>
-            {!isMobile && (
-              <AcpThoughtLevelSelector
-                thoughtLevel={runtimeThoughtLevel}
-                setStatus={runtimeConfig.setStatus}
-                onSetOption={handleThoughtLevelSetOption}
-                iconOnly={Boolean(teamPermission)}
-              />
-            )}
             {showModeSelector && (
               <AgentModeSelector
                 backend={backend}
@@ -727,7 +701,6 @@ Please check your local CLI tool authentication status`,
                 hideCompactLabelPrefixOnMobile
                 onModeChanged={isLeaderInTeam ? teamPermission?.propagateMode : undefined}
                 beforeRuntimeSync={prepareRuntimeSync}
-                persistGlobalPreference={!assistantId}
               />
             )}
           </div>

@@ -111,6 +111,27 @@ const LoginPage: React.FC = () => {
     [clearMessageLater]
   );
 
+  const supportedLanguages = useMemo<{ code: string; label: string }[]>(
+    () => [
+      { code: 'zh-CN', label: '简体中文' },
+      { code: 'zh-TW', label: '繁體中文' },
+      { code: 'ja-JP', label: '日本語' },
+      { code: 'ko-KR', label: '한국어' },
+      { code: 'tr-TR', label: 'Türkçe' },
+      { code: 'uk-UA', label: 'Українська' },
+      { code: 'pt-BR', label: 'Português (BR)' },
+      { code: 'de-DE', label: 'Deutsch' },
+      { code: 'en-US', label: 'English' },
+    ],
+    []
+  );
+
+  const handleLanguageChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
+    const nextLanguage = event.target.value;
+    changeLanguage(nextLanguage).catch((error: Error) => {
+      console.error('Failed to change language:', error);
+    });
+  }, []);
   const handleSubmit = useCallback(
     async (event: React.FormEvent) => {
       event.preventDefault();

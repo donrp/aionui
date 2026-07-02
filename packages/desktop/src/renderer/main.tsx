@@ -84,10 +84,9 @@ configService.initialize().catch((err) => {
 import './services/i18n';
 import { registerPwa } from './services/registerPwa';
 
-import { mutate as swrMutate } from 'swr';
 import { ipcBridge } from '@/common';
-import { DETECTED_AGENTS_SWR_KEY, fetchDetectedAgents } from './utils/model/agentTypes';
 import { repairAllCronJobTimeZonesOnce } from '@renderer/pages/cron/repairCronJobTimeZone';
+import { bootstrapRendererConfig } from '@renderer/services/bootstrapRenderer';
 
 // Components and utilities
 import Layout from './components/layout/Layout';
@@ -277,20 +276,7 @@ const Main = () => {
 
   useEffect(() => {
     if (!ready) return;
-    // Prefetch `/api/agents` in parallel with configService.initialize() and
-    // seed the shared SWR cache so the Guid page's model/mode selectors can
-    // read `handshake.available_models` on the very first render — without
-    // waiting for a session to be created.
-    Promise.all([
-      configService.initialize().catch((err) => {
-        console.error('Failed to initialize config:', err);
-      }),
-      fetchDetectedAgents()
-        .then((agents) => swrMutate(DETECTED_AGENTS_SWR_KEY, agents, false))
-        .catch((err) => {
-          console.error('Failed to prefetch agents:', err);
-        }),
-    ]).finally(() => setConfigReady(true));
+    void bootstrapRendererConfig().finally(() => setConfigReady(true));
   }, [ready]);
 
   useEffect(() => {
@@ -320,6 +306,8 @@ const BackendStartupFailureDialog: React.FC<{ failure: BackendStartupFailureInfo
 
   const isIncompatibleRuntime = failure.reason === 'backend_incompatible_runtime';
   const isPackageArchitectureMismatch = failure.reason === 'backend_package_architecture_mismatch';
+  const isDataMigrationFailure = failure.reason === 'backend_data_migration_failed';
+  const isLocalDataRepairFailure = failure.reason === 'backend_local_data_repair_failed';
   const title = t('common.backendStartup.incompatibleRuntime.title');
   const description = isIncompatibleRuntime
     ? t('common.backendStartup.incompatibleRuntime.description')
@@ -329,7 +317,11 @@ const BackendStartupFailureDialog: React.FC<{ failure: BackendStartupFailureInfo
           deviceArch: failure.deviceArch ?? 'arm64',
           expectedArch: failure.expectedDownloadArch ?? 'arm64',
         })
-      : getBackendStartupInstallationDescription(t);
+      : isDataMigrationFailure
+        ? t('common.backendStartup.dataMigration.description')
+        : isLocalDataRepairFailure
+          ? t('common.backendStartup.localDataRepair.description')
+          : getBackendStartupInstallationDescription(t);
   const requiredVersions = failure.requiredVersions?.map((version) => `GLIBC_${version}`).join(', ');
 
   if (!isIncompatibleRuntime && !isPackageArchitectureMismatch) {
@@ -337,6 +329,13 @@ const BackendStartupFailureDialog: React.FC<{ failure: BackendStartupFailureInfo
       <div className='min-h-screen bg-bg-1'>
         <InstallationIntegrityModalHost
           description={description}
+          diagnosticsKind={
+            isLocalDataRepairFailure
+              ? 'local_data_repair'
+              : isDataMigrationFailure
+                ? 'data_migration'
+                : 'incomplete_installation'
+          }
           diagnostics={{
             source: 'backend_startup_failure',
             description,
@@ -387,6 +386,8 @@ const shouldShowBackendStartupFailureDialog =
   backendStartupFailure?.reason === 'backend_incompatible_runtime' ||
   backendStartupFailure?.reason === 'backend_incomplete_installation' ||
   backendStartupFailure?.reason === 'backend_package_architecture_mismatch' ||
+  backendStartupFailure?.reason === 'backend_data_migration_failed' ||
+  backendStartupFailure?.reason === 'backend_local_data_repair_failed' ||
   backendStartupFailure?.reason === 'backend_startup_failed';
 if (backendStartupFailure && shouldShowBackendStartupFailureDialog) {
   root.render(

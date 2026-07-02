@@ -14,18 +14,17 @@ export type TeammateStatus = 'pending' | 'idle' | 'active' | 'completed' | 'fail
 /** Workspace sharing strategy for the team */
 export type WorkspaceMode = 'shared' | 'isolated';
 
-/** Persisted agent configuration within a team */
-export type TeamAgent = {
+/** Persisted assistant configuration within a team */
+export type TeamAssistant = {
   slot_id: string;
   conversation_id: string;
   role: TeammateRole;
-  agent_type: string;
+  assistant_backend: string;
   icon?: string;
-  agent_name: string;
-  conversation_type: string;
+  assistant_name: string;
   status: TeammateStatus;
   cli_path?: string;
-  custom_agent_id?: string;
+  assistant_id?: string;
   model?: string;
   pending_confirmations?: number;
 };
@@ -37,9 +36,13 @@ export type TTeam = {
   name: string;
   workspace: string;
   workspace_mode: WorkspaceMode;
-  leader_agent_id: string;
-  agents: TeamAgent[];
-  /** Current session permission mode (e.g. 'plan', 'auto'). Persisted so newly spawned agents inherit it. */
+  leader_assistant_id: string;
+  assistants: TeamAssistant[];
+  /** @deprecated Use leader_assistant_id. */
+  leader_agent_id?: string;
+  /** @deprecated Use assistants. */
+  agents?: TeamAssistant[];
+  /** Current session permission mode (e.g. 'plan', 'auto'). Persisted so newly spawned assistants inherit it. */
   session_mode?: string;
   created_at: number;
   updated_at: number;
@@ -66,6 +69,11 @@ export type ITeamSlotWork = {
   paused?: boolean;
   suppressed_wake_count?: number;
   active_turn_id?: string;
+  active_turn_started_at_ms?: number;
+  active_turn_elapsed_ms?: number;
+  active_turn_slow?: boolean;
+  active_turn_slow_threshold_ms?: number;
+  runtime_health?: 'disconnected' | 'unhealthy';
 };
 
 export type ITeamRunAck = {
@@ -104,6 +112,10 @@ export type ITeamRunEvent = {
   slot_work?: ITeamSlotWork[];
 };
 
+export type ITeamRunStateResponse = {
+  active_run: ITeamRunEvent | null;
+};
+
 export type ITeamChildTurnEvent = {
   team_id: string;
   team_run_id: string;
@@ -125,7 +137,9 @@ export type ITeamAgentStatusEvent = {
 /** IPC event pushed to renderer when a new agent is spawned at runtime */
 export type ITeamAgentSpawnedEvent = {
   team_id: string;
-  agent: TeamAgent;
+  assistant: TeamAssistant;
+  /** @deprecated Use assistant. */
+  agent?: TeamAssistant;
 };
 
 /** IPC event pushed to renderer when an agent is removed from the team */
