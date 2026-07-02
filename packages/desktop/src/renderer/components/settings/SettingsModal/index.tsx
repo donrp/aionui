@@ -16,6 +16,7 @@ import { Computer, Earth, Info, LinkCloud, Puzzle, Toolkit } from '@icon-park/re
 import classNames from 'classnames';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SUPERDNODES_BRAND } from '@/renderer/brand/supernodes';
 import AboutModalContent from './contents/AboutModalContent';
 import AgentModalContent from './contents/AgentModalContent';
 import ExtensionSettingsTabContent from './contents/ExtensionSettingsTabContent';
@@ -210,14 +211,21 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onCancel, defaul
       });
     }
 
-    builtinItems.push(
-      {
+    if (SUPERDNODES_BRAND.showSystemSettings) {
+      builtinItems.push({
         key: 'system',
         label: t('settings.system'),
         icon: <Computer theme='outline' size='20' fill={iconColors.secondary} />,
-      },
-      { key: 'about', label: t('settings.about'), icon: <Info theme='outline' size='20' fill={iconColors.secondary} /> }
-    );
+      });
+    }
+
+    if (SUPERDNODES_BRAND.showAboutSettings) {
+      builtinItems.push({
+        key: 'about',
+        label: t('settings.about'),
+        icon: <Info theme='outline' size='20' fill={iconColors.secondary} />,
+      });
+    }
 
     // Extension tabs — position anchoring
     const beforeMap = new Map<string, IExtensionSettingsTab[]>();

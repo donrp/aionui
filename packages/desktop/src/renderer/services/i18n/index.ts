@@ -4,6 +4,7 @@ import { initReactI18next } from 'react-i18next';
 import { configService } from '@/common/config/configService';
 import { ipcBridge } from '@/common';
 import i18nConfig from '@/common/config/i18n-config.json';
+import { SUPERDNODES_BRAND } from '@/renderer/brand/supernodes';
 import {
   DEFAULT_LANGUAGE,
   normalizeLanguageCode,
@@ -75,6 +76,9 @@ function getElectronSystemLanguageHint(): string | null {
 }
 
 function getInitialLanguage(): SupportedLanguage {
+  if (SUPERDNODES_BRAND.forceEnglishLocale) {
+    return DEFAULT_LANGUAGE;
+  }
   const backendStartupFailed =
     typeof window !== 'undefined' && (window as Window & { __backendStartupFailed?: boolean }).__backendStartupFailed;
   const localStorageLanguage = getLocalStorageLanguageHint();
@@ -134,6 +138,13 @@ i18n
 // module load.
 async function initLanguage(): Promise<void> {
   try {
+    if (SUPERDNODES_BRAND.forceEnglishLocale) {
+      await ensureAndSwitch(i18n, DEFAULT_LANGUAGE, loadLocaleModules);
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('i18nextLng', DEFAULT_LANGUAGE);
+      }
+      return;
+    }
     await configService.whenReady();
     const savedLanguage = configService.get('language');
     const language = savedLanguage || normalizeLanguageCode(navigator.language || DEFAULT_LANGUAGE);

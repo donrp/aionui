@@ -1,13 +1,13 @@
 {
-  "name": "AionUi",
-  "short_name": "AionUi",
-  "description": "AionUi WebUI for mobile and desktop browsers.",
+  "name": "Supernodes",
+  "short_name": "Supernodes",
+  "description": "Supernodes AI agents for marketing and sales.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#ffffff",
-  "theme_color": "#4E5969",
+  "background_color": "#f7f6f5",
+  "theme_color": "#ee5b2e",
   "icons": [
     {
       "src": "./pwa/icon-192.png",

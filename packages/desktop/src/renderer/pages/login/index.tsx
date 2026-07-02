@@ -1,9 +1,9 @@
-import loginLogo from '@renderer/assets/logos/brand/app.png';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import loginLogo from '@renderer/assets/logos/brand/supernodes.svg';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { changeLanguage } from '@/renderer/services/i18n';
 import { useNavigate } from 'react-router-dom';
 import AppLoader from '@renderer/components/layout/AppLoader';
+import { SUPERDNODES_BRAND, ensureBrandFavicon } from '@/renderer/brand/supernodes';
 import { useAuth } from '../../hooks/context/AuthContext';
 import './LoginPage.css';
 
@@ -32,7 +32,7 @@ const deobfuscate = (text: string): string => {
 };
 
 const LoginPage: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { status, login } = useAuth();
 
@@ -49,6 +49,7 @@ const LoginPage: React.FC = () => {
 
   useEffect(() => {
     document.body.classList.add('login-page-active');
+    ensureBrandFavicon();
     return () => {
       document.body.classList.remove('login-page-active');
       if (messageTimer.current) {
@@ -62,8 +63,8 @@ const LoginPage: React.FC = () => {
   }, [t]);
 
   useEffect(() => {
-    document.documentElement.lang = i18n.language;
-  }, [i18n.language]);
+    document.documentElement.lang = 'en';
+  }, []);
 
   useEffect(() => {
     const isRememberMe = localStorage.getItem(REMEMBER_ME_KEY) === 'true';
@@ -109,26 +110,6 @@ const LoginPage: React.FC = () => {
     },
     [clearMessageLater]
   );
-
-  const supportedLanguages = useMemo<{ code: string; label: string }[]>(
-    () => [
-      { code: 'zh-CN', label: '简体中文' },
-      { code: 'zh-TW', label: '繁體中文' },
-      { code: 'ja-JP', label: '日本語' },
-      { code: 'ko-KR', label: '한국어' },
-      { code: 'tr-TR', label: 'Türkçe' },
-      { code: 'uk-UA', label: 'Українська' },
-      { code: 'en-US', label: 'English' },
-    ],
-    []
-  );
-
-  const handleLanguageChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
-    const nextLanguage = event.target.value;
-    changeLanguage(nextLanguage).catch((error: Error) => {
-      console.error('Failed to change language:', error);
-    });
-  }, []);
 
   const handleSubmit = useCallback(
     async (event: React.FormEvent) => {
@@ -193,33 +174,11 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className='login-page'>
-      {/* <div className='login-page__background' aria-hidden='true'>
-        <div className='login-page__background-circle login-page__background-circle--lg' />
-        <div className='login-page__background-circle login-page__background-circle--md' />
-        <div className='login-page__background-circle login-page__background-circle--sm' />
-      </div> */}
-
       <div className='login-page__card'>
-        <label className='login-page__lang-select-wrapper' htmlFor='lang-select'>
-          <select
-            id='lang-select'
-            className='login-page__lang-select'
-            value={i18n.language}
-            onChange={handleLanguageChange}
-          >
-            {supportedLanguages.map((lang) => (
-              <option key={lang.code} value={lang.code}>
-                {lang.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
         <div className='login-page__header'>
           <div className='login-page__logo'>
             <img src={loginLogo} alt={t('login.brand')} />
           </div>
-          <h1 className='login-page__title'>{t('login.brand')}</h1>
           <p className='login-page__subtitle'>{t('login.subtitle')}</p>
         </div>
 
@@ -344,13 +303,15 @@ const LoginPage: React.FC = () => {
           </div>
         </form>
 
-        <div className='login-page__footer'>
-          <div className='login-page__footer-content'>
-            <span>{t('login.footerPrimary')}</span>
-            <span className='login-page__footer-divider'>•</span>
-            <span>{t('login.footerSecondary')}</span>
+        {!SUPERDNODES_BRAND.loginHideFooter && (
+          <div className='login-page__footer'>
+            <div className='login-page__footer-content'>
+              <span>{t('login.footerPrimary')}</span>
+              <span className='login-page__footer-divider'>•</span>
+              <span>{t('login.footerSecondary')}</span>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

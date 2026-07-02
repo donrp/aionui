@@ -22,19 +22,10 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Tooltip } from '@arco-design/web-react';
 import { getSiderTooltipProps } from '@/renderer/utils/ui/siderTooltip';
+import { isVisibleSettingsTab, SETTINGS_TAB_ORDER } from '@/renderer/brand/supernodes';
 
 /** Builtin settings tab IDs in display order (must match router paths). */
-export const BUILTIN_TAB_IDS = [
-  'agent',
-  'model',
-  'assistants',
-  'capabilities',
-  'appearance',
-  'webui',
-  'pet',
-  'system',
-  'about',
-] as const;
+export const BUILTIN_TAB_IDS = SETTINGS_TAB_ORDER;
 
 /**
  * Legacy anchor IDs that have been merged into other tabs.
@@ -114,7 +105,9 @@ const SettingsSider: React.FC<{ collapsed?: boolean; tooltipEnabled?: boolean }>
     };
 
     // Start with ordered builtin IDs, hiding desktop-only tabs in browser mode
-    const result: SiderItem[] = BUILTIN_TAB_IDS.filter((id) => isDesktop || id !== 'pet').map((id) => builtinMap[id]);
+    const result: SiderItem[] = BUILTIN_TAB_IDS.filter((id) => isVisibleSettingsTab(id, isDesktop)).map(
+      (id) => builtinMap[id]
+    );
 
     // Extension tabs with position anchoring
     const beforeMap = new Map<string, IExtensionSettingsTab[]>();

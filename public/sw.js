@@ -2,15 +2,17 @@
 // (index.html) for failed script requests, causing "module script MIME text/html"
 // errors when the server was down or served a different asset hash. The v2
 // activate handler deletes v1, flushing any poisoned cached entries.
-const CACHE_NAME = 'aionui-webui-v2';
+const CACHE_NAME = 'supernodes-webui-v1';
 const NON_CACHEABLE_PATHS = new Set(['/qr-login']);
 const OFFLINE_PAGE_URL = new URL('./index.html', self.location.href).toString();
+const ICON_VERSION = 'supernodes';
 const PRECACHE_URLS = [
   new URL('./', self.location.href).toString(),
   OFFLINE_PAGE_URL,
   new URL('./manifest.webmanifest', self.location.href).toString(),
-  new URL('./pwa/icon-192.png', self.location.href).toString(),
-  new URL('./pwa/icon-512.png', self.location.href).toString(),
+  new URL(`./favicon.ico?v=${ICON_VERSION}`, self.location.href).toString(),
+  new URL(`./pwa/icon-192.png?v=${ICON_VERSION}`, self.location.href).toString(),
+  new URL(`./pwa/icon-512.png?v=${ICON_VERSION}`, self.location.href).toString(),
 ];
 
 self.addEventListener('install', (event) => {
@@ -101,20 +103,28 @@ function isAssetContentTypeMismatch(request, response) {
   return false;
 }
 
+function isImageContentTypeMismatch(request, response) {
+  if (request.destination !== 'image') return false;
+  const contentType = response.headers.get('content-type') || '';
+  return !/^image\//i.test(contentType);
+}
+
 async function staleWhileRevalidate(request) {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(request);
 
   const networkFetch = fetch(request)
-    .then((response) => {
-      if (response.ok) {
+    .then(async (response) => {
+      if (response.ok && !isImageContentTypeMismatch(request, response)) {
         cache.put(request, response.clone());
+      } else if (isImageContentTypeMismatch(request, response)) {
+        await cache.delete(request);
       }
       return response;
     })
     .catch(() => undefined);
 
-  if (cached) {
+  if (cached && !isImageContentTypeMismatch(request, cached)) {
     void networkFetch;
     return cached;
   }

@@ -13,6 +13,7 @@ import { useInputFocusRing } from '@/renderer/hooks/chat/useInputFocusRing';
 import { openExternalUrl, resolveExtensionAssetUrl } from '@/renderer/utils/platform';
 import { CUSTOM_AVATAR_IMAGE_MAP } from './constants';
 import AgentPillBar from './components/AgentPillBar';
+import { SUPERDNODES_BRAND } from '@/renderer/brand/supernodes';
 import AssistantSelectionArea from './components/AssistantSelectionArea';
 import { AgentPillBarSkeleton } from './components/GuidSkeleton';
 import GuidActionRow from './components/GuidActionRow';
@@ -821,8 +822,10 @@ const GuidPage: React.FC = () => {
               </div>
             ) : null
           ) : agentSelection.availableAgents === undefined ? (
-            <AgentPillBarSkeleton />
-          ) : agentSelection.availableAgents.length > 0 ? (
+            SUPERDNODES_BRAND.showAgentPillBar ? (
+              <AgentPillBarSkeleton />
+            ) : null
+          ) : agentSelection.availableAgents.length > 0 && SUPERDNODES_BRAND.showAgentPillBar ? (
             <AgentPillBar
               availableAgents={agentSelection.availableAgents}
               selectedAgentKey={agentSelection.selectedAgentKey}
@@ -882,12 +885,14 @@ const GuidPage: React.FC = () => {
           />
         </div>
 
-        <QuickActionButtons
-          onOpenLink={openLink}
-          onOpenBugReport={() => setShowFeedbackModal(true)}
-          inactiveBorderColor={inactiveBorderColor}
-          activeShadow={activeShadow}
-        />
+        {SUPERDNODES_BRAND.showGuidQuickActions && (
+          <QuickActionButtons
+            onOpenLink={openLink}
+            onOpenBugReport={() => setShowFeedbackModal(true)}
+            inactiveBorderColor={inactiveBorderColor}
+            activeShadow={activeShadow}
+          />
+        )}
         <FeedbackReportModal visible={showFeedbackModal} onCancel={() => setShowFeedbackModal(false)} />
       </div>
     </ConfigProvider>

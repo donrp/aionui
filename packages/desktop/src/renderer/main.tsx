@@ -37,6 +37,9 @@ import './utils/ui/runtimePatches';
 
 // Browser adapter setup
 import '@/common/adapter/browser';
+import { ensureBrandFavicon } from '@/renderer/brand/supernodes';
+
+ensureBrandFavicon();
 
 // React and core dependencies
 import type { PropsWithChildren } from 'react';
@@ -64,6 +67,7 @@ import { useTranslation } from 'react-i18next';
 
 // Styles
 import 'uno.css';
+import './styles/fonts.css';
 import './styles/arco-override.css';
 import './styles/themes/index.css';
 import './styles/markdown.css';

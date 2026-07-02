@@ -1,0 +1,10 @@
+{
+  "title": "Documents",
+  "empty": "Select a document to edit",
+  "save": "Save",
+  "saved": "Document saved",
+  "saveFailed": "Failed to save document",
+  "saveAsDocument": "Save as Document",
+  "createdBy": "By {{agent}} · {{date}}",
+  "listTitle": "Documents"
+}

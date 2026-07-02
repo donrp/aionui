@@ -25,6 +25,7 @@ import { usePresetAssistantResolver } from './usePresetAssistantResolver';
 import { useAgentAvailability } from './useAgentAvailability';
 import { useCustomAgentsLoader } from './useCustomAgentsLoader';
 import { isSupportedNewConversationAgent } from '@/renderer/utils/model/agentTypeSupportPolicy';
+import { SUPERDNODES_BRAND } from '@/renderer/brand/supernodes';
 
 export type GuidAgentSelectionResult = {
   selectedAgentKey: string;
@@ -128,9 +129,9 @@ export const useGuidAgentSelection = ({
 }: UseGuidAgentSelectionOptions): GuidAgentSelectionResult => {
   const [selectedAgentKey, _setSelectedAgentKey] = useState<string>(() => {
     try {
-      return configService.get('guid.lastSelectedAgent') || 'aionrs';
+      return configService.get('guid.lastSelectedAgent') || 'hermes';
     } catch {
-      return 'aionrs';
+      return 'hermes';
     }
   });
   const [availableAgents, setAvailableAgents] = useState<AvailableAgent[]>();
@@ -284,13 +285,21 @@ export const useGuidAgentSelection = ({
     // instead of mistaking it for a logo URL.
     const normalisedDetected: AvailableAgent[] = availableAgentsData
       .filter(isSupportedNewConversationAgent)
+      .filter((a) =>
+        SUPERDNODES_BRAND.hideAionCliAgent ? ((a as AgentMetadata).backend ?? a.agent_type) !== 'aionrs' : true
+      )
       .map((a) => {
         const asAgent = a as AgentMetadata;
         const isCustomRow = asAgent.agent_source === 'custom';
+        const backendKey = asAgent.backend ?? a.agent_type;
         return Object.assign({}, a, {
           id: asAgent.id,
           custom_agent_id: isCustomRow ? asAgent.id : (a as AvailableAgent).custom_agent_id,
           avatar: isCustomRow ? asAgent.icon : (a as AvailableAgent).avatar,
+          name:
+            backendKey === 'hermes' && SUPERDNODES_BRAND.soleAgentDisplayName
+              ? SUPERDNODES_BRAND.soleAgentDisplayName
+              : (a as AvailableAgent).name,
         });
       });
     setAvailableAgents(normalisedDetected);
@@ -336,7 +345,7 @@ export const useGuidAgentSelection = ({
       const currentIsPreset = selectedAgentKey.startsWith('custom:');
       if (currentIsPreset) {
         const firstCliAgent = availableAgents.find((a) => !a.is_preset);
-        const fallbackKey = firstCliAgent ? getAgentKey(firstCliAgent) : 'aionrs';
+        const fallbackKey = firstCliAgent ? getAgentKey(firstCliAgent) : 'hermes';
         _setSelectedAgentKey(fallbackKey);
         configService.set('guid.lastSelectedAgent', fallbackKey).catch((error) => {
           console.error('Failed to save reset agent key:', error);
@@ -522,7 +531,7 @@ export const useGuidAgentSelection = ({
   // Key of the first non-preset CLI agent (used as fallback when leaving preset mode)
   const defaultAgentKey = useMemo(() => {
     const firstCliAgent = availableAgents?.find((a) => !a.is_preset);
-    return firstCliAgent ? getAgentKey(firstCliAgent) : 'aionrs';
+    return firstCliAgent ? getAgentKey(firstCliAgent) : 'hermes';
   }, [availableAgents]);
 
   return {

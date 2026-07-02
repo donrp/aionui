@@ -6,8 +6,23 @@
    因此 Shadow DOM 内渲染的 Markdown 也能引用它。 */
 :root {
   --font-mono:
-    ui-monospace, 'SF Mono', SFMono-Regular, Menlo, 'Cascadia Code', 'Roboto Mono', Consolas, 'Liberation Mono',
-    monospace;
+    'Fragment Mono', ui-monospace, 'SF Mono', SFMono-Regular, Menlo, 'Cascadia Code', 'Roboto Mono', Consolas,
+    'Liberation Mono', monospace;
+
+  /* Supernodes brand: override Arco's primary (arcoblue) palette with the
+     orange ramp around #ee5b2e. Arco consumes these as RGB triplets via
+     rgb(var(--primary-6)). This recolors all primary buttons, links, focus
+     rings, switches, sliders, etc. across the app. */
+  --primary-1: 253, 234, 227;
+  --primary-2: 251, 213, 199;
+  --primary-3: 247, 189, 166;
+  --primary-4: 244, 157, 124;
+  --primary-5: 241, 124, 84;
+  --primary-6: 238, 91, 46;
+  --primary-7: 213, 78, 36;
+  --primary-8: 168, 60, 27;
+  --primary-9: 122, 43, 18;
+  --primary-10: 77, 26, 10;
   --code-font-size: 13px;
   --aion-overlay-bg: #ffffff;
   --aion-overlay-text: #1d2129;
@@ -17,10 +32,22 @@
 
 html[data-theme='dark'],
 body[arco-theme='dark'] {
-  --aion-overlay-bg: #0e0e0e;
-  --aion-overlay-text: #f2f3f5;
-  --aion-overlay-border: #333333;
-  --aion-overlay-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  --aion-overlay-bg: #1a171a;
+  --aion-overlay-text: #f7f6f5;
+  --aion-overlay-border: #383338;
+  --aion-overlay-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+
+  /* Supernodes brand: brighter orange ramp for dark mode primary */
+  --primary-1: 58, 44, 37;
+  --primary-2: 90, 64, 53;
+  --primary-3: 138, 87, 64;
+  --primary-4: 192, 106, 68;
+  --primary-5: 224, 122, 80;
+  --primary-6: 244, 122, 82;
+  --primary-7: 246, 144, 109;
+  --primary-8: 249, 179, 154;
+  --primary-9: 251, 210, 197;
+  --primary-10: 255, 225, 214;
 }
 
 /* Arco's arco.css puts 'Inter' first in font-family, which causes very thin
@@ -28,8 +55,8 @@ body[arco-theme='dark'] {
 html,
 body {
   font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'PingFang SC',
-    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    'StackSans Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
 }
 
 html body .arco-tooltip-content,

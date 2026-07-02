@@ -20,6 +20,8 @@ export type StaticServerOptions = {
   backendPort: number;
   port?: number;
   allowRemote?: boolean;
+  /** Data directory for Supernodes documents API */
+  dataDir?: string;
 };
 
 export type StaticServerHandle = {
@@ -135,6 +137,13 @@ export async function startStaticServer(opts: StaticServerOptions): Promise<Stat
     try {
       if (!req.url || !req.method) {
         res.writeHead(400).end();
+        return;
+      }
+
+      // Supernodes documents API — handled locally, not proxied to aioncore
+      if (opts.dataDir && req.url.startsWith('/api/supernodes/documents')) {
+        const { handleDocumentsRequest } = await import('./documents-handler.js');
+        await handleDocumentsRequest(req, res, opts.dataDir);
         return;
       }
 

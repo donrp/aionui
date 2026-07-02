@@ -3,6 +3,8 @@ import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import AppLoader from '@renderer/components/layout/AppLoader';
 import { useAuth } from '@renderer/hooks/context/AuthContext';
 import { TEAM_MODE_ENABLED } from '@/common/config/constants';
+import { SUPERDNODES_BRAND, getDefaultSettingsPath } from '@/renderer/brand/supernodes';
+import { isElectronDesktop } from '@/renderer/utils/platform';
 const Conversation = React.lazy(() => import('@renderer/pages/conversation'));
 const Guid = React.lazy(() => import('@renderer/pages/guid'));
 const AgentSettings = React.lazy(() => import('@renderer/pages/settings/AgentSettings'));
@@ -18,12 +20,17 @@ const LoginPage = React.lazy(() => import('@renderer/pages/login'));
 const ComponentsShowcase = React.lazy(() => import('@renderer/pages/TestShowcase'));
 const ScheduledTasksPage = React.lazy(() => import('@renderer/pages/cron/ScheduledTasksPage'));
 const TaskDetailPage = React.lazy(() => import('@renderer/pages/cron/ScheduledTasksPage/TaskDetailPage'));
+const DocumentsPage = React.lazy(() => import('@renderer/pages/documents/DocumentsPage'));
 const TeamIndex = React.lazy(() => import('@renderer/pages/team'));
 
 const withRouteFallback = (Component: React.LazyExoticComponent<React.ComponentType>) => (
   <Suspense fallback={<AppLoader />}>
     <Component />
   </Suspense>
+);
+
+const HiddenSettingsRedirect: React.FC = () => (
+  <Navigate to={getDefaultSettingsPath(isElectronDesktop())} replace />
 );
 
 const ProtectedLayout: React.FC<{ layout: React.ReactElement }> = ({ layout }) => {
@@ -60,22 +67,69 @@ const PanelRoute: React.FC<{ layout: React.ReactElement }> = ({ layout }) => {
           />
           <Route path='/settings/model' element={withRouteFallback(ModeSettings)} />
           <Route path='/settings/assistants' element={withRouteFallback(AssistantSettings)} />
-          <Route path='/settings/agent' element={withRouteFallback(AgentSettings)} />
+          <Route
+            path='/settings/agent'
+            element={
+              SUPERDNODES_BRAND.showAgentSettings ? (
+                withRouteFallback(AgentSettings)
+              ) : (
+                <HiddenSettingsRedirect />
+              )
+            }
+          />
           <Route path='/settings/capabilities' element={withRouteFallback(CapabilitiesSettings)} />
           {/* Legacy routes — redirect to the merged /settings/capabilities page */}
           <Route path='/settings/skills-hub' element={<Navigate to='/settings/capabilities?tab=skills' replace />} />
           <Route path='/settings/tools' element={<Navigate to='/settings/capabilities?tab=tools' replace />} />
-          <Route path='/settings/appearance' element={withRouteFallback(AppearanceSettings)} />
-          <Route path='/settings/display' element={<Navigate to='/settings/appearance' replace />} />
+          <Route
+            path='/settings/appearance'
+            element={
+              SUPERDNODES_BRAND.showAppearanceSettings ? (
+                withRouteFallback(AppearanceSettings)
+              ) : (
+                <HiddenSettingsRedirect />
+              )
+            }
+          />
+          <Route
+            path='/settings/display'
+            element={
+              <Navigate
+                to={
+                  SUPERDNODES_BRAND.showAppearanceSettings ? '/settings/appearance' : getDefaultSettingsPath(false)
+                }
+                replace
+              />
+            }
+          />
           <Route path='/settings/webui' element={withRouteFallback(WebuiSettings)} />
           <Route path='/settings/pet' element={withRouteFallback(PetSettings)} />
-          <Route path='/settings/system' element={withRouteFallback(SystemSettings)} />
-          <Route path='/settings/about' element={withRouteFallback(SystemSettings)} />
+          <Route
+            path='/settings/system'
+            element={
+              SUPERDNODES_BRAND.showSystemSettings ? (
+                withRouteFallback(SystemSettings)
+              ) : (
+                <HiddenSettingsRedirect />
+              )
+            }
+          />
+          <Route
+            path='/settings/about'
+            element={
+              SUPERDNODES_BRAND.showAboutSettings ? (
+                withRouteFallback(SystemSettings)
+              ) : (
+                <HiddenSettingsRedirect />
+              )
+            }
+          />
           <Route path='/settings/ext/:tabId' element={withRouteFallback(ExtensionSettingsPage)} />
-          <Route path='/settings' element={<Navigate to='/settings/model' replace />} />
+          <Route path='/settings' element={<Navigate to={getDefaultSettingsPath(false)} replace />} />
           <Route path='/test/components' element={withRouteFallback(ComponentsShowcase)} />
           <Route path='/scheduled' element={withRouteFallback(ScheduledTasksPage)} />
           <Route path='/scheduled/:job_id' element={withRouteFallback(TaskDetailPage)} />
+          <Route path='/documents' element={withRouteFallback(DocumentsPage)} />
         </Route>
         <Route path='*' element={<Navigate to={status === 'authenticated' ? '/guid' : '/login'} replace />} />
       </Routes>

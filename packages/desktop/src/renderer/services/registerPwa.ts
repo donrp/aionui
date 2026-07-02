@@ -6,7 +6,7 @@
 
 import { isElectronDesktop } from '@renderer/utils/platform';
 
-const SERVICE_WORKER_URL = './sw.js';
+const SERVICE_WORKER_URL = './sw.js?v=supernodes';
 const LOCALHOST_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
 
 function isPwaRegistrationSupported(): boolean {

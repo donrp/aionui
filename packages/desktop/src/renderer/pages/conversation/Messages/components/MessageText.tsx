@@ -10,7 +10,7 @@ import { useConversationContextSafe } from '@/renderer/hooks/context/Conversatio
 import { useLayoutContext } from '@/renderer/hooks/context/LayoutContext';
 import { iconColors } from '@/renderer/styles/colors';
 import { Alert, Message, Tooltip } from '@arco-design/web-react';
-import { Copy } from '@icon-park/react';
+import { Copy, FileText } from '@icon-park/react';
 import classNames from 'classnames';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -146,6 +146,34 @@ const MessageText: React.FC<{ message: IMessageText; showCopyRow?: boolean }> = 
       });
   };
 
+  const handleSaveDocument = () => {
+    const baseText = shouldRenderPlainText ? text : json ? JSON.stringify(data, null, 2) : text;
+    const agentName = senderName ?? 'Agent';
+    const title = `${agentName} - ${new Date().toLocaleDateString()}`;
+    const content = `<p>${baseText.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>')}</p>`;
+
+    fetch('/api/supernodes/documents', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title,
+        content,
+        conversation_id: conversationContext?.conversation_id ?? '',
+        created_by_agent: agentName,
+      }),
+    })
+      .then((res) => {
+        if (res.ok) {
+          Message.success(t('documents.saved'));
+        } else {
+          Message.error(t('documents.saveFailed'));
+        }
+      })
+      .catch(() => {
+        Message.error(t('documents.saveFailed'));
+      });
+  };
+
   const copyButton = (
     <Tooltip content={t('common.copy', { defaultValue: 'Copy' })}>
       <div
@@ -157,6 +185,19 @@ const MessageText: React.FC<{ message: IMessageText; showCopyRow?: boolean }> = 
       </div>
     </Tooltip>
   );
+
+  const saveDocumentButton =
+    !isUserMessage && typeof window !== 'undefined' && !(window as { electronAPI?: unknown }).electronAPI ? (
+      <Tooltip content={t('documents.saveAsDocument')}>
+        <div
+          className='p-4px rd-4px cursor-pointer hover:bg-3 transition-colors opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto focus-within:opacity-100 focus-within:pointer-events-auto'
+          onClick={handleSaveDocument}
+          style={{ lineHeight: 0 }}
+        >
+          <FileText theme='outline' size='16' fill={iconColors.secondary} />
+        </div>
+      </Tooltip>
+    ) : null;
 
   const cronMeta = message.content.cronMeta;
   const senderName = message.content.senderName;
@@ -237,6 +278,7 @@ const MessageText: React.FC<{ message: IMessageText; showCopyRow?: boolean }> = 
             })}
           >
             {copyButton}
+            {saveDocumentButton}
             {message.created_at && (
               <span className='text-12px text-t-secondary opacity-0 group-hover:opacity-100 transition-opacity select-none'>
                 {formatMessageTime(message.created_at)}

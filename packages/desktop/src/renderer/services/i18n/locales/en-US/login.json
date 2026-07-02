@@ -1,7 +1,7 @@
 {
-  "pageTitle": "AionUi - Sign In",
-  "brand": "AionUi",
-  "subtitle": "Welcome back, please sign in to your account",
+  "pageTitle": "Supernodes - Sign In",
+  "brand": "Supernodes",
+  "subtitle": "AI agents that run your marketing and sales",
   "username": "Username",
   "usernamePlaceholder": "Enter your username",
   "password": "Password",
@@ -13,8 +13,8 @@
   "showPassword": "Show password",
   "hidePassword": "Hide password",
   "languageToggle": "Change language",
-  "footerPrimary": "Transform your command-line AI",
-  "footerSecondary": "Modern & Efficient",
+  "footerPrimary": "AI agents for marketing and sales",
+  "footerSecondary": "Powered by Supernodes",
   "errors": {
     "empty": "Please enter username and password",
     "invalidCredentials": "Invalid username or password",
