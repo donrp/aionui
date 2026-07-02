@@ -1,5 +1,5 @@
 import loginLogo from '@renderer/assets/logos/brand/supernodes.svg';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import AppLoader from '@renderer/components/layout/AppLoader';
@@ -32,7 +32,7 @@ const deobfuscate = (text: string): string => {
 };
 
 const LoginPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { status, login } = useAuth();
 
@@ -128,7 +128,7 @@ const LoginPage: React.FC = () => {
 
   const handleLanguageChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
     const nextLanguage = event.target.value;
-    changeLanguage(nextLanguage).catch((error: Error) => {
+    i18n.changeLanguage(nextLanguage).catch((error: Error) => {
       console.error('Failed to change language:', error);
     });
   }, []);

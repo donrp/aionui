@@ -71,12 +71,10 @@ export async function fetchAgentLogos(): Promise<AgentLogoMap> {
  * once it hydrates.
  */
 export function getAgentLogo(agent: string | undefined | null): string | null {
-  if (!agent || typeof agent !== 'string') return null;
-  const key = agent.toLowerCase() as keyof typeof AGENT_LOGO_PATH_MAP;
   // Supernodes branding: the sole agent (Hermes backend) shows the Supernodes mark.
-  if (key === 'hermes') return supernodesMark;
-  const path = AGENT_LOGO_PATH_MAP[key];
-  return path ? normalizeLogoUrl(buildAssetUrl(path)) : null;
+  if (!agent || typeof agent !== 'string') return null;
+  if (agent.toLowerCase() === 'hermes') return supernodesMark;
+  return null;
 }
 
 export function useAgentLogos(): AgentLogoMap {
