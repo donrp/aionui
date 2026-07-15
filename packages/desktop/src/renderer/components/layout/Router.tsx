@@ -1,16 +1,16 @@
 import React, { Suspense } from 'react';
-import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { HashRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import AppLoader from '@renderer/components/layout/AppLoader';
 import { useAuth } from '@renderer/hooks/context/AuthContext';
 import { TEAM_MODE_ENABLED } from '@/common/config/constants';
-import { SUPERDNODES_BRAND, getDefaultSettingsPath } from '@/renderer/brand/supernodes';
-import { isElectronDesktop } from '@/renderer/utils/platform';
+import { SUPERDNODES_BRAND } from '@/renderer/brand/supernodes';
 const Conversation = React.lazy(() => import('@renderer/pages/conversation'));
 const Guid = React.lazy(() => import('@renderer/pages/guid'));
 const AgentSettings = React.lazy(() => import('@renderer/pages/settings/AgentSettings'));
 const AgentRepairPage = React.lazy(() => import('@renderer/pages/settings/AgentSettings/AgentRepairPage'));
 const AssistantSettings = React.lazy(() => import('@renderer/pages/settings/AssistantSettings'));
-const CapabilitiesSettings = React.lazy(() => import('@renderer/pages/settings/CapabilitiesSettings'));
+const SkillsSettings = React.lazy(() => import('@renderer/pages/settings/SkillsHubSettings'));
+const ToolsSettings = React.lazy(() => import('@renderer/pages/settings/ToolsSettings'));
 const AppearanceSettings = React.lazy(() => import('@renderer/pages/settings/AppearanceSettings'));
 const ModeSettings = React.lazy(() => import('@renderer/pages/settings/ModeSettings'));
 const SystemSettings = React.lazy(() => import('@renderer/pages/settings/SystemSettings'));
@@ -30,9 +30,15 @@ const withRouteFallback = (Component: React.LazyExoticComponent<React.ComponentT
   </Suspense>
 );
 
-const HiddenSettingsRedirect: React.FC = () => (
-  <Navigate to={getDefaultSettingsPath(isElectronDesktop())} replace />
-);
+/**
+ * Legacy `/settings/capabilities?tab=tools` deep links now map to the standalone
+ * Tools page; everything else (skills tab or no tab) lands on the Skills page.
+ */
+const CapabilitiesRedirect: React.FC = () => {
+  const { search } = useLocation();
+  const tab = new URLSearchParams(search).get('tab');
+  return <Navigate to={tab === 'tools' ? '/settings/tools' : '/settings/skills'} replace />;
+};
 
 const ProtectedLayout: React.FC<{ layout: React.ReactElement }> = ({ layout }) => {
   const { status } = useAuth();
@@ -74,26 +80,30 @@ const PanelRoute: React.FC<{ layout: React.ReactElement }> = ({ layout }) => {
               SUPERDNODES_BRAND.showAgentSettings ? (
                 withRouteFallback(AgentSettings)
               ) : (
-                <HiddenSettingsRedirect />
+                <Navigate to='/guid' replace />
               )
             }
           />
           <Route path='/settings/agent/:id/repair' element={withRouteFallback(AgentRepairPage)} />
-          <Route path='/settings/capabilities' element={withRouteFallback(CapabilitiesSettings)} />
+          {/* Skills and Tools are top-level settings entries. */}
+          <Route path='/settings/skills' element={withRouteFallback(SkillsSettings)} />
+          <Route path='/settings/skills/import-history' element={withRouteFallback(SkillsSettings)} />
+          <Route path='/settings/tools' element={withRouteFallback(ToolsSettings)} />
+          {/* Legacy routes — the previous combined "Capabilities" page is now two pages. */}
+          <Route path='/settings/capabilities' element={<CapabilitiesRedirect />} />
           <Route
             path='/settings/capabilities/skills/import-history'
-            element={withRouteFallback(CapabilitiesSettings)}
+            element={<Navigate to='/settings/skills/import-history' replace />}
           />
-          {/* Legacy routes — redirect to the merged /settings/capabilities page */}
-          <Route path='/settings/skills-hub' element={<Navigate to='/settings/capabilities?tab=skills' replace />} />
-          <Route path='/settings/tools' element={<Navigate to='/settings/capabilities?tab=tools' replace />} />
+          {/* Legacy routes — redirect to standalone pages */}
+          <Route path='/settings/skills-hub' element={<Navigate to='/settings/skills' replace />} />
           <Route
             path='/settings/appearance'
             element={
               SUPERDNODES_BRAND.showAppearanceSettings ? (
                 withRouteFallback(AppearanceSettings)
               ) : (
-                <HiddenSettingsRedirect />
+                <Navigate to='/guid' replace />
               )
             }
           />
@@ -102,7 +112,7 @@ const PanelRoute: React.FC<{ layout: React.ReactElement }> = ({ layout }) => {
             element={
               <Navigate
                 to={
-                  SUPERDNODES_BRAND.showAppearanceSettings ? '/settings/appearance' : getDefaultSettingsPath(false)
+                  SUPERDNODES_BRAND.showAppearanceSettings ? '/settings/appearance' : '/guid'
                 }
                 replace
               />
@@ -116,7 +126,7 @@ const PanelRoute: React.FC<{ layout: React.ReactElement }> = ({ layout }) => {
               SUPERDNODES_BRAND.showSystemSettings ? (
                 withRouteFallback(SystemSettings)
               ) : (
-                <HiddenSettingsRedirect />
+                <Navigate to='/guid' replace />
               )
             }
           />
@@ -126,12 +136,12 @@ const PanelRoute: React.FC<{ layout: React.ReactElement }> = ({ layout }) => {
               SUPERDNODES_BRAND.showAboutSettings ? (
                 withRouteFallback(SystemSettings)
               ) : (
-                <HiddenSettingsRedirect />
+                <Navigate to='/guid' replace />
               )
             }
           />
           <Route path='/settings/ext/:tabId' element={withRouteFallback(ExtensionSettingsPage)} />
-          <Route path='/settings' element={<Navigate to={getDefaultSettingsPath(false)} replace />} />
+          <Route path='/settings' element={<Navigate to='/guid' replace />} />
           <Route path='/test/components' element={withRouteFallback(ComponentsShowcase)} />
           <Route path='/scheduled' element={withRouteFallback(ScheduledTasksPage)} />
           <Route path='/scheduled/:job_id' element={withRouteFallback(TaskDetailPage)} />

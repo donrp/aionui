@@ -1,3 +1,4 @@
+export { default as SiderAssistantEntry } from './SiderAssistantEntry';
 export { default as SiderScheduledEntry } from './SiderScheduledEntry';
 export { default as SiderDocumentsEntry } from './SiderDocumentsEntry';
 export { default as SiderSearchEntry } from './SiderSearchEntry';
