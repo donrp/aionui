@@ -1,10 +1,11 @@
-import loginLogo from '@renderer/assets/logos/brand/supernodes.svg';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AppLoader from '@renderer/components/layout/AppLoader';
 import { SUPERDNODES_BRAND, ensureBrandFavicon } from '@/renderer/brand/supernodes';
 import { useAuth } from '../../hooks/context/AuthContext';
+import { useAuthPageAnalytics } from '../../hooks/useAuthPageAnalytics';
+import AuthBrandPanel from './AuthBrandPanel';
 import './LoginPage.css';
 
 type MessageState = {
@@ -32,7 +33,7 @@ const deobfuscate = (text: string): string => {
 };
 
 const LoginPage: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { status, login } = useAuth();
 
@@ -48,15 +49,19 @@ const LoginPage: React.FC = () => {
   const messageTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => {
+    document.documentElement.classList.add('login-page-active');
     document.body.classList.add('login-page-active');
     ensureBrandFavicon();
     return () => {
+      document.documentElement.classList.remove('login-page-active');
       document.body.classList.remove('login-page-active');
       if (messageTimer.current) {
         window.clearTimeout(messageTimer.current);
       }
     };
   }, []);
+
+  useAuthPageAnalytics(t('login.pageTitle'), '#/login');
 
   useEffect(() => {
     document.title = t('login.pageTitle');
@@ -111,29 +116,6 @@ const LoginPage: React.FC = () => {
     [clearMessageLater]
   );
 
-  const supportedLanguages = useMemo<{ code: string; label: string }[]>(
-    () => [
-      { code: 'zh-CN', label: '简体中文' },
-      { code: 'zh-TW', label: '繁體中文' },
-      { code: 'ja-JP', label: '日本語' },
-      { code: 'ko-KR', label: '한국어' },
-      { code: 'tr-TR', label: 'Türkçe' },
-      { code: 'uk-UA', label: 'Українська' },
-      { code: 'pt-BR', label: 'Português (BR)' },
-      { code: 'de-DE', label: 'Deutsch' },
-      { code: 'es-ES', label: 'Español' },
-      { code: 'fa-IR', label: 'فارسی' },
-      { code: 'en-US', label: 'English' },
-    ],
-    []
-  );
-
-  const handleLanguageChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
-    const nextLanguage = event.target.value;
-    i18n.changeLanguage(nextLanguage).catch((error: Error) => {
-      console.error('Failed to change language:', error);
-    });
-  }, []);
   const handleSubmit = useCallback(
     async (event: React.FormEvent) => {
       event.preventDefault();
@@ -197,15 +179,16 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className='login-page'>
-      <div className='login-page__card'>
-        <div className='login-page__header'>
-          <div className='login-page__logo'>
-            <img src={loginLogo} alt={t('login.brand')} />
+      <div className='login-page__shell'>
+      <div className='login-page__panel'>
+        <div className='login-page__panel-inner'>
+          <div className='login-page__header'>
+            <span className='login-page__eyebrow'>{t('login.eyebrow')}</span>
+            <h1 className='login-page__title'>{t('login.signInTitle')}</h1>
+            <p className='login-page__subtitle'>{t('login.subtitle')}</p>
           </div>
-          <p className='login-page__subtitle'>{t('login.subtitle')}</p>
-        </div>
 
-        <form className='login-page__form' onSubmit={handleSubmit}>
+          <form className='login-page__form' onSubmit={handleSubmit}>
           <div className='login-page__form-item'>
             <label className='login-page__label' htmlFor='username'>
               {t('login.username')}
@@ -326,6 +309,13 @@ const LoginPage: React.FC = () => {
           </div>
         </form>
 
+        <p className='login-page__switch-auth'>
+          {t('login.noAccount')}{' '}
+          <Link to='/register' className='login-page__switch-auth-link'>
+            {t('login.createAccountLink')}
+          </Link>
+        </p>
+
         {!SUPERDNODES_BRAND.loginHideFooter && (
           <div className='login-page__footer'>
             <div className='login-page__footer-content'>
@@ -335,6 +325,10 @@ const LoginPage: React.FC = () => {
             </div>
           </div>
         )}
+        </div>
+      </div>
+
+      <AuthBrandPanel />
       </div>
     </div>
   );
